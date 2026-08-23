@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- 
+    Simple Sample Box Dieline 
+    Colors: 
+      Magenta (#ff00ff) = Cut
+      Cyan (#00ffff) = Fold
+  -->
+  <g id="dieline-layer" inkscape:label="DIELINE - LOCKED">
+    <!-- Back Panel (Center Left) -->
+    <rect x="250" y="200" width="150" height="200" fill="none" stroke="#00ffff" stroke-dasharray="5,5" inkscape:label="Back Panel" id="back" />
+    
+    <!-- Front Panel (Center Right) -->
+    <rect x="400" y="200" width="150" height="200" fill="none" stroke="#00ffff" stroke-dasharray="5,5" inkscape:label="Front Panel" id="front" />
+    
+    <!-- Left Side Panel -->
+    <rect x="150" y="200" width="100" height="200" fill="none" stroke="#00ffff" stroke-dasharray="5,5" inkscape:label="Left Side" />
+    
+    <!-- Right Side Panel -->
+    <rect x="550" y="200" width="100" height="200" fill="none" stroke="#00ffff" stroke-dasharray="5,5" inkscape:label="Right Side" />
+    
+    <!-- Top Flap (Above Front) -->
+    <rect x="400" y="100" width="150" height="100" fill="none" stroke="#00ffff" stroke-dasharray="5,5" inkscape:label="Top Flap" />
+    
+    <!-- Bottom Flap (Below Front) -->
+    <rect x="400" y="400" width="150" height="100" fill="none" stroke="#00ffff" stroke-dasharray="5,5" inkscape:label="Bottom Flap" />
+    
+    <!-- Cut Outlines (Outer Boundary) -->
+    <!-- Outer perimeter cuts using magenta -->
+    <path d="M 150 200 L 250 200 L 250 100 L 400 100 L 400 0 L 550 0 L 550 100 L 650 100 L 650 200 L 650 400 L 550 400 L 550 500 L 400 500 L 400 600 L 250 600 L 250 500 L 150 500 Z" fill="none" stroke="#ff00ff" stroke-width="2" id="cut-boundary" inkscape:label="Cut Line" />
+  </g>
+</svg>
