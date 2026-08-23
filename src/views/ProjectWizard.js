@@ -19,7 +19,7 @@ import { showToast } from '../components/Toast.js';
 import { gemini } from '../ai/GeminiClient.js';
 import { icon } from '../components/Icons.js';
 
-const STEPS = ['Setup', 'Dieline', 'Content', 'AI Review'];
+const STEPS = ['Setup', 'Dieline', 'Content'];
 
 export class ProjectWizard {
   constructor(appContainer) {
@@ -88,7 +88,6 @@ export class ProjectWizard {
       case 0: this._renderStepSetup(); break;
       case 1: this._renderStepDieline(); break;
       case 2: this._renderStepContent(); break;
-      case 3: this._renderStepReview(); break;
     }
   }
 
@@ -220,93 +219,27 @@ export class ProjectWizard {
     const nextBtn = document.createElement('button');
     nextBtn.id = 'btn-next';
     nextBtn.className = 'btn btn-primary';
-    nextBtn.textContent = 'Analyze Content & Market';
+    nextBtn.textContent = 'Generate Concepts';
     nextBtn.disabled = !this.projectData.docFile;
-    nextBtn.onclick = () => {
-      this.currentStep++;
-      this._renderStep();
+    nextBtn.onclick = async () => {
+      nextBtn.disabled = true;
+      nextBtn.innerHTML = `${icon('spinner', '16px')} Analyzing...`;
+      try {
+        const prodData = await analyzeProductData(this.projectData.rawDocText);
+        this.projectData.productData = prodData;
+        await this._finishWizard();
+      } catch (err) {
+        showToast(`Analysis Failed: ${err.message}`, 'error');
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'Generate Concepts';
+      }
     };
 
     this.footerContainer.appendChild(prevBtn);
     this.footerContainer.appendChild(nextBtn);
   }
 
-  // ── Step 4: AI Review ───────────────────────────────────────
-
-  async _renderStepReview() {
-    this.bodyContainer.innerHTML = `
-      <div style="text-align:center;padding:40px 0">
-        ${icon('spinner')}
-        <h2 style="margin-top:24px">AI analyzing product data & researching market...</h2>
-        <p style="color:var(--text-muted)">This usually takes 5-10 seconds.</p>
-      </div>
-    `;
-
-    try {
-      // 1. Extract product data
-      const prodData = await analyzeProductData(this.projectData.rawDocText);
-      this.projectData.productData = prodData;
-
-      // 2. Perform market research
-      const marketRes = await performMarketResearch(prodData);
-      this.projectData.marketResearch = marketRes;
-
-      // Display review screen
-      this.bodyContainer.innerHTML = `
-        <h2 style="display:flex;align-items:center;gap:8px">${icon('ai')} Data Extracted & Researched</h2>
-        
-        <div class="card" style="margin-bottom:24px">
-          <h3 style="margin-top:0">Extracted Product Data</h3>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px">
-            <div><strong>Brand:</strong> ${prodData.brand}</div>
-            <div><strong>Product:</strong> ${prodData.productName}</div>
-            <div><strong>Category:</strong> ${prodData.productCategory}</div>
-            <div><strong>Size:</strong> ${prodData.productSize || prodData.weight || prodData.volume}</div>
-          </div>
-          <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
-            Extracted from document. <strong>No claims invented.</strong>
-          </div>
-        </div>
-
-        <div class="card" style="border-left:3px solid var(--accent)">
-          <h3 style="margin-top:0">Market Research Insight</h3>
-          <p style="font-size:14px;line-height:1.5">${marketRes.overallInsight}</p>
-          
-          <h4 style="margin:16px 0 8px">Differentiation Opportunity:</h4>
-          <p style="font-size:14px;color:var(--accent)">${marketRes.differentiation?.recommendedDirection}</p>
-        </div>
-      `;
-
-      const prevBtn = document.createElement('button');
-      prevBtn.className = 'btn btn-secondary';
-      prevBtn.textContent = 'Back';
-      prevBtn.onclick = () => { this.currentStep--; this._renderStep(); };
-
-      const nextBtn = document.createElement('button');
-      nextBtn.className = 'btn btn-primary';
-      nextBtn.textContent = 'Generate Concepts';
-      nextBtn.onclick = () => this._finishWizard();
-
-      this.footerContainer.appendChild(prevBtn);
-      this.footerContainer.appendChild(nextBtn);
-
-    } catch (err) {
-      this.bodyContainer.innerHTML = `
-        <div class="empty-state" style="border-color:var(--error)">
-          ${icon('error')}
-          <h3>Analysis Failed</h3>
-          <p>${err.message}</p>
-        </div>
-      `;
-      
-      const prevBtn = document.createElement('button');
-      prevBtn.className = 'btn btn-secondary';
-      prevBtn.textContent = 'Back';
-      prevBtn.onclick = () => { this.currentStep--; this._renderStep(); };
-      
-      this.footerContainer.appendChild(prevBtn);
-    }
-  }
+  // ── (Review step removed as per user request) ────────────────
 
   async _finishWizard() {
     try {

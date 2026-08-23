@@ -6,6 +6,7 @@
 
 import { getProject, saveProject } from '../core/Storage.js';
 import { generateCreativeDirection, generateConceptVariations } from '../ai/CreativeDirector.js';
+import { performMarketResearch } from '../ai/MarketResearcher.js';
 import { renderConcept } from '../ai/ConceptGenerator.js';
 import { dielineEngine } from '../core/DielectricEngine.js';
 import { icon } from '../components/Icons.js';
@@ -35,6 +36,12 @@ export class ConceptPicker {
       // Load dieline engine if not already loaded (e.g. page refresh)
       if (!dielineEngine.isLoaded && this.project.dielineText) {
         dielineEngine.loadFromSvgString(this.project.dielineText);
+      }
+
+      // 0. Perform market research silently in the background
+      if (!this.project.marketResearch) {
+        this.project.marketResearch = await performMarketResearch(this.project.productData);
+        await saveProject(this.project);
       }
 
       // 1. Generate core creative direction
