@@ -233,6 +233,68 @@ const CSS = `
 .lp-dirq { font-size: 13px; font-weight: 600; margin: 12px 0 3px; }
 .lp-dira { font-size: 12.5px; color: var(--ink-soft); line-height: 1.7; margin: 0; }
 
+/* ---------- die-cut ---------- */
+.lp-drop {
+  border: 2px dashed var(--rule); background: #fff; padding: 26px 18px;
+  text-align: center; cursor: pointer; display: block;
+}
+.lp-drop:hover { border-color: var(--ink); }
+.lp-drop b { display: block; font-size: 14px; margin-bottom: 5px; }
+.lp-drop span { font-size: 12px; color: var(--ink-soft); line-height: 1.7; }
+
+.lp-dcgrid { display: grid; grid-template-columns: minmax(200px, 280px) 1fr; gap: 24px; align-items: start; }
+@media (max-width: 720px) { .lp-dcgrid { grid-template-columns: 1fr; } }
+
+.lp-dcprev {
+  border: 1px solid var(--rule); background: #fff; padding: 12px;
+  display: flex; align-items: center; justify-content: center; min-height: 190px;
+}
+.lp-dcprev svg { max-width: 100%; max-height: 260px; height: auto; }
+
+.lp-readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.lp-ro { border: 1px solid var(--rule); background: #fff; padding: 10px 12px; }
+.lp-rok {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-soft); margin-bottom: 4px;
+}
+.lp-rov { font-family: 'IBM Plex Mono', monospace; font-size: 16px; direction: ltr; text-align: left; }
+
+.lp-fields { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.lp-field { flex: 1 1 110px; min-width: 100px; }
+.lp-field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+.lp-num {
+  width: 100%; background: #fff; border: 1px solid var(--rule); padding: 9px 10px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px; direction: ltr; text-align: left;
+}
+.lp-num:focus, .lp-sel:focus { outline: 2px solid var(--cyan); outline-offset: -1px; }
+.lp-sel {
+  width: 100%; background: #fff; border: 1px solid var(--rule); padding: 9px 10px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+}
+
+.lp-shapes { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 16px; }
+.lp-shape {
+  background: #fff; border: 1px solid var(--rule); padding: 7px 10px; cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-soft); direction: ltr;
+}
+.lp-shape:hover { border-color: var(--ink); color: var(--ink); }
+.lp-shape[data-on="1"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.lp-ok { border-right: 3px solid var(--cyan); background: #fff; padding: 12px 14px; font-size: 13px; line-height: 1.65; }
+
+/* ---------- artwork upload ---------- */
+.lp-artrow {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  border: 1px solid var(--rule); background: #fff;
+  padding: 9px 12px; margin-bottom: 8px;
+}
+.lp-artname { flex: 1 1 130px; min-width: 0; font-size: 12.5px; font-weight: 600; overflow-wrap: anywhere; }
+.lp-artmeta {
+  display: block; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  font-weight: 400; color: var(--ink-soft); margin-top: 3px; direction: ltr; text-align: left;
+}
+.lp-artrow .lp-btn { padding: 7px 12px; font-size: 12px; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 `;
 
@@ -853,6 +915,190 @@ function localConcept(text, style, scope, brand) {
 
 /* ============================================================ */
 
+/* ============================================================
+   DIE-CUT ANALYSIS
+   Geometry is measured from the file itself — SVG bounding boxes
+   via getBBox(), PDF page boxes read from the file structure.
+   Nothing here is inferred by a model.
+   ============================================================ */
+
+const TO_MM = { mm: 1, cm: 10, in: 25.4, pt: 25.4 / 72, pc: 25.4 / 6, px: 25.4 / 96 };
+const UNITS = ["mm", "cm", "in", "pt", "px"];
+
+function parseLen(v) {
+  if (v === null || v === undefined) return null;
+  const m = String(v).trim().match(/^(-?[\d.]+)\s*(mm|cm|in|pt|pc|px|%)?$/);
+  if (!m) return null;
+  const u = m[2] || "px";
+  if (u === "%") return null;
+  return { n: parseFloat(m[1]), u };
+}
+
+const toMM = (n, u) => n * (TO_MM[u] || TO_MM.px);
+const fromMM = (mm, u) => mm / (TO_MM[u] || TO_MM.px);
+const round1 = (n) => Math.round(n * 10) / 10;
+
+function gcd(a, b) { return b < 0.0001 ? a : gcd(b, a % b); }
+function ratioText(w, h) {
+  if (!w || !h) return "—";
+  const r = w / h;
+  // Try a clean small-integer ratio first, else fall back to decimal.
+  for (let d = 1; d <= 12; d++) {
+    const n = r * d;
+    if (Math.abs(n - Math.round(n)) < 0.02) return `${Math.round(n)}:${d}`;
+  }
+  return `${round1(r)}:1`;
+}
+
+function sanitizeSVG(markup) {
+  return markup
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/javascript:/gi, "");
+}
+
+function analyzeSVG(text) {
+  const clean = sanitizeSVG(text);
+  const doc = new DOMParser().parseFromString(clean, "image/svg+xml");
+  const svg = doc.querySelector("svg");
+  if (!svg) throw new Error("مش ملف SVG صالح");
+
+  const vb = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+  const hasVB = vb.length === 4 && vb.every((n) => !isNaN(n));
+  const wAttr = parseLen(svg.getAttribute("width"));
+  const hAttr = parseLen(svg.getAttribute("height"));
+
+  // Mount offscreen so getBBox() returns real rendered geometry.
+  const host = document.createElement("div");
+  host.setAttribute("style", "position:absolute;left:-99999px;top:0;width:0;height:0;overflow:hidden");
+  document.body.appendChild(host);
+  host.innerHTML = clean;
+  const live = host.querySelector("svg");
+
+  let shapes = [];
+  try {
+    const nodes = live.querySelectorAll("path, rect, circle, ellipse, polygon, polyline, line");
+    nodes.forEach((el, i) => {
+      let bb;
+      try { bb = el.getBBox(); } catch { return; }
+      if (!bb || bb.width < 0.01 || bb.height < 0.01) return;
+      shapes.push({
+        i,
+        tag: el.tagName.toLowerCase(),
+        id: el.getAttribute("id") || "",
+        x: bb.x, y: bb.y, w: bb.width, h: bb.height,
+        area: bb.width * bb.height,
+      });
+    });
+  } finally {
+    document.body.removeChild(host);
+  }
+
+  // User units per viewBox unit -> millimetres.
+  let mmPerUnit = null;
+  let confidence = "low";
+  if (hasVB && wAttr && wAttr.u !== "px") {
+    mmPerUnit = toMM(wAttr.n, wAttr.u) / vb[2];
+    confidence = "high";
+  } else if (!hasVB && wAttr && wAttr.u !== "px") {
+    mmPerUnit = toMM(wAttr.n, wAttr.u) / wAttr.n;
+    confidence = "high";
+  } else if (hasVB && wAttr && wAttr.u === "px") {
+    mmPerUnit = toMM(wAttr.n, "px") / vb[2];
+    confidence = "assumed";
+  }
+
+  const artW = hasVB ? vb[2] : wAttr ? wAttr.n : null;
+  const artH = hasVB ? vb[3] : hAttr ? hAttr.n : null;
+
+  shapes.sort((a, b) => b.area - a.area);
+  shapes = shapes.slice(0, 12);
+
+  return {
+    kind: "svg",
+    markup: clean,
+    artboard: { w: artW, h: artH },
+    viewBox: hasVB ? vb : null,
+    mmPerUnit,
+    confidence,
+    shapes,
+    declared: wAttr && hAttr ? { w: wAttr.n, h: hAttr.n, u: wAttr.u } : null,
+  };
+}
+
+function analyzePDF(buf) {
+  // Page boxes live as plain tokens in the PDF structure, so they can be
+  // read directly. Individual cut paths sit inside compressed content
+  // streams and are NOT extracted here.
+  const bytes = new Uint8Array(buf);
+  let s = "";
+  const CH = 8192;
+  for (let i = 0; i < bytes.length; i += CH) {
+    s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  }
+
+  const grab = (name) => {
+    const re = new RegExp("\\/" + name + "\\s*\\[\\s*(-?[\\d.]+)\\s+(-?[\\d.]+)\\s+(-?[\\d.]+)\\s+(-?[\\d.]+)\\s*\\]");
+    const m = s.match(re);
+    if (!m) return null;
+    const [x0, y0, x1, y1] = m.slice(1).map(Number);
+    return { w: Math.abs(x1 - x0), h: Math.abs(y1 - y0) };
+  };
+
+  const trim = grab("TrimBox");
+  const media = grab("MediaBox");
+  const box = trim || media;
+  if (!box) throw new Error("مقدرتش أقرا مقاس الصفحة من الـ PDF");
+
+  return {
+    kind: "pdf",
+    markup: null,
+    // PDF user space is points.
+    boxMM: { w: toMM(box.w, "pt"), h: toMM(box.h, "pt") },
+    usedBox: trim ? "TrimBox" : "MediaBox",
+    hasTrim: !!trim,
+    confidence: "high",
+    shapes: [],
+  };
+}
+
+function analyzeRaster(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        kind: "raster",
+        markup: null,
+        px: { w: img.naturalWidth, h: img.naturalHeight },
+        confidence: "none",
+        shapes: [],
+      });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("مقدرتش أفتح الصورة")); };
+    img.src = url;
+  });
+}
+
+async function analyzeDieFile(file) {
+  const name = (file.name || "").toLowerCase();
+  if (name.endsWith(".svg")) {
+    return analyzeSVG(await file.text());
+  }
+  if (name.endsWith(".pdf") || name.endsWith(".ai")) {
+    // Modern .ai files carry a PDF-compatible structure, so the same read applies.
+    return analyzePDF(await file.arrayBuffer());
+  }
+  if (/\.(png|jpe?g|webp|gif)$/.test(name)) {
+    return analyzeRaster(file);
+  }
+  throw new Error("صيغة مش مدعومة. استخدم SVG أو PDF أو AI.");
+}
+
+/* ============================================================ */
+
 function Dieline({ items, face }) {
   const W = 300;
   const H = 640;
@@ -923,6 +1169,25 @@ function Dieline({ items, face }) {
   );
 }
 
+/* A concept with no artwork slot leaves the user nowhere to upload,
+   so make sure one always exists. */
+function ensureArtZone(c) {
+  if (!c || !Array.isArray(c.zones) || !c.zones.length) return c;
+  if (c.zones.some((z) => z.role === "art")) return c;
+  const zones = c.zones.slice();
+  // Place it after the headline block rather than at the very top.
+  const at = Math.min(3, zones.length);
+  zones.splice(at, 0, {
+    label: "Hero Visual",
+    role: "art",
+    w: 0.85,
+    h: 2.2,
+    align: "center",
+    tone: "light",
+  });
+  return { ...c, zones };
+}
+
 function readable(hex) {
   const h = (hex || "#888888").replace("#", "");
   if (h.length !== 6) return "#16181C";
@@ -932,9 +1197,88 @@ function readable(hex) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#16181C" : "#FFFFFF";
 }
 
-function ConceptMock({ concept, scope }) {
+/* Reads an uploaded artwork file and checks whether it actually
+   carries transparency — AI tools often ignore the request for it. */
+function readArtImage(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onerror = () => reject(new Error("مقدرتش أقرا الملف"));
+    fr.onload = () => {
+      const dataUrl = fr.result;
+      const img = new Image();
+      img.onerror = () => reject(new Error("مقدرتش أفتح الصورة"));
+      img.onload = () => {
+        let hasAlpha = false;
+        try {
+          const S = 90; // sample small — we only need presence of alpha
+          const cv = document.createElement("canvas");
+          cv.width = S; cv.height = S;
+          const ctx = cv.getContext("2d", { willReadFrequently: true });
+          ctx.drawImage(img, 0, 0, S, S);
+          const d = ctx.getImageData(0, 0, S, S).data;
+          for (let i = 3; i < d.length; i += 4) {
+            if (d[i] < 250) { hasAlpha = true; break; }
+          }
+        } catch { hasAlpha = false; }
+        resolve({
+          dataUrl,
+          name: file.name,
+          w: img.naturalWidth,
+          h: img.naturalHeight,
+          hasAlpha,
+        });
+      };
+      img.src = dataUrl;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+const artKey = (label) => String(label || "").trim().toLowerCase();
+
+function DiePreview({ raw, shapeIdx }) {
+  const sh = raw.shapes[shapeIdx];
+  const vb = raw.viewBox;
+  const w = vb ? vb[2] : raw.artboard.w || 100;
+  const h = vb ? vb[3] : raw.artboard.h || 100;
+  const x = vb ? vb[0] : 0;
+  const y = vb ? vb[1] : 0;
+
+  // The file's own artwork is shown as-is; the selected shape is outlined.
+  return (
+    <svg viewBox={`${x} ${y} ${w} ${h}`} style={{ width: "100%", height: "auto" }}
+         role="img" aria-label="شكل السكينة المكتشف">
+      <g dangerouslySetInnerHTML={{ __html: raw.markup.replace(/<\/?svg[^>]*>/gi, "") }} />
+      {sh ? (
+        <rect x={sh.x} y={sh.y} width={sh.w} height={sh.h}
+              fill="none" stroke="#C8005E" strokeWidth={Math.max(w, h) / 220}
+              strokeDasharray={`${Math.max(w, h) / 70} ${Math.max(w, h) / 110}`} />
+      ) : null}
+    </svg>
+  );
+}
+
+function BoxPreview({ w, h }) {
+  const maxSide = 200;
+  const scale = maxSide / Math.max(w, h);
+  const bw = Math.max(w * scale, 6);
+  const bh = Math.max(h * scale, 6);
+  return (
+    <svg viewBox={`0 0 ${maxSide} ${maxSide}`} style={{ width: "100%", height: "auto" }}
+         role="img" aria-label="نسبة أبعاد الملف">
+      <rect x={(maxSide - bw) / 2} y={(maxSide - bh) / 2} width={bw} height={bh}
+            fill="#F7F8F6" stroke="#16181C" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function ConceptMock({ concept, scope, die, art }) {
   const W = 330;
-  const H = scope === "full" ? 560 : 620;
+  // A confirmed die-cut drives the proportion; otherwise fall back to defaults.
+  let H = scope === "full" ? 560 : 620;
+  if (die && die.confirmed && die.w > 0 && die.h > 0) {
+    H = Math.round(Math.min(Math.max((W * die.h) / die.w, 130), 900));
+  }
   const pad = 20;
   const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
   const bg = pal[0] || "#F2F2F0";
@@ -969,8 +1313,21 @@ function ConceptMock({ concept, scope }) {
       <rect x="0" y="0" width={W} height={H} fill={bg} />
       {boxes.map((b, i) => {
         const isArt = b.role === "art";
+        const shot = isArt && art ? art[artKey(b.label)] : null;
         const f = fillFor(b.tone);
         const txt = readable(b.tone === "light" ? bg : f);
+
+        if (shot) {
+          // Contain, never crop or stretch — this is a reference, not a crop tool.
+          return (
+            <g key={i}>
+              <image href={shot.dataUrl} x={b.x} y={b.y}
+                     width={b.w} height={Math.max(b.h, 9)}
+                     preserveAspectRatio="xMidYMid meet" />
+            </g>
+          );
+        }
+
         return (
           <g key={i}>
             <rect x={b.x} y={b.y} width={b.w} height={Math.max(b.h, 9)}
@@ -1000,6 +1357,106 @@ function LabelPrepTool() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [stage, setStage] = useState("");
+  // Die-cut step
+  const [dieFile, setDieFile] = useState(null);
+  const [dieRaw, setDieRaw] = useState(null);     // analysis result
+  const [dieShape, setDieShape] = useState(0);    // chosen shape index
+  const [dieErr, setDieErr] = useState("");
+  const [dieBusy, setDieBusy] = useState(false);
+  const [dieW, setDieW] = useState("");
+  const [dieH, setDieH] = useState("");
+  const [dieUnit, setDieUnit] = useState("mm");
+  const [die, setDie] = useState(null);           // confirmed reference
+
+  const resetDie = () => {
+    setDieFile(null); setDieRaw(null); setDieShape(0);
+    setDieErr(""); setDieW(""); setDieH(""); setDieUnit("mm"); setDie(null);
+  };
+
+  // Fill the editable fields from whatever the file actually yielded.
+  const applyMeasured = (res, shapeIdx) => {
+    if (res.kind === "svg") {
+      const sh = res.shapes[shapeIdx];
+      if (sh && res.mmPerUnit) {
+        setDieUnit("mm");
+        setDieW(String(round1(sh.w * res.mmPerUnit)));
+        setDieH(String(round1(sh.h * res.mmPerUnit)));
+      } else if (sh) {
+        setDieUnit("px");
+        setDieW(String(round1(sh.w)));
+        setDieH(String(round1(sh.h)));
+      }
+    } else if (res.kind === "pdf") {
+      setDieUnit("mm");
+      setDieW(String(round1(res.boxMM.w)));
+      setDieH(String(round1(res.boxMM.h)));
+    } else if (res.kind === "raster") {
+      setDieUnit("px");
+      setDieW(String(res.px.w));
+      setDieH(String(res.px.h));
+    }
+  };
+
+  const onDieFile = async (file) => {
+    if (!file) return;
+    setDieBusy(true); setDieErr(""); setDie(null); setDieRaw(null);
+    try {
+      const res = await analyzeDieFile(file);
+      setDieFile({ name: file.name, size: file.size });
+      setDieRaw(res);
+      setDieShape(0);
+      applyMeasured(res, 0);
+    } catch (e) {
+      setDieErr(e.message || "مقدرتش أحلل الملف");
+      setDieFile({ name: file.name, size: file.size });
+    } finally {
+      setDieBusy(false);
+    }
+  };
+
+  const pickShape = (idx) => {
+    setDieShape(idx);
+    if (dieRaw) applyMeasured(dieRaw, idx);
+  };
+
+  const confirmDie = () => {
+    const w = parseFloat(dieW);
+    const h = parseFloat(dieH);
+    if (!(w > 0) || !(h > 0)) { setDieErr("اكتب عرض وارتفاع صالحين"); return; }
+    setDieErr("");
+    setDie({
+      confirmed: true,
+      w, h, unit: dieUnit,
+      wMM: toMM(w, dieUnit),
+      hMM: toMM(h, dieUnit),
+      source: dieRaw?.kind || "manual",
+      file: dieFile?.name || "",
+    });
+  };
+
+  // Uploaded artwork, keyed by zone label. Session only.
+  const [art, setArt] = useState({});
+  const [artErr, setArtErr] = useState("");
+
+  const onArtFile = async (label, file) => {
+    if (!file) return;
+    setArtErr("");
+    try {
+      const img = await readArtImage(file);
+      setArt((prev) => ({ ...prev, [artKey(label)]: img }));
+    } catch (e) {
+      setArtErr(e.message || "مقدرتش أحمّل الصورة");
+    }
+  };
+
+  const clearArt = (label) => {
+    setArt((prev) => {
+      const next = { ...prev };
+      delete next[artKey(label)];
+      return next;
+    });
+  };
+
   const [localMode, setLocalMode] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
@@ -1120,14 +1577,17 @@ function LabelPrepTool() {
       assets ? `Proposed visual assets: ${assets}` : "",
       `Design style: ${style}`,
       `Scope: ${scopeLabel}`,
+      die && die.confirmed
+        ? `Label proportion: ${round1(die.w)} x ${round1(die.h)} ${die.unit} (aspect ${ratioText(die.wMM, die.hMM)}). Lay the hierarchy out to suit this proportion.`
+        : "",
       concept ? "Give a DIFFERENT visual direction from the previous one." : "",
     ].filter(Boolean).join("\n");
     try {
       const r = await askClaudeRetry(SYS_CONCEPT, brief);
       if (!r || !(r.zones || []).length) throw new Error("empty");
-      setConcept(r);
+      setConcept(ensureArtZone(r));
     } catch {
-      setConcept(localConcept(desc, style, scope, brand));
+      setConcept(ensureArtZone(localConcept(desc, style, scope, brand)));
       setLocalMode(true);
     } finally {
       setConBusy(false);
@@ -1248,6 +1708,11 @@ function LabelPrepTool() {
                       onClick={() => setTab("director")} role="tab" aria-selected={tab === "director"}>
                 Visual AI Director
                 {director ? <span>{director.length}</span> : null}
+              </button>
+              <button className="lp-tab" data-on={tab === "diecut" ? 1 : 0}
+                      onClick={() => setTab("diecut")} role="tab" aria-selected={tab === "diecut"}>
+                Die-Cut
+                {die ? <span>✓</span> : null}
               </button>
               <button className="lp-tab" data-on={tab === "concept" ? 1 : 0}
                       onClick={() => setTab("concept")} role="tab" aria-selected={tab === "concept"}>
@@ -1417,6 +1882,182 @@ function LabelPrepTool() {
               </>
             ) : null}
 
+            {tab === "diecut" ? (
+              <>
+                <p className="lp-eyebrow">
+                  ملف السكينة — <b>مرجع أبعاد للتصور</b>
+                </p>
+
+                {!dieRaw && !dieErr ? (
+                  <div className="lp-ctrl">
+                    <label className="lp-drop" htmlFor="diefile">
+                      <b>{dieBusy ? "بيحلل الملف…" : "ارفع ملف الـ Die-Cut"}</b>
+                      <span>
+                        SVG بيدي أدق نتيجة (شكل ومقاس).<br />
+                        PDF و AI بيدّوا مقاس الصفحة.<br />
+                        PNG و JPG مرجع بصري بس، من غير مقاسات.
+                      </span>
+                    </label>
+                    <input
+                      id="diefile" type="file" style={{ display: "none" }}
+                      accept=".svg,.pdf,.ai,.png,.jpg,.jpeg,.webp"
+                      onChange={(e) => onDieFile(e.target.files?.[0])}
+                    />
+                    <p className="lp-note" style={{ marginTop: 16 }}>
+                      المقاسات بتتقاس من هندسة الملف نفسه، مش بتتخمّن. الخطوة دي
+                      بتاخد الشكل والنسبة كمرجع للتصور البصري بس — مفيش تعديل على
+                      ملفك، ومفيش إضافة خطوط طباعة.
+                    </p>
+                  </div>
+                ) : null}
+
+                {dieErr ? (
+                  <div className="lp-ctrl">
+                    <div className="lp-err">{dieErr}</div>
+                    <div className="lp-row">
+                      <label className="lp-btn lp-btn-ghost" htmlFor="diefile2" style={{ cursor: "pointer" }}>
+                        جرّب ملف تاني
+                      </label>
+                      <input
+                        id="diefile2" type="file" style={{ display: "none" }}
+                        accept=".svg,.pdf,.ai,.png,.jpg,.jpeg,.webp"
+                        onChange={(e) => onDieFile(e.target.files?.[0])}
+                      />
+                      <button className="lp-btn lp-btn-ghost" onClick={resetDie}>ابدأ من الأول</button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {dieRaw ? (
+                  <>
+                    <p className="lp-eyebrow" style={{ marginTop: 4 }}>
+                      Detected Die-Cut Dimensions
+                    </p>
+
+                    <div className="lp-dcgrid">
+                      <div>
+                        <div className="lp-dcprev">
+                          {dieRaw.kind === "svg" ? (
+                            <DiePreview raw={dieRaw} shapeIdx={dieShape} />
+                          ) : dieRaw.kind === "pdf" ? (
+                            <BoxPreview w={dieRaw.boxMM.w} h={dieRaw.boxMM.h} />
+                          ) : (
+                            <BoxPreview w={dieRaw.px.w} h={dieRaw.px.h} />
+                          )}
+                        </div>
+                        <p style={{ marginTop: 8, fontSize: 11, color: "#5C6169", overflowWrap: "anywhere" }}>
+                          {dieFile?.name}
+                        </p>
+                      </div>
+
+                      <div>
+                        <div className="lp-readout">
+                          <div className="lp-ro">
+                            <div className="lp-rok">Width</div>
+                            <div className="lp-rov">{dieW || "—"} {dieUnit}</div>
+                          </div>
+                          <div className="lp-ro">
+                            <div className="lp-rok">Height</div>
+                            <div className="lp-rov">{dieH || "—"} {dieUnit}</div>
+                          </div>
+                          <div className="lp-ro">
+                            <div className="lp-rok">Aspect Ratio</div>
+                            <div className="lp-rov">{ratioText(parseFloat(dieW), parseFloat(dieH))}</div>
+                          </div>
+                        </div>
+
+                        {dieRaw.kind === "svg" && dieRaw.shapes.length > 1 ? (
+                          <>
+                            <label className="lp-label">
+                              اتلاقى {dieRaw.shapes.length} أشكال — اختار شكل السكينة
+                            </label>
+                            <div className="lp-shapes">
+                              {dieRaw.shapes.map((sh, i) => (
+                                <button key={i} className="lp-shape" data-on={dieShape === i ? 1 : 0}
+                                        onClick={() => pickShape(i)}>
+                                  {sh.id || sh.tag} · {round1(sh.w)}×{round1(sh.h)}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        ) : null}
+
+                        {dieRaw.kind === "svg" && dieRaw.confidence !== "high" ? (
+                          <div className="lp-banner" style={{ marginBottom: 14 }}>
+                            <strong>الملف مفيهوش وحدة قياس صريحة.</strong>{" "}
+                            الأرقام دي بوحدات الملف. اكتب المقاس الحقيقي تحت قبل ما تأكد.
+                          </div>
+                        ) : null}
+
+                        {dieRaw.kind === "pdf" ? (
+                          <div className="lp-banner" style={{ marginBottom: 14 }}>
+                            <strong>{dieRaw.usedBox}.</strong>{" "}
+                            ده مقاس الصفحة مش مسار السكينة نفسه. لو السكينة أصغر من
+                            الصفحة، اكتب مقاسها تحت. لأدق نتيجة صدّر الملف SVG.
+                          </div>
+                        ) : null}
+
+                        {dieRaw.kind === "raster" ? (
+                          <div className="lp-banner" style={{ marginBottom: 14 }}>
+                            <strong>صورة، مش vector.</strong>{" "}
+                            الأرقام دي بيكسلات ومش مقاس حقيقي. اكتب المقاس بالملي تحت.
+                          </div>
+                        ) : null}
+
+                        <label className="lp-label">تعديل يدوي</label>
+                        <div className="lp-fields">
+                          <div className="lp-field">
+                            <label htmlFor="dw">Width</label>
+                            <input id="dw" className="lp-num" type="number" min="0" step="0.1"
+                                   value={dieW} onChange={(e) => setDieW(e.target.value)} />
+                          </div>
+                          <div className="lp-field">
+                            <label htmlFor="dh">Height</label>
+                            <input id="dh" className="lp-num" type="number" min="0" step="0.1"
+                                   value={dieH} onChange={(e) => setDieH(e.target.value)} />
+                          </div>
+                          <div className="lp-field">
+                            <label htmlFor="du">Unit</label>
+                            <select id="du" className="lp-sel" value={dieUnit}
+                                    onChange={(e) => setDieUnit(e.target.value)}>
+                              {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="lp-row">
+                          <button className="lp-btn" onClick={confirmDie}>
+                            {die ? "أكّد المقاس تاني" : "Confirm Die-Cut"}
+                          </button>
+                          <label className="lp-btn lp-btn-ghost" htmlFor="diefile3" style={{ cursor: "pointer" }}>
+                            Replace Die-Cut File
+                          </label>
+                          <input
+                            id="diefile3" type="file" style={{ display: "none" }}
+                            accept=".svg,.pdf,.ai,.png,.jpg,.jpeg,.webp"
+                            onChange={(e) => onDieFile(e.target.files?.[0])}
+                          />
+                        </div>
+
+                        {die ? (
+                          <div className="lp-ok" style={{ marginTop: 14 }}>
+                            اتأكد: {round1(die.w)} × {round1(die.h)} {die.unit} — نسبة{" "}
+                            {ratioText(die.wMM, die.hMM)}. التصور البصري هيتبني على النسبة دي.
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <p className="lp-note">
+                      المقاس ده بيتستخدم كنسبة ومرجع للتصور البصري بس. مفيش Bleed ولا
+                      Safe Area اتضافوا، ومفيش ملف طباعة بيتولّد — التنفيذ الحقيقي
+                      بيحصل في الإليستريتور على ملف السكينة الأصلي.
+                    </p>
+                  </>
+                ) : null}
+              </>
+            ) : null}
+
             {tab === "concept" ? (
               <>
                 <p className="lp-eyebrow">
@@ -1472,7 +2113,8 @@ function LabelPrepTool() {
                   <div className="lp-cgrid">
                     <div>
                       <div className="lp-dlcap">{style} — {SCOPES.find((s) => s.id === scope)?.label}</div>
-                      <ConceptMock concept={concept} scope={scope} />
+                      <ConceptMock concept={concept} scope={scope} die={die} art={art} />
+
                     </div>
 
                     <div>
@@ -1506,6 +2148,44 @@ function LabelPrepTool() {
                         </>
                       ) : null}
 
+                      <p className="lp-eyebrow" style={{ marginTop: 18 }}>ارفع الرسومات</p>
+                      {(concept.zones || []).filter((z) => z.role === "art").map((z, i) => {
+                        const shot = art[artKey(z.label)];
+                        return (
+                          <div className="lp-artrow" key={i}>
+                            <div className="lp-artname">
+                              {z.label}
+                              {shot ? (
+                                <span className="lp-artmeta">
+                                  {shot.w}×{shot.h}{shot.hasAlpha ? "" : " · خلفية مصمتة"}
+                                </span>
+                              ) : null}
+                            </div>
+                            {shot ? (
+                              <button className="lp-btn lp-btn-ghost" onClick={() => clearArt(z.label)}>
+                                شيلها
+                              </button>
+                            ) : null}
+                            <label className="lp-btn lp-btn-ghost" htmlFor={`art-${i}`} style={{ cursor: "pointer" }}>
+                              {shot ? "غيّرها" : "ارفع"}
+                            </label>
+                            <input
+                              id={`art-${i}`} type="file" style={{ display: "none" }}
+                              accept="image/png,image/webp,image/jpeg"
+                              onChange={(e) => onArtFile(z.label, e.target.files?.[0])}
+                            />
+                          </div>
+                        );
+                      })}
+
+                      {Object.values(art).some((a) => !a.hasAlpha) ? (
+                        <div className="lp-banner" style={{ marginTop: 12 }}>
+                          <strong>في صورة من غير خلفية شفافة.</strong>{" "}
+                          هتبان بمربع حواليها. أعد توليدها وتأكد إن أداة الصور مصدّرة PNG بشفافية.
+                        </div>
+                      ) : null}
+
+                      {artErr ? <div className="lp-err">{artErr}</div> : null}
                       <div className="lp-dir">
                         <p className="lp-eyebrow" style={{ marginTop: 8 }}>Design Direction</p>
                         {(concept.direction || []).map((d, i) => (
