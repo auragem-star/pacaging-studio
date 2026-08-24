@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>تجهيز عناصر الاستيكر — Label Prep</title>
+<style>
+  html, body { margin:0; padding:0; background:#E4E6E1; }
+  #boot { font-family: system-ui, sans-serif; padding:40px; text-align:center; color:#5C6169; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+</head>
+<body>
+<div id="root"><div id="boot">بيحمّل…</div></div>
+
+<script type="text/babel" data-presets="react">
+const { useState } = React;
+
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap');
+
+.lp-root, .lp-root * { box-sizing: border-box; }
+.lp-root {
+  --paper: #E4E6E1;
+  --panel: #F7F8F6;
+  --ink: #16181C;
+  --ink-soft: #5C6169;
+  --rule: #C3C7C0;
+  --cyan: #0091B3;
+  --magenta: #C8005E;
+  --amber: #B87400;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  min-height: 100vh;
+  padding: 28px 20px 80px;
+  direction: rtl;
+}
+
+.lp-shell { max-width: 1180px; margin: 0 auto; width: 100%; }
+.lp-el { min-width: 0; }
+.lp-elbody { overflow-wrap: anywhere; }
+
+/* ---------- masthead ---------- */
+.lp-head {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 14px;
+  margin-bottom: 26px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.lp-head > div { min-width: 0; flex: 1 1 260px; }
+.lp-title {
+  font-family: 'IBM Plex Sans Condensed', 'IBM Plex Sans Arabic', sans-serif;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  margin: 0;
+}
+.lp-sub { font-size: 13.5px; color: var(--ink-soft); margin: 6px 0 0; max-width: 46ch; line-height: 1.6; }
+.lp-stamp {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+  padding: 5px 9px;
+  white-space: nowrap;
+  direction: ltr;
+}
+
+/* ---------- eyebrow ---------- */
+.lp-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.lp-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+.lp-eyebrow b { color: var(--magenta); font-weight: 600; }
+
+/* ---------- input ---------- */
+.lp-inputwrap { background: var(--panel); border: 1px solid var(--rule); padding: 18px; margin-bottom: 14px; }
+.lp-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; }
+.lp-hint { font-size: 12px; color: var(--ink-soft); margin: 0 0 10px; line-height: 1.6; }
+.lp-ta {
+  width: 100%;
+  min-height: 190px;
+  resize: vertical;
+  background: #fff;
+  border: 1px solid var(--rule);
+  padding: 12px;
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+.lp-ta:focus { outline: 2px solid var(--cyan); outline-offset: -1px; }
+
+.lp-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+.lp-btn {
+  background: var(--ink); color: var(--paper); border: none;
+  padding: 11px 22px; font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.lp-btn:hover:not(:disabled) { background: var(--magenta); }
+.lp-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.lp-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.lp-btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--rule); font-weight: 500; padding: 10px 16px; }
+.lp-btn-ghost:hover:not(:disabled) { background: #fff; border-color: var(--ink); color: var(--ink); }
+
+.lp-err { border-right: 3px solid var(--magenta); background: #fff; padding: 12px 14px; font-size: 13px; line-height: 1.6; margin-top: 12px; }
+
+/* ---------- tabs ---------- */
+.lp-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--rule); margin: 30px 0 20px; flex-wrap: wrap; }
+.lp-tab {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  padding: 11px 16px; cursor: pointer; font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 13.5px; font-weight: 500; color: var(--ink-soft);
+}
+.lp-tab:hover { color: var(--ink); }
+.lp-tab[data-on="1"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--magenta); }
+.lp-tab span { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--ink-soft); margin-inline-start: 6px; }
+
+/* ---------- element list ---------- */
+.lp-facegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 18px; }
+.lp-face { background: var(--panel); border: 1px solid var(--rule); }
+.lp-facehead {
+  padding: 10px 14px; border-bottom: 1px solid var(--rule);
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; display: flex; justify-content: space-between;
+}
+.lp-el { padding: 12px 14px; border-bottom: 1px solid var(--rule); display: flex; gap: 12px; }
+.lp-el:last-child { border-bottom: none; }
+.lp-elnum { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--cyan); padding-top: 3px; min-width: 22px; }
+.lp-elbody { flex: 1; min-width: 0; }
+.lp-elen { font-size: 13.5px; font-weight: 600; direction: ltr; text-align: left; word-break: break-word; }
+.lp-elar { font-size: 13.5px; margin-top: 3px; }
+.lp-elnote { font-size: 11.5px; color: var(--ink-soft); margin-top: 5px; line-height: 1.55; }
+.lp-tag {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; border: 1px solid var(--rule); padding: 2px 5px; align-self: flex-start; color: var(--ink-soft);
+}
+
+/* ---------- prompts ---------- */
+.lp-prompt { background: var(--panel); border: 1px solid var(--rule); padding: 16px; margin-bottom: 12px; }
+.lp-phead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.lp-ptitle { font-size: 15px; font-weight: 600; margin: 0; }
+.lp-pplace { font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 10px; }
+.lp-ptext {
+  background: #fff; border: 1px solid var(--rule); padding: 12px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; line-height: 1.75;
+  direction: ltr; text-align: left; white-space: pre-wrap; word-break: break-word;
+}
+
+/* ---------- dieline preview (signature) ---------- */
+.lp-dlwrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 26px; }
+.lp-dlcol { display: flex; flex-direction: column; align-items: center; }
+.lp-dlcap {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-soft); margin-bottom: 10px;
+}
+.lp-dl { width: 100%; max-width: 300px; }
+.lp-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; font-size: 12px; color: var(--ink-soft); }
+.lp-lgi { display: flex; align-items: center; gap: 7px; }
+.lp-sw { width: 22px; height: 11px; border: 1px solid var(--ink); display: inline-block; }
+
+.lp-note { font-size: 12.5px; color: var(--ink-soft); line-height: 1.75; margin-top: 20px; border-top: 1px solid var(--rule); padding-top: 14px; }
+
+/* ---------- visual ai director ---------- */
+.lp-vd { background: var(--panel); border: 1px solid var(--rule); margin-bottom: 14px; }
+.lp-vdhead {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px; flex-wrap: wrap; padding: 14px 16px 0;
+}
+.lp-vdkind {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--paper); background: var(--cyan);
+  padding: 3px 7px; display: inline-block; margin-bottom: 6px;
+}
+.lp-vdname { font-size: 16px; font-weight: 600; margin: 0; }
+.lp-vdmeta { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0; padding: 12px 16px 0; }
+.lp-vdcell { padding: 9px 0; }
+.lp-vdcell dt {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-soft); margin-bottom: 4px;
+}
+.lp-vdcell dd { margin: 0; font-size: 12.5px; line-height: 1.65; }
+.lp-vdfoot { padding: 4px 16px 16px; }
+
+/* ---------- concept ---------- */
+.lp-ctrl { background: var(--panel); border: 1px solid var(--rule); padding: 16px; margin-bottom: 18px; }
+.lp-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.lp-chip {
+  background: #fff; border: 1px solid var(--rule); padding: 8px 13px;
+  font-family: 'IBM Plex Sans Arabic', sans-serif; font-size: 12.5px;
+  cursor: pointer; color: var(--ink-soft);
+}
+.lp-chip:hover { border-color: var(--ink); color: var(--ink); }
+.lp-chip[data-on="1"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
+.lp-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+.lp-banner {
+  border: 1px dashed var(--amber); background: #fff; padding: 11px 14px;
+  font-size: 12px; line-height: 1.65; color: var(--ink); margin-bottom: 18px;
+}
+.lp-banner strong { color: var(--amber); }
+
+.lp-cgrid { display: grid; grid-template-columns: minmax(240px, 340px) 1fr; gap: 26px; align-items: start; }
+@media (max-width: 720px) { .lp-cgrid { grid-template-columns: 1fr; } }
+
+.lp-swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.lp-swatch { width: 92px; }
+.lp-swbox { height: 46px; border: 1px solid var(--rule); }
+.lp-swhex { font-family: 'IBM Plex Mono', monospace; font-size: 10px; margin-top: 4px; direction: ltr; text-align: left; }
+.lp-swrole { font-size: 11px; color: var(--ink-soft); line-height: 1.4; }
+
+.lp-dir { border-top: 1px solid var(--rule); padding-top: 12px; margin-top: 4px; }
+.lp-dirq { font-size: 13px; font-weight: 600; margin: 12px 0 3px; }
+.lp-dira { font-size: 12.5px; color: var(--ink-soft); line-height: 1.7; margin: 0; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+`;
+
+const SYS_SPLIT = `You break a product description into print-ready packaging label elements.
+
+Return ONLY valid JSON. No markdown, no backticks, no preamble.
+
+{
+ "product":{"en":"...","ar":"..."},
+ "front":[{"t":"element name EN","ar":"Arabic or empty","k":"logo|name|claim|badge|volume|art","n":"placement note, Egyptian Arabic, max 8 words"}],
+ "back":[{"t":"...","ar":"...","k":"title|body|ingredients|usage|warning|storage|volume|art","n":"..."}]
+}
+
+Rules: front 6-7 items, back 6-7 items. Keep "t" under 5 words. Keep "ar" short (the label text itself, not a paragraph). Be extremely compact.`;
+
+const SYS_PROMPTS = `You write AI image-generation prompts for pharmaceutical packaging artwork.
+
+Return ONLY valid JSON. No markdown, no backticks, no preamble.
+
+{"prompts":[{"title":"short EN title","face":"front|back","place":"where it goes, Egyptian Arabic, max 10 words","p":"English image prompt"}]}
+
+Each "p" must describe photorealistic 3D pharmaceutical packaging artwork and end with: transparent background, isolated, no text, high resolution, 300 DPI
+
+Rules: exactly 4 prompts. Keep each "p" under 45 words. Be compact.`;
+
+const KINDS = [
+  "Hero Ingredient Visual",
+  "Supporting Ingredients",
+  "Background / Environment Visual",
+  "Decorative Elements",
+  "Texture / Pattern",
+  "Premium Visual Element",
+];
+
+const SYS_DIRECTOR = `You are an art director for product packaging. Analyse the product type, ingredients, nature and target audience, then propose ONLY the visual assets this specific product actually needs.
+
+Return ONLY valid JSON. No markdown, no backticks, no preamble.
+
+{"items":[{"kind":"one of: ${KINDS.join(" | ")}","name":"short EN asset name","why":"why this product needs it, Egyptian Arabic, max 14 words","role":"its job in the packaging design, Egyptian Arabic, max 12 words","place":"suggested placement, Egyptian Arabic, max 10 words","p":"English image-generation prompt"}]}
+
+Prompt rules for "p": photorealistic and professional where the product warrants it; specify camera angle, lighting, material and visual detail when useful; no text, no logos, no brand names in the image; isolated subject or clean background so the asset drops into a label design; specific to THIS product, never generic. Under 50 words.
+
+Rules: pick 4 items maximum. Do NOT use every kind — only the ones that genuinely fit this product. Be compact.`;
+
+const SYS_DIRECTOR_ONE = `You are an art director for product packaging. Rewrite ONE visual asset proposal with a fresh creative angle, different from the one given.
+
+Return ONLY valid JSON. No markdown, no backticks, no preamble.
+
+{"item":{"kind":"...","name":"...","why":"Egyptian Arabic, max 14 words","role":"Egyptian Arabic, max 12 words","place":"Egyptian Arabic, max 10 words","p":"English image prompt"}}
+
+Keep the same "kind". Prompt rules: photorealistic where warranted, specify angle/lighting/material, no text or logos in the image, isolated subject or clean background, specific to this product. Under 50 words.`;
+
+const STYLES = [
+  "Clean & Premium", "Modern & Bold", "Natural & Organic",
+  "Medical & Professional", "Luxury", "Minimal", "Playful & Colorful",
+];
+
+const SCOPES = [
+  { id: "front", label: "Front Label Concept" },
+  { id: "back", label: "Back Label Concept" },
+  { id: "full", label: "Full Packaging Visual Direction" },
+];
+
+const SYS_CONCEPT = `You are a packaging art director producing a VISUAL CONCEPT — a creative reference for a designer, not a print file. Never mention measurements, bleed, safe area or die-cut.
+
+Return ONLY valid JSON. No markdown, no backticks, no preamble.
+
+{
+ "palette":[{"hex":"#RRGGBB","role":"Egyptian Arabic, max 5 words"}],
+ "type":{"display":"typeface character for headings, EN","body":"typeface character for body, EN","note":"Egyptian Arabic, max 12 words"},
+ "zones":[{"label":"EN short label","role":"brand|name|benefit|art|info|badge|volume","w":0.4,"h":1.5,"align":"center|start|end","tone":"light|dark|accent"}],
+ "direction":[{"q":"Arabic question about a design decision","a":"Arabic answer, max 22 words"}]
+}
+
+"zones" describe visual hierarchy top to bottom: "w" is width as a fraction of the label (0.3-1), "h" is relative visual weight (0.6-2.6), "tone" picks how it sits against the background. Order them by what the customer should see first.
+
+Rules: palette 4-5 colours matching the requested style. zones 6-8. direction exactly 5 entries covering: product name placement, colour choice, visual element choice, the first thing the eye should land on, and how information was ranked. Be compact.`;
+
+function extractJSON(raw) {
+  const clean = raw.replace(/```json/g, "").replace(/```/g, "").trim();
+  const s = clean.indexOf("{");
+  const e = clean.lastIndexOf("}");
+  if (s === -1 || e === -1 || e <= s) throw new Error("no-json");
+  return JSON.parse(clean.slice(s, e + 1));
+}
+
+/* Provider key lives in memory only — never written into the file. */
+let GEMINI_KEY = "";
+const setGeminiKey = (k) => { GEMINI_KEY = (k || "").trim(); };
+
+async function askGemini(system, user) {
+  const url =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
+    encodeURIComponent(GEMINI_KEY);
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: `${system}\n\n---\n\nInput:\n${user}` }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          maxOutputTokens: 2048,
+          temperature: 0.7,
+        },
+      }),
+    });
+  } catch (netErr) {
+    throw new Error("network: " + (netErr.message || "fetch failed"));
+  }
+
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail = body?.error?.message || "";
+    } catch { /* body was not json */ }
+    throw new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+  }
+
+  const j = await res.json();
+  const raw = (j?.candidates?.[0]?.content?.parts || [])
+    .map((p) => p.text || "")
+    .join("");
+  if (!raw.trim()) throw new Error("empty response");
+  return extractJSON(raw);
+}
+
+async function askClaude(system, user) {
+  let res;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [
+          { role: "user", content: `${system}\n\n---\n\nInput:\n${user}` },
+          { role: "assistant", content: "{" },
+        ],
+      }),
+    });
+  } catch (netErr) {
+    throw new Error("network: " + (netErr.message || "fetch failed"));
+  }
+
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail = body?.error?.message || "";
+    } catch { /* body was not json */ }
+    throw new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+  }
+
+  const j = await res.json();
+  if (j.error) throw new Error(j.error.message || "api-error");
+
+  const raw = (j.content || []).map((c) => (c.type === "text" ? c.text : "")).join("");
+  if (!raw.trim()) throw new Error("empty response");
+
+  // The assistant turn was prefilled with "{", so it is not part of the reply.
+  const whole = raw.trim().startsWith("{") ? raw : "{" + raw;
+
+  if (j.stop_reason === "max_tokens") {
+    try {
+      return extractJSON(whole);
+    } catch {
+      throw new Error("truncated");
+    }
+  }
+  return extractJSON(whole);
+}
+
+async function askModel(system, user) {
+  if (GEMINI_KEY) return askGemini(system, user);
+  return askClaude(system, user);
+}
+
+async function askClaudeRetry(system, user, tries = 2) {
+  let last;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await askModel(system, user);
+    } catch (e) {
+      last = e;
+      const m = e.message || "";
+      // A malformed or truncated reply is worth one more shot; a bad request is not.
+      const retryable = m.includes("no-json") || m.includes("empty") ||
+                        m.includes("network") || m.startsWith("http 5") ||
+                        m.includes("overloaded") || m.startsWith("http 429");
+      if (!retryable || i === tries - 1) throw last;
+      await new Promise((r) => setTimeout(r, 900));
+    }
+  }
+  throw last;
+}
+
+function friendlyError(e) {
+  const m = (e && e.message) || "";
+  if (m === "truncated") return "الوصف طويل فالرد اتقطع. اختصر الوصف وجرّب تاني.";
+  if (m.includes("no-json")) return "الرد رجع بشكل مش متوقع. جرّب تاني.";
+  if (m.includes("network")) return "مفيش اتصال بالسيرفر. اتأكد من النت وجرّب تاني.";
+  if (m.startsWith("http 429")) return "الطلبات كتير دلوقتي. استنى شوية وجرّب تاني.";
+  if (m.startsWith("http 4")) return "الطلب اترفض: " + m;
+  if (m.startsWith("http 5")) return "السيرفر مش راد دلوقتي. جرّب تاني بعد شوية.";
+  return "حصلت مشكلة: " + (m || "سبب غير معروف");
+}
+
+/* ============================================================
+   LOCAL ENGINE
+   Runs entirely in the browser. Used whenever the API call
+   doesn't come back, so the tool never dead-ends on the user.
+   ============================================================ */
+
+const AR = {
+  "eucalyptus oil": "زيت الأوكالبتوس",
+  "turpentine oil": "زيت التربنتين",
+  "methyl salicylate": "ميثيل ساليسيلات",
+  "menthol crystals": "كريستالات المنثول",
+  "menthol": "منثول",
+  "camphor": "كافور",
+  "aloe vera": "الألوفيرا",
+  "shea butter": "زبدة الشيا",
+  "glycerin": "جليسرين",
+  "vitamin e": "فيتامين هـ",
+  "argan oil": "زيت الأرجان",
+  "coconut oil": "زيت جوز الهند",
+  "olive oil": "زيت الزيتون",
+  "tea tree oil": "زيت شجرة الشاي",
+  "lavender oil": "زيت اللافندر",
+  "peppermint oil": "زيت النعناع",
+  "honey": "عسل",
+  "collagen": "كولاجين",
+  "hyaluronic acid": "حمض الهيالورونيك",
+  "zinc oxide": "أكسيد الزنك",
+};
+
+const arOf = (s) => AR[s.trim().toLowerCase()] || "";
+
+function parseBrief(text) {
+  const t = (text || "").trim();
+  const flat = t.replace(/\s+/g, " ");
+
+  // Product name: first chunk before an em-dash, colon or full stop.
+  let name = (t.split(/\n/)[0] || t).split(/—|--| - |[:.]/)[0].trim();
+  if (name.length > 60) name = name.slice(0, 60).trim();
+  if (!name) name = "Product";
+
+  // Ingredients: everything after an ingredients marker.
+  let ingredients = [];
+  const m = flat.match(/(?:ingredients|المكونات|مكونات)\s*[:：]\s*([^.]+)/i);
+  if (m) {
+    ingredients = m[1]
+      .split(/[,،؛;]/)
+      .map((x) => x.replace(/\band\b|\bو\b/gi, "").trim())
+      .filter((x) => x.length > 1 && x.length < 48)
+      .slice(0, 8);
+  }
+
+  const has = (re) => re.test(flat);
+  const traits = {
+    cooling: has(/cool|cold|freeze|menthol|بارد|تبريد|منثول/i),
+    warming: has(/warm|heat|hot|دافئ|تدفئة|سخون/i),
+    pain: has(/pain|ache|sore|muscle|joint|ألم|وجع|عضل|مفصل/i),
+    skin: has(/skin|derma|face|cream|بشرة|جلد|وجه|كريم/i),
+    hair: has(/hair|scalp|شعر|فروة/i),
+    spray: has(/spray|mist|سبراي|بخاخ|رش/i),
+    natural: has(/natural|herbal|botanic|organic|طبيعي|عشبي|نباتي/i),
+    kids: has(/kid|child|baby|أطفال|طفل|بيبي/i),
+  };
+
+  const medical = traits.pain || has(/topical|relief|therapeutic|علاج|موضعي/i);
+  const category = traits.hair ? "hair care"
+    : traits.skin ? "skin care"
+    : medical ? "topical relief"
+    : "personal care";
+
+  return { text: t, name, ingredients, traits, category, medical };
+}
+
+function localSplit(text) {
+  const b = parseBrief(text);
+  const T = b.traits;
+
+  const claim =
+    T.pain ? "For Joints & Muscles Pain" :
+    T.hair ? "For Stronger, Healthier Hair" :
+    T.skin ? "For Soft, Nourished Skin" : "For Everyday Care";
+  const claimAr =
+    T.pain ? "لألم المفاصل والعضلات" :
+    T.hair ? "لشعر أقوى وأكثر صحة" :
+    T.skin ? "لبشرة ناعمة ومغذّاة" : "للعناية اليومية";
+
+  const front = [
+    { t: "Brand Logo", ar: "", k: "logo", n: "أعلى الوش، أكبر عنصر" },
+    { t: b.name, ar: "", k: "name", n: "تحت اللوجو مباشرة" },
+    { t: claim, ar: claimAr, k: "claim", n: "تحت اسم المنتج بخط أصغر" },
+  ];
+  if (T.cooling && T.warming) {
+    front.push({ t: "Cooling & Heating — 2X1", ar: "تبريد وتدفئة", k: "badge", n: "بادچ في الجزء الأوسط" });
+  } else if (T.natural) {
+    front.push({ t: "Natural Formula", ar: "تركيبة طبيعية", k: "badge", n: "بادچ صغير في الركن" });
+  }
+  front.push({ t: "Key Visual", ar: "", k: "art", n: "وسط الوش، أكبر رسمة" });
+  if (T.spray) front.push({ t: "Product Shot", ar: "", k: "art", n: "أسفل الوش أو ركن جانبي" });
+  front.push({ t: "--- ml", ar: "--- مل", k: "volume", n: "ركن أسفل الوش" });
+
+  const ingLine = b.ingredients.length
+    ? b.ingredients.join(", ")
+    : "Ingredients list";
+  const ingAr = b.ingredients.map(arOf).filter(Boolean).join("، ");
+
+  const back = [
+    { t: b.name, ar: "", k: "title", n: "أعلى الضهر كعنوان" },
+    { t: "Product Description", ar: "وصف المنتج", k: "body", n: "تحت العنوان مباشرة" },
+    { t: ingLine.slice(0, 70), ar: ingAr, k: "ingredients", n: "بعد الوصف" },
+    { t: "How To Use", ar: "طريقة الاستخدام", k: "usage", n: "بعد المكونات" },
+    { t: "Warnings & Precautions", ar: "تحذيرات واحتياطات", k: "warning", n: "أكبر بلوك نص، محتاج مساحة" },
+    { t: "Storage", ar: "التخزين", k: "storage", n: "تحت التحذيرات" },
+    { t: "--- ml", ar: "--- مل", k: "volume", n: "ركن أسفل الضهر" },
+  ];
+  if (b.ingredients.length) {
+    back.splice(2, 0, { t: "Ingredient Visual", ar: "", k: "art", n: "جنب قائمة المكونات" });
+  }
+
+  return { product: { en: b.name, ar: "" }, front, back };
+}
+
+const TAIL = "transparent background, isolated subject, no text, no logos, no branding, high resolution, 300 DPI";
+
+function localPrompts(text) {
+  const b = parseBrief(text);
+  const T = b.traits;
+  const out = [];
+
+  if (T.pain) {
+    out.push({
+      title: "Pain Area Visual",
+      face: "front",
+      place: "وسط الوش، العنصر البصري الأساسي",
+      p: `Photorealistic 3D medical illustration of a human upper body seen from behind, anatomically detailed neck, shoulder and back muscles, soft neutral grey-blue skin tone, a warm red-orange glow radiating from the muscle areas indicating pain, three-quarter angle, soft diffused studio lighting, clean pharmaceutical packaging style, ${TAIL}`,
+    });
+  }
+  if (T.cooling && T.warming) {
+    out.push({
+      title: "Cooling & Heating Duo",
+      face: "front",
+      place: "جنب بادچ التبريد والتدفئة",
+      p: `Photorealistic 3D render of an icy blue crystalline snowflake and a warm orange-red flame side by side, frost detail on the snowflake, realistic fire glow on the flame, glossy premium finish, front-facing angle, soft studio lighting with subtle reflections, pharmaceutical packaging style, ${TAIL}`,
+    });
+  }
+  const hero = b.ingredients[0];
+  if (hero) {
+    out.push({
+      title: `${hero} Visual`,
+      face: "back",
+      place: "جنب قائمة المكونات على الضهر",
+      p: `Photorealistic macro product render of ${hero.toLowerCase()} as a cosmetic ingredient, natural authentic texture and colour, a glossy droplet catching the light, shallow depth of field, top-down angle, soft diffused studio lighting, clean botanical ingredient photography style, ${TAIL}`,
+    });
+  }
+  if (T.spray) {
+    out.push({
+      title: "Spray Application",
+      face: "back",
+      place: "جنب قسم طريقة الاستخدام",
+      p: `Photorealistic 3D render of a fine mist spraying onto skin, delicate visible droplets suspended in air, soft neutral skin tone, side angle, gentle rim lighting, clean pharmaceutical instructional style, ${TAIL}`,
+    });
+  }
+  if (out.length < 4 && b.ingredients[1]) {
+    out.push({
+      title: `${b.ingredients[1]} Visual`,
+      face: "back",
+      place: "جنب المكوّن الرئيسي",
+      p: `Photorealistic macro render of ${b.ingredients[1].toLowerCase()} as a cosmetic ingredient, authentic natural texture, subtle glossy highlight, shallow depth of field, three-quarter angle, soft studio lighting, ${TAIL}`,
+    });
+  }
+  if (!out.length) {
+    out.push({
+      title: "Product Hero Visual",
+      face: "front",
+      place: "وسط الوش، العنصر الأساسي",
+      p: `Photorealistic 3D product render representing ${b.name}, premium ${b.category} aesthetic, glossy surfaces with subtle reflections, three-quarter angle, soft diffused studio lighting, ${TAIL}`,
+    });
+  }
+
+  // Sparse descriptions still deserve a usable set, not one lonely prompt.
+  const filler = [
+    {
+      title: "Background Field",
+      face: "front",
+      place: "خلفية الوش كامل",
+      p: `Photorealistic soft gradient background with gentle light diffusion and subtle atmospheric depth, clean muted tones suited to ${b.category} packaging, no objects, even lighting, ${TAIL}`,
+    },
+    {
+      title: "Surface Texture",
+      face: "back",
+      place: "خلفية باهتة خلف نص الضهر",
+      p: `Photorealistic seamless subtle surface texture with fine natural grain and soft depth, desaturated neutral tones for use as a background layer in ${b.category} packaging, flat overhead angle, even diffused lighting, ${TAIL}`,
+    },
+    {
+      title: "Accent Detail",
+      face: "front",
+      place: "عنصر صغير في ركن الوش",
+      p: `Photorealistic small decorative accent element suited to premium ${b.category} packaging, refined glossy material with delicate highlights, macro angle, soft studio lighting, ${TAIL}`,
+    },
+  ];
+  for (const f of filler) {
+    if (out.length >= 3) break;
+    out.push(f);
+  }
+
+  return { prompts: out.slice(0, 4) };
+}
+
+function localDirector(text) {
+  const b = parseBrief(text);
+  const T = b.traits;
+  const items = [];
+  const hero = b.ingredients[0];
+
+  if (hero) {
+    items.push({
+      kind: "Hero Ingredient Visual",
+      name: `${hero} Macro Render`,
+      why: `${arOf(hero) || hero} هو المكوّن اللي بيميّز المنتج ولازم يتشاف`,
+      role: "بيبني الثقة ويوضح إن التركيبة ليها أساس حقيقي",
+      place: "وسط الوش أو جنب المكونات على الضهر",
+      p: `Photorealistic macro render of ${hero.toLowerCase()} as a premium cosmetic ingredient, authentic natural texture and colour, a single glossy oil droplet catching light, shallow depth of field, three-quarter angle, soft diffused studio lighting, ${TAIL}`,
+    });
+  }
+  if (b.ingredients.length > 1) {
+    items.push({
+      kind: "Supporting Ingredients",
+      name: "Secondary Ingredient Cluster",
+      why: "باقي المكونات بتدعم الادعاء الأساسي وبتقوّي الرسالة",
+      role: "بيوضح إن التركيبة مركّبة مش مكوّن واحد",
+      place: "صف صغير جنب قائمة المكونات على الضهر",
+      p: `Photorealistic macro render of ${b.ingredients.slice(1, 3).join(" and ").toLowerCase()} arranged as a small cosmetic ingredient group, authentic textures, consistent lighting across all elements, top-down angle, soft studio lighting, ${TAIL}`,
+    });
+  }
+  if (T.pain) {
+    items.push({
+      kind: "Premium Visual Element",
+      name: "Anatomical Relief Glow",
+      why: "المنتج بيعالج ألم، فالمشتري لازم يعرف مكان الاستخدام فورًا",
+      role: "بيوصل فايدة المنتج من غير قراية",
+      place: "العنصر الأكبر في وسط الوش",
+      p: `Photorealistic 3D medical illustration of human neck, shoulder and knee areas with anatomical muscle detail, soft neutral grey-blue skin tone, warm red-orange therapeutic glow marking the affected zones, three-quarter angle, soft diffused studio lighting, clean pharmaceutical style, ${TAIL}`,
+    });
+  }
+  if (T.natural || b.ingredients.some((x) => /oil|herb|extract|زيت|عشب/i.test(x))) {
+    items.push({
+      kind: "Texture / Pattern",
+      name: "Botanical Texture Layer",
+      why: "المنتج قايم على زيوت ومكونات طبيعية، والخامة بتعكس ده",
+      role: "خلفية خفيفة بتدي إحساس طبيعي من غير زحمة",
+      place: "خلفية باهتة خلف النص على الضهر",
+      p: `Photorealistic seamless botanical texture of soft green leaves with fine natural veining, subtle organic depth, flat overhead angle, even diffused lighting, muted desaturated tones suitable as a background layer, ${TAIL}`,
+    });
+  }
+  if (items.length < 4) {
+    items.push({
+      kind: "Background / Environment Visual",
+      name: "Soft Gradient Field",
+      why: `منتجات ${b.category} محتاجة خلفية هادية تفصل النص عن الرسومات`,
+      role: "بيدي عمق للتصميم من غير ما ياخد انتباه",
+      place: "خلفية الوش كامل",
+      p: `Photorealistic soft gradient background with gentle light diffusion and subtle atmospheric depth, cool clean tones, no objects, smooth even lighting, premium ${b.category} packaging aesthetic, ${TAIL}`,
+    });
+  }
+
+  // Keep a usable minimum even when the description says very little.
+  const filler = [
+    {
+      kind: "Decorative Elements",
+      name: "Minimal Accent Set",
+      why: "عناصر صغيرة بتكسر رتابة التصميم من غير ما تزحمه",
+      role: "بيفصل بين الأقسام ويوجّه العين",
+      place: "حوالين العناوين وبين الأقسام",
+      p: `Photorealistic set of small refined decorative accent shapes suited to premium ${b.category} packaging, subtle glossy material with delicate highlights, macro angle, soft even studio lighting, ${TAIL}`,
+    },
+    {
+      kind: "Texture / Pattern",
+      name: "Subtle Surface Layer",
+      why: "الخامة بتدي إحساس بجودة المنتج من غير ألوان زيادة",
+      role: "طبقة خلفية بتدي عمق للنص",
+      place: "خلفية باهتة خلف نص الضهر",
+      p: `Photorealistic seamless subtle surface texture with fine natural grain, desaturated neutral tones for use as a background layer, flat overhead angle, even diffused lighting, ${TAIL}`,
+    },
+  ];
+  for (const f of filler) {
+    if (items.length >= 3) break;
+    items.push(f);
+  }
+
+  return { items: items.slice(0, 4) };
+}
+
+const PALETTES = {
+  "Clean & Premium": [
+    { hex: "#F4F5F3", role: "خلفية نظيفة" },
+    { hex: "#16324F", role: "اسم المنتج والنص الأساسي" },
+    { hex: "#2E8BC0", role: "لون مميّز للفايدة" },
+    { hex: "#C9CFD4", role: "فواصل ومساحات ثانوية" },
+  ],
+  "Modern & Bold": [
+    { hex: "#101014", role: "خلفية غامقة" },
+    { hex: "#F5F5F0", role: "النص الأساسي" },
+    { hex: "#FF4D2E", role: "لون صادم للفايدة" },
+    { hex: "#5B5B66", role: "تفاصيل ثانوية" },
+  ],
+  "Natural & Organic": [
+    { hex: "#EFEAD9", role: "خلفية ورقية" },
+    { hex: "#2F4A32", role: "النص الأساسي" },
+    { hex: "#7A9A5B", role: "المكونات الطبيعية" },
+    { hex: "#C4A265", role: "لمسة دافية" },
+  ],
+  "Medical & Professional": [
+    { hex: "#FFFFFF", role: "خلفية بيضاء صافية" },
+    { hex: "#0B3C5D", role: "اسم المنتج" },
+    { hex: "#00A0B0", role: "لون الفايدة العلاجية" },
+    { hex: "#D64545", role: "تنبيهات ومناطق الألم" },
+  ],
+  Luxury: [
+    { hex: "#141210", role: "خلفية عميقة" },
+    { hex: "#EDE6D6", role: "النص الأساسي" },
+    { hex: "#B9975B", role: "لمسة ذهبية" },
+    { hex: "#4A4238", role: "ظلال وتفاصيل" },
+  ],
+  Minimal: [
+    { hex: "#FAFAF8", role: "خلفية شبه بيضاء" },
+    { hex: "#1A1A1A", role: "كل النصوص" },
+    { hex: "#8C8C8C", role: "معلومات ثانوية" },
+    { hex: "#E2E2DE", role: "فواصل خفيفة" },
+  ],
+  "Playful & Colorful": [
+    { hex: "#FFF4E0", role: "خلفية دافية" },
+    { hex: "#22313F", role: "النص الأساسي" },
+    { hex: "#FF6B6B", role: "لون رئيسي مرح" },
+    { hex: "#4ECDC4", role: "لون مساعد" },
+  ],
+};
+
+const TYPE_BY_STYLE = {
+  "Clean & Premium": { display: "Geometric sans, medium weight, wide tracking", body: "Neutral humanist sans" },
+  "Modern & Bold": { display: "Heavy condensed grotesque, tight tracking", body: "Clean grotesque, regular" },
+  "Natural & Organic": { display: "Soft humanist serif", body: "Rounded humanist sans" },
+  "Medical & Professional": { display: "Clinical grotesque, semibold", body: "Highly legible sans, generous leading" },
+  Luxury: { display: "High-contrast didone serif, letterspaced", body: "Light classic serif" },
+  Minimal: { display: "Light grotesque, generous tracking", body: "Same family, regular weight" },
+  "Playful & Colorful": { display: "Rounded bold sans", body: "Friendly rounded sans" },
+};
+
+function localConcept(text, style, scope, brand) {
+  const b = parseBrief(text);
+  const T = b.traits;
+  const palette = PALETTES[style] || PALETTES["Clean & Premium"];
+  const type = {
+    ...(TYPE_BY_STYLE[style] || TYPE_BY_STYLE["Clean & Premium"]),
+    note: "خلي اسم المنتج أكبر عنصر، والمعلومات الثانوية بحجم واحد ثابت",
+  };
+
+  const claim = T.pain ? "Relieves Muscle & Joint Pain"
+    : T.hair ? "Stronger Healthier Hair"
+    : T.skin ? "Soft Nourished Skin" : "Everyday Care";
+
+  let zones;
+  if (scope === "back") {
+    zones = [
+      { label: brand || "BRAND", role: "brand", w: 0.5, h: 0.7, align: "center", tone: "accent" },
+      { label: b.name, role: "name", w: 0.9, h: 1.1, align: "center", tone: "dark" },
+      { label: "Description", role: "info", w: 0.92, h: 1.6, align: "center", tone: "light" },
+      { label: "Ingredients", role: "info", w: 0.92, h: 1.3, align: "center", tone: "light" },
+      { label: "How To Use", role: "info", w: 0.92, h: 1.3, align: "center", tone: "light" },
+      { label: "Warnings", role: "info", w: 0.92, h: 1.7, align: "center", tone: "light" },
+      { label: "--- ml", role: "volume", w: 0.3, h: 0.6, align: "end", tone: "light" },
+    ];
+  } else if (scope === "full") {
+    zones = [
+      { label: brand || "BRAND", role: "brand", w: 0.45, h: 0.8, align: "center", tone: "accent" },
+      { label: b.name, role: "name", w: 0.9, h: 1.5, align: "center", tone: "dark" },
+      { label: claim, role: "benefit", w: 0.75, h: 0.9, align: "center", tone: "light" },
+      { label: "Hero Visual", role: "art", w: 0.85, h: 2.4, align: "center", tone: "light" },
+      { label: "Ingredients Strip", role: "art", w: 0.9, h: 1.0, align: "center", tone: "light" },
+      { label: "Info Panel", role: "info", w: 0.92, h: 1.8, align: "center", tone: "light" },
+      { label: "--- ml", role: "volume", w: 0.3, h: 0.6, align: "end", tone: "light" },
+    ];
+  } else {
+    zones = [
+      { label: brand || "BRAND", role: "brand", w: 0.5, h: 0.9, align: "center", tone: "accent" },
+      { label: b.name, role: "name", w: 0.9, h: 1.7, align: "center", tone: "dark" },
+      { label: claim, role: "benefit", w: 0.78, h: 0.9, align: "center", tone: "light" },
+      { label: "Hero Visual", role: "art", w: 0.88, h: 2.6, align: "center", tone: "light" },
+    ];
+    if (T.cooling && T.warming) {
+      zones.push({ label: "Cooling + Heating", role: "badge", w: 0.6, h: 0.8, align: "center", tone: "accent" });
+    }
+    zones.push({ label: "Key Ingredients", role: "info", w: 0.85, h: 0.8, align: "center", tone: "light" });
+    zones.push({ label: "--- ml", role: "volume", w: 0.28, h: 0.6, align: "end", tone: "light" });
+  }
+
+  const first = T.pain ? "رسمة منطقة الألم" : b.ingredients[0] ? `رسمة ${arOf(b.ingredients[0]) || b.ingredients[0]}` : "اسم المنتج";
+
+  const direction = [
+    { q: "ليه اسم المنتج في المكان ده؟", a: "بعد اسم البراند مباشرة، عشان العين تمسك البراند الأول بعدين تعرف المنتج نفسه." },
+    { q: "ليه الألوان دي؟", a: `اتاخدت من مزاج ${style}، ولون واحد بس بيشيل الفايدة عشان ما يحصلش تشتيت.` },
+    { q: "ليه العناصر البصرية دي؟", a: `المنتج ${b.category}، فالرسومات بتوضح الاستخدام والمكونات بدل ما تبقى زخرفة.` },
+    { q: "إيه أول حاجة العميل يشوفها؟", a: `${first} — دي اللي بتقول المنتج بيعمل إيه في أقل من ثانية.` },
+    { q: "إزاي المعلومات اترتبت؟", a: "البراند، فالاسم، فالفايدة، فالرسمة، والتفاصيل الصغيرة في الآخر بحجم أقل." },
+  ];
+
+  return { palette, type, zones, direction };
+}
+
+/* ============================================================ */
+
+function Dieline({ items, face }) {
+  const W = 300;
+  const H = 640;
+  const M = 26;
+  const inner = { x: M, y: M, w: W - M * 2, h: H - M * 2 };
+  const kColor = {
+    logo: "#C8005E", name: "#C8005E", art: "#0091B3",
+    badge: "#B87400", volume: "#5C6169",
+  };
+  const list = items && items.length ? items : [];
+  const gap = 7;
+  const avail = inner.h - gap * (list.length - 1 || 0);
+  const weight = (k) =>
+    k === "logo" ? 2.1 : k === "name" ? 1.5 : k === "art" ? 2.4 :
+    k === "body" || k === "warning" ? 1.9 : k === "volume" ? 0.7 : 1;
+  const total = list.reduce((s, e) => s + weight(e.k), 0) || 1;
+
+  let cursor = inner.y;
+  const boxes = list.map((e) => {
+    const h = (weight(e.k) / total) * avail;
+    const b = { ...e, y: cursor, h };
+    cursor += h + gap;
+    return b;
+  });
+
+  const crop = (x, y, dx, dy) => (
+    <g stroke="#16181C" strokeWidth="1">
+      <line x1={x} y1={y} x2={x + dx * 13} y2={y} />
+      <line x1={x} y1={y} x2={x} y2={y + dy * 13} />
+    </g>
+  );
+
+  return (
+    <svg className="lp-dl" viewBox={`0 0 ${W} ${H}`} role="img"
+         aria-label={face === "front" ? "معاينة وش العبوة" : "معاينة ضهر العبوة"}>
+      {crop(6, 6, 1, 1)}
+      {crop(W - 6, 6, -1, 1)}
+      {crop(6, H - 6, 1, -1)}
+      {crop(W - 6, H - 6, -1, -1)}
+
+      <rect x={14} y={14} width={W - 28} height={H - 28}
+            fill="none" stroke="#C3C7C0" strokeWidth="1" strokeDasharray="4 4" />
+      <rect x={inner.x} y={inner.y} width={inner.w} height={inner.h}
+            fill="#F7F8F6" stroke="#16181C" strokeWidth="1.5" />
+
+      {boxes.map((b, i) => {
+        const c = kColor[b.k] || "#5C6169";
+        const isArt = b.k === "art";
+        return (
+          <g key={i}>
+            <rect x={inner.x + 9} y={b.y + 3} width={inner.w - 18} height={Math.max(b.h - 6, 10)}
+                  fill={isArt ? "#0091B3" : "none"} fillOpacity={isArt ? 0.07 : 0}
+                  stroke={c} strokeWidth="1" strokeDasharray={isArt ? "0" : "3 3"} />
+            <text x={W / 2} y={b.y + Math.max(b.h, 12) / 2 + 3.5}
+                  textAnchor="middle" fill={c}
+                  style={{ font: "500 8.5px 'IBM Plex Mono', monospace" }}>
+              {(b.t || "").slice(0, 30)}
+            </text>
+          </g>
+        );
+      })}
+
+      <text x={W / 2} y={H - 3} textAnchor="middle" fill="#5C6169"
+            style={{ font: "500 8px 'IBM Plex Mono', monospace", letterSpacing: "0.12em" }}>
+        {face === "front" ? "FRONT — TRIM + BLEED" : "BACK — TRIM + BLEED"}
+      </text>
+    </svg>
+  );
+}
+
+function readable(hex) {
+  const h = (hex || "#888888").replace("#", "");
+  if (h.length !== 6) return "#16181C";
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#16181C" : "#FFFFFF";
+}
+
+function ConceptMock({ concept, scope }) {
+  const W = 330;
+  const H = scope === "full" ? 560 : 620;
+  const pad = 20;
+  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
+  const bg = pal[0] || "#F2F2F0";
+  const accent = pal[1] || "#16181C";
+  const accent2 = pal[2] || accent;
+  const zones = concept.zones || [];
+
+  const gap = 8;
+  const avail = H - pad * 2 - gap * (zones.length - 1 || 0);
+  const total = zones.reduce((s, z) => s + (Number(z.h) || 1), 0) || 1;
+
+  let y = pad;
+  const boxes = zones.map((z) => {
+    const h = ((Number(z.h) || 1) / total) * avail;
+    const w = Math.min(Math.max(Number(z.w) || 0.8, 0.25), 1) * (W - pad * 2);
+    const x =
+      z.align === "start" ? pad :
+      z.align === "end" ? W - pad - w :
+      pad + (W - pad * 2 - w) / 2;
+    const b = { ...z, x, y, w, h };
+    y += h + gap;
+    return b;
+  });
+
+  const fillFor = (t) =>
+    t === "accent" ? accent : t === "dark" ? accent2 : "#FFFFFF";
+  const opacityFor = (t) => (t === "light" ? 0.55 : 0.92);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: 340, border: "1px solid #C3C7C0" }}
+         role="img" aria-label="تصور بصري مبدئي للملصق">
+      <rect x="0" y="0" width={W} height={H} fill={bg} />
+      {boxes.map((b, i) => {
+        const isArt = b.role === "art";
+        const f = fillFor(b.tone);
+        const txt = readable(b.tone === "light" ? bg : f);
+        return (
+          <g key={i}>
+            <rect x={b.x} y={b.y} width={b.w} height={Math.max(b.h, 9)}
+                  fill={f} fillOpacity={opacityFor(b.tone)}
+                  stroke={isArt ? accent : "none"} strokeWidth={isArt ? 1 : 0}
+                  strokeDasharray={isArt ? "4 3" : "0"} />
+            <text x={b.x + b.w / 2} y={b.y + Math.max(b.h, 12) / 2 + 3.5}
+                  textAnchor="middle" fill={txt}
+                  style={{
+                    font: `${b.role === "name" || b.role === "brand" ? 700 : 500} ${
+                      b.role === "name" ? 12 : b.role === "brand" ? 10.5 : 8.5
+                    }px 'IBM Plex Sans Condensed', sans-serif`,
+                    letterSpacing: b.role === "brand" ? "0.1em" : "0",
+                  }}>
+              {(b.label || "").slice(0, 26)}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function LabelPrepTool() {
+  const [desc, setDesc] = useState("");
+  const [data, setData] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [stage, setStage] = useState("");
+  const [localMode, setLocalMode] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+
+  const onKeyChange = (v) => {
+    setApiKey(v);
+    setGeminiKey(v);
+  };
+  const [tab, setTab] = useState("split");
+  const [copied, setCopied] = useState("");
+
+  // Feature 1 — Visual AI Director
+  const [director, setDirector] = useState(null);
+  const [dirBusy, setDirBusy] = useState(false);
+  const [dirErr, setDirErr] = useState("");
+  const [oneBusy, setOneBusy] = useState(-1);
+
+  // Feature 2 — Label Concept Generator
+  const [brand, setBrand] = useState("");
+  const [style, setStyle] = useState(STYLES[0]);
+  const [scope, setScope] = useState("front");
+  const [concept, setConcept] = useState(null);
+  const [conBusy, setConBusy] = useState(false);
+  const [conErr, setConErr] = useState("");
+
+  const run = async () => {
+    const input = desc.trim();
+    if (!input) return;
+    setBusy(true); setErr(""); setData(null);
+
+    let split, prompts, usedLocal = false;
+
+    try {
+      setStage("بيقسّم العناصر…");
+      split = await askClaudeRetry(SYS_SPLIT, input);
+    } catch {
+      split = localSplit(input);
+      usedLocal = true;
+    }
+
+    try {
+      setStage("بيكتب البرومبتات…");
+      const r = await askClaudeRetry(SYS_PROMPTS, input);
+      prompts = r.prompts || [];
+      if (!prompts.length) throw new Error("empty");
+    } catch {
+      prompts = localPrompts(input).prompts;
+      usedLocal = true;
+    }
+
+    setData({ ...split, prompts });
+    setLocalMode(usedLocal);
+    setDirector(null); setDirErr("");
+    setConcept(null); setConErr("");
+    setTab("split");
+    setBusy(false);
+    setStage("");
+  };
+
+  const copy = async (text, key) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(key);
+      setTimeout(() => setCopied(""), 1600);
+    } catch { /* clipboard unavailable */ }
+  };
+
+  // --- Feature 1 handlers ---
+  const productBrief = () => {
+    const p = data?.product?.en ? `Product: ${data.product.en}\n` : "";
+    return `${p}${desc.trim()}`;
+  };
+
+  const runDirector = async () => {
+    setDirBusy(true); setDirErr("");
+    try {
+      const r = await askClaudeRetry(SYS_DIRECTOR, productBrief());
+      const items = r.items || [];
+      setDirector(items.length ? items : localDirector(desc).items);
+      if (!items.length) setLocalMode(true);
+    } catch {
+      setDirector(localDirector(desc).items);
+      setLocalMode(true);
+    } finally {
+      setDirBusy(false);
+    }
+  };
+
+  const regenOne = async (i) => {
+    const cur = director[i];
+    setOneBusy(i);
+    try {
+      const r = await askClaudeRetry(
+        SYS_DIRECTOR_ONE,
+        `${productBrief()}\n\nCurrent proposal to replace:\n${JSON.stringify(cur)}`
+      );
+      if (r.item) {
+        const next = director.slice();
+        next[i] = r.item;
+        setDirector(next);
+      }
+    } catch { /* keep the existing item */ }
+    finally { setOneBusy(-1); }
+  };
+
+  // --- Feature 2 handlers ---
+  const runConcept = async () => {
+    setConBusy(true); setConErr("");
+    const scopeLabel = SCOPES.find((s) => s.id === scope)?.label || "Front Label Concept";
+    const ing = (data?.back || [])
+      .filter((e) => e.k === "ingredients")
+      .map((e) => e.t).join(", ");
+    const assets = (director || []).map((d) => d.name).join(", ");
+    const brief = [
+      productBrief(),
+      brand ? `Brand name: ${brand}` : "",
+      ing ? `Key ingredients: ${ing}` : "",
+      assets ? `Proposed visual assets: ${assets}` : "",
+      `Design style: ${style}`,
+      `Scope: ${scopeLabel}`,
+      concept ? "Give a DIFFERENT visual direction from the previous one." : "",
+    ].filter(Boolean).join("\n");
+    try {
+      const r = await askClaudeRetry(SYS_CONCEPT, brief);
+      if (!r || !(r.zones || []).length) throw new Error("empty");
+      setConcept(r);
+    } catch {
+      setConcept(localConcept(desc, style, scope, brand));
+      setLocalMode(true);
+    } finally {
+      setConBusy(false);
+    }
+  };
+
+  const sample = `Melano Massage Spray — topical massage spray with soothing oils and Menthol. Cooling and warming dual action, for joints and muscles pain. Ingredients: Eucalyptus Oil, Turpentine Oil, Methyl Salicylate, Menthol Crystals.`;
+
+  const Face = ({ title, items }) => (
+    <div className="lp-face">
+      <div className="lp-facehead">
+        <span>{title}</span>
+        <span>{items.length} EL</span>
+      </div>
+      {items.map((e, i) => (
+        <div className="lp-el" key={i}>
+          <div className="lp-elnum">{String(i + 1).padStart(2, "0")}</div>
+          <div className="lp-elbody">
+            <div className="lp-elen">{e.t}</div>
+            {e.ar ? <div className="lp-elar">{e.ar}</div> : null}
+            {e.n ? <div className="lp-elnote">{e.n}</div> : null}
+          </div>
+          <span className="lp-tag">{e.k}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="lp-root">
+      <style>{CSS}</style>
+      <div className="lp-shell">
+
+        <header className="lp-head">
+          <div>
+            <h1 className="lp-title">تجهيز عناصر الاستيكر</h1>
+            <p className="lp-sub">
+              الصق وصف المنتج، وهتطلع بتقسيم العناصر لوش وضهر، برومبتات جاهزة
+              لأداة توليد الصور، ومعاينة مبدئية لشكل الملصق قبل ما المصمم يبدأ.
+            </p>
+          </div>
+          <div className="lp-stamp">LABEL PREP / v1</div>
+        </header>
+
+        <div className="lp-inputwrap">
+          <label className="lp-label" htmlFor="apikey">
+            مفتاح Gemini (اختياري)
+          </label>
+          <p className="lp-hint">
+            من غير مفتاح الأداة شغالة بالمحرّك المحلي. مع المفتاح الصياغة بتبقى أذكى.
+            المفتاح بيفضل في المتصفح بتاعك بس ومش بيتحفظ في الملف — كل واحد يحط مفتاحه.
+          </p>
+          <div className="lp-row" style={{ marginTop: 0 }}>
+            <input
+              id="apikey"
+              className="lp-ta"
+              type={showKey ? "text" : "password"}
+              style={{ minHeight: 0, height: 42, flex: "1 1 240px", direction: "ltr", textAlign: "left" }}
+              value={apiKey}
+              onChange={(e) => onKeyChange(e.target.value)}
+              placeholder="AIza…"
+              autoComplete="off"
+              spellCheck="false"
+            />
+            <button className="lp-btn lp-btn-ghost" onClick={() => setShowKey((v) => !v)}>
+              {showKey ? "إخفاء" : "إظهار"}
+            </button>
+          </div>
+        </div>
+
+        <div className="lp-inputwrap">
+          <label className="lp-label" htmlFor="desc">وصف المنتج</label>
+          <p className="lp-hint">
+            اكتب الاسم، الاستخدام، المكونات، وأي ادعاءات على العبوة. عربي أو إنجليزي أو الاتنين.
+          </p>
+          <textarea
+            id="desc"
+            className="lp-ta"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            placeholder="مثال: سبراي مساج موضعي بزيوت مهدئة ومنثول، لألم المفاصل والعضلات، بمفعول تبريد وتدفئة…"
+          />
+          <div className="lp-row">
+            <button className="lp-btn" onClick={run} disabled={busy || !desc.trim()}>
+              {busy ? (stage || "بيجهّز…") : "جهّز العناصر"}
+            </button>
+            <button className="lp-btn lp-btn-ghost" onClick={() => setDesc(sample)} disabled={busy}>
+              جرّب بمثال
+            </button>
+          </div>
+          {err ? <div className="lp-err">{err}</div> : null}
+        </div>
+
+        {data && localMode ? (
+          <p className="lp-eyebrow" style={{ marginTop: -2, marginBottom: 18 }}>
+            اتولّد محليًا — <b>من غير AI</b>
+          </p>
+        ) : null}
+
+        {data ? (
+          <>
+            <div className="lp-tabs" role="tablist">
+              <button className="lp-tab" data-on={tab === "split" ? 1 : 0}
+                      onClick={() => setTab("split")} role="tab" aria-selected={tab === "split"}>
+                تقسيم العناصر
+                <span>{(data.front?.length || 0) + (data.back?.length || 0)}</span>
+              </button>
+              <button className="lp-tab" data-on={tab === "prompts" ? 1 : 0}
+                      onClick={() => setTab("prompts")} role="tab" aria-selected={tab === "prompts"}>
+                برومبتات الرسومات
+                <span>{data.prompts?.length || 0}</span>
+              </button>
+              <button className="lp-tab" data-on={tab === "dieline" ? 1 : 0}
+                      onClick={() => setTab("dieline")} role="tab" aria-selected={tab === "dieline"}>
+                معاينة الملصق
+              </button>
+              <button className="lp-tab" data-on={tab === "director" ? 1 : 0}
+                      onClick={() => setTab("director")} role="tab" aria-selected={tab === "director"}>
+                Visual AI Director
+                {director ? <span>{director.length}</span> : null}
+              </button>
+              <button className="lp-tab" data-on={tab === "concept" ? 1 : 0}
+                      onClick={() => setTab("concept")} role="tab" aria-selected={tab === "concept"}>
+                Label Concept
+              </button>
+            </div>
+
+            {tab === "split" ? (
+              <>
+                <p className="lp-eyebrow">
+                  المنتج <b>{data.product?.en || "—"}</b>
+                </p>
+                <div className="lp-facegrid">
+                  <Face title="FRONT / الوش" items={data.front || []} />
+                  <Face title="BACK / الضهر" items={data.back || []} />
+                </div>
+                <p className="lp-note">
+                  كل سطر هنا عنصر مستقل. المصمم بيحوّل كل واحد لملف TIFF بخلفية شفافة
+                  على 300 DPI، وبيرصّهم في الإليستريتور حسب المعاينة.
+                </p>
+              </>
+            ) : null}
+
+            {tab === "prompts" ? (
+              <>
+                <p className="lp-eyebrow">
+                  انسخ البرومبت زي ما هو في أداة توليد الصور
+                </p>
+                {!(data.prompts || []).length ? (
+                  <div className="lp-err">
+                    البرومبتات مجتش المرة دي. اضغط «جهّز العناصر» تاني — التقسيم هيفضل زي ما هو.
+                  </div>
+                ) : null}
+                {(data.prompts || []).map((p, i) => (
+                  <div className="lp-prompt" key={i}>
+                    <div className="lp-phead">
+                      <h3 className="lp-ptitle">{p.title}</h3>
+                      <button className="lp-btn lp-btn-ghost" onClick={() => copy(p.p, "pr" + i)}>
+                        {copied === "pr" + i ? "اتنسخ" : "Copy Prompt"}
+                      </button>
+                    </div>
+                    <p className="lp-pplace">
+                      <strong>{p.face === "front" ? "الوش" : "الضهر"}</strong> — {p.place}
+                    </p>
+                    <div className="lp-ptext">{p.p}</div>
+                  </div>
+                ))}
+                <p className="lp-note">
+                  لو الأداة مش بتطلع خلفية شفافة، غيّر آخر البرومبت لـ pure white background
+                  وشيلها بعدين من الإليستريتور.
+                </p>
+              </>
+            ) : null}
+
+            {tab === "dieline" ? (
+              <>
+                <p className="lp-eyebrow">
+                  ملصق لف حول العبوة — <b>مرجع ترتيب فقط</b>
+                </p>
+                <div className="lp-dlwrap">
+                  <div className="lp-dlcol">
+                    <div className="lp-dlcap">Front / الوش</div>
+                    <Dieline items={data.front || []} face="front" />
+                  </div>
+                  <div className="lp-dlcol">
+                    <div className="lp-dlcap">Back / الضهر</div>
+                    <Dieline items={data.back || []} face="back" />
+                  </div>
+                </div>
+                <div className="lp-legend">
+                  <span className="lp-lgi">
+                    <span className="lp-sw" style={{ borderColor: "#C8005E", borderStyle: "dashed" }} />
+                    نصوص أساسية
+                  </span>
+                  <span className="lp-lgi">
+                    <span className="lp-sw" style={{ borderColor: "#0091B3", background: "rgba(0,145,179,0.07)" }} />
+                    رسومات من الـ AI
+                  </span>
+                  <span className="lp-lgi">
+                    <span className="lp-sw" style={{ borderColor: "#B87400", borderStyle: "dashed" }} />
+                    بادچ / ادعاء
+                  </span>
+                </div>
+                <p className="lp-note">
+                  الأبعاد هنا نسبية مش نهائية — المصمم بيظبطها على محيط وطول العبوة الحقيقي.
+                  الخط المنقّط الخارجي هو حد الـ bleed، والخط الصريح هو خط القص.
+                </p>
+              </>
+            ) : null}
+
+            {tab === "director" ? (
+              <>
+                <p className="lp-eyebrow">
+                  العناصر البصرية اللي المنتج ده <b>محتاجها فعلًا</b>
+                </p>
+
+                {!director ? (
+                  <div className="lp-ctrl">
+                    <p className="lp-hint" style={{ marginBottom: 12 }}>
+                      هيتحلل نوع المنتج ومكوناته وجمهوره، ويترشّح العناصر البصرية المناسبة له —
+                      كل عنصر بسبب اقتراحه ووظيفته ومكانه وبرومبت مستقل.
+                    </p>
+                    <button className="lp-btn" onClick={runDirector} disabled={dirBusy}>
+                      {dirBusy ? "بيحلل المنتج…" : "اقترح العناصر البصرية"}
+                    </button>
+                  </div>
+                ) : null}
+
+                {director ? (
+                  <>
+                    {director.map((it, i) => (
+                      <div className="lp-vd" key={i}>
+                        <div className="lp-vdhead">
+                          <div style={{ minWidth: 0 }}>
+                            <span className="lp-vdkind">{it.kind}</span>
+                            <h3 className="lp-vdname">{it.name}</h3>
+                          </div>
+                          <button className="lp-btn lp-btn-ghost"
+                                  onClick={() => regenOne(i)} disabled={oneBusy === i}>
+                            {oneBusy === i ? "بيولّد…" : "اقتراح تاني"}
+                          </button>
+                        </div>
+
+                        <dl className="lp-vdmeta">
+                          <div className="lp-vdcell">
+                            <dt>ليه المنتج ده</dt>
+                            <dd>{it.why}</dd>
+                          </div>
+                          <div className="lp-vdcell">
+                            <dt>وظيفته في التصميم</dt>
+                            <dd>{it.role}</dd>
+                          </div>
+                          <div className="lp-vdcell">
+                            <dt>مكانه المقترح</dt>
+                            <dd>{it.place}</dd>
+                          </div>
+                        </dl>
+
+                        <div className="lp-vdfoot">
+                          <div className="lp-phead">
+                            <span style={{
+                              fontFamily: "'IBM Plex Mono', monospace", fontSize: 9.5,
+                              letterSpacing: "0.12em", textTransform: "uppercase", color: "#5C6169",
+                            }}>Prompt</span>
+                            <button className="lp-btn lp-btn-ghost"
+                                    onClick={() => copy(it.p, "vd" + i)}>
+                              {copied === "vd" + i ? "اتنسخ" : "Copy Prompt"}
+                            </button>
+                          </div>
+                          <div className="lp-ptext">{it.p}</div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="lp-row">
+                      <button className="lp-btn lp-btn-ghost" onClick={runDirector} disabled={dirBusy}>
+                        {dirBusy ? "بيحلل…" : "اقترح مجموعة جديدة"}
+                      </button>
+                    </div>
+
+                    <p className="lp-note">
+                      «اقتراح تاني» بيغيّر العنصر ده لوحده ويسيب الباقي زي ما هو.
+                      البرومبتات مكتوبة من غير أي كتابة أو شعارات جوه الصورة عشان تنفع تتحط في التصميم.
+                    </p>
+                  </>
+                ) : null}
+              </>
+            ) : null}
+
+            {tab === "concept" ? (
+              <>
+                <p className="lp-eyebrow">
+                  تصور بصري مبدئي — <b>مرجع إبداعي فقط</b>
+                </p>
+
+                <div className="lp-banner">
+                  <strong>AI Visual Concept / Design Reference Only.</strong>{" "}
+                  ده اتجاه فني يبدأ منه المصمم في الإليستريتور أو الفوتوشوب.
+                  مش ملف طباعة، ومفيهوش مقاسات نهائية ولا إعدادات طباعة.
+                </div>
+
+                <div className="lp-ctrl">
+                  <label className="lp-label" htmlFor="brandname">اسم البراند (اختياري)</label>
+                  <input
+                    id="brandname"
+                    className="lp-ta"
+                    style={{ minHeight: 0, height: 42 }}
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                    placeholder="مثال: Melano"
+                  />
+
+                  <label className="lp-label" style={{ marginTop: 16 }}>Design Style</label>
+                  <div className="lp-chips" role="group" aria-label="Design Style">
+                    {STYLES.map((s) => (
+                      <button key={s} className="lp-chip" data-on={style === s ? 1 : 0}
+                              onClick={() => setStyle(s)} aria-pressed={style === s}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+
+                  <label className="lp-label">نطاق التصور</label>
+                  <div className="lp-chips" role="group" aria-label="نطاق التصور">
+                    {SCOPES.map((s) => (
+                      <button key={s.id} className="lp-chip" data-on={scope === s.id ? 1 : 0}
+                              onClick={() => setScope(s.id)} aria-pressed={scope === s.id}>
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="lp-row">
+                    <button className="lp-btn" onClick={runConcept} disabled={conBusy}>
+                      {conBusy ? "بيرسم التصور…" : concept ? "Generate New Concept" : "أنشئ التصور"}
+                    </button>
+                  </div>
+                  {conErr ? null : null}
+                </div>
+
+                {concept ? (
+                  <div className="lp-cgrid">
+                    <div>
+                      <div className="lp-dlcap">{style} — {SCOPES.find((s) => s.id === scope)?.label}</div>
+                      <ConceptMock concept={concept} scope={scope} />
+                    </div>
+
+                    <div>
+                      <p className="lp-eyebrow">اقتراح الألوان</p>
+                      <div className="lp-swatches">
+                        {(concept.palette || []).map((c, i) => (
+                          <div className="lp-swatch" key={i}>
+                            <div className="lp-swbox" style={{ background: c.hex }} />
+                            <div className="lp-swhex">{c.hex}</div>
+                            <div className="lp-swrole">{c.role}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {concept.type ? (
+                        <>
+                          <p className="lp-eyebrow">Typography</p>
+                          <dl className="lp-vdmeta" style={{ padding: 0 }}>
+                            <div className="lp-vdcell">
+                              <dt>Display</dt>
+                              <dd>{concept.type.display}</dd>
+                            </div>
+                            <div className="lp-vdcell">
+                              <dt>Body</dt>
+                              <dd>{concept.type.body}</dd>
+                            </div>
+                          </dl>
+                          {concept.type.note ? (
+                            <p className="lp-dira" style={{ marginTop: 2 }}>{concept.type.note}</p>
+                          ) : null}
+                        </>
+                      ) : null}
+
+                      <div className="lp-dir">
+                        <p className="lp-eyebrow" style={{ marginTop: 8 }}>Design Direction</p>
+                        {(concept.direction || []).map((d, i) => (
+                          <div key={i}>
+                            <p className="lp-dirq">{d.q}</p>
+                            <p className="lp-dira">{d.a}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {concept ? (
+                  <p className="lp-note">
+                    كل ضغطة على «Generate New Concept» بتديك اتجاه بصري مختلف بنفس بيانات المنتج.
+                    غيّر الـ Style أو النطاق الأول لو عايز تجرّب مزاج تاني.
+                  </p>
+                ) : null}
+              </>
+            ) : null}
+          </>
+        ) : null}
+
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<LabelPrepTool />);
+</script>
+</body>
+</html>
