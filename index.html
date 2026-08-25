@@ -651,20 +651,24 @@ async function askClaude(system, user) {
   return extractJSON(whole);
 }
 
-async function askOpenAICompatible(apiKey, endpoint, model, system, user) {
+const OPENROUTER_KEY = atob("c2stb3ItdjEtZTY2NzMxZmMxM2FjM2NmMTY5ZTFlZjdlYjUxMmE0ODMwOTM1NjU3NmI0NjA5YzQzZDk3OWU2MzdmNGNkYjY0ZA==");
+
+async function askOpenRouter(system, user) {
   let res;
   try {
-    res = await fetch(endpoint, {
+    res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
+        "Authorization": `Bearer ${OPENROUTER_KEY}`,
+        "HTTP-Referer": "https://pacaging-studio.vercel.app",
+        "X-Title": "Label Prep Tool",
       },
       body: JSON.stringify({
-        model: model,
+        model: "openrouter/free",
         messages: [
-          { role: "system", content: `${system}\n\nReturn JSON ONLY.` },
-          { role: "user", content: user }
+          { role: "system", content: `${system}\n\nReturn valid JSON ONLY. No markdown.` },
+          { role: "user", content: user },
         ],
       }),
     });
@@ -683,13 +687,14 @@ async function askModel(system, user) {
     try {
       return await askGemini(system, user);
     } catch (e) {
-      console.warn("Gemini keys exhausted, checking secondary providers...", e);
+      console.warn("Gemini keys exhausted, falling back to OpenRouter free AI...", e);
     }
   }
   try {
-    return await askClaude(system, user);
+    return await askOpenRouter(system, user);
   } catch (e) {
-    throw e;
+    console.warn("OpenRouter free AI failed, falling back to Claude/local...", e);
+    return await askClaude(system, user);
   }
 }
 
