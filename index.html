@@ -1411,14 +1411,19 @@ async function verifyGeminiKey(key) {
   const url =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
     encodeURIComponent(key);
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: "Reply with the single word: ok" }] }],
-      generationConfig: { maxOutputTokens: 5 },
-    }),
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: "Reply with the single word: ok" }] }],
+        generationConfig: { maxOutputTokens: 5 },
+      }),
+    });
+  } catch (netErr) {
+    throw new Error("network: " + (netErr.message || "Failed to fetch"));
+  }
   if (!res.ok) {
     let detail = "";
     try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
@@ -2264,7 +2269,7 @@ function LabelPrepTool() {
           : m.startsWith("http 403") ? "المفتاح مرفوض أو الخدمة مش مفعّلة عليه"
           : m.startsWith("http 429") ? "المفتاح شغال بس الطلبات كتير دلوقتي"
           : m.startsWith("http 5") ? "السيرفر مش راد — جرّب تاني"
-          : "مقدرتش أوصل للسيرفر"
+          : ("خطأ في الاتصال: " + m)
         );
       }
     }, 700);
