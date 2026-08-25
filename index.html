@@ -3064,59 +3064,91 @@ function LabelPrepTool() {
             {tab === "prompts" ? (
               <>
                 <p className="lp-eyebrow">
-                  انسخ البرومبت زي ما هو في أداة توليد الصور
+                  برومبتات الاستيكر ومكوناته — <b>اختيار الستايل والتوليد الإبداعي</b>
                 </p>
 
-                {/* ── New Idea panel ─────────────────────────────── */}
+                {/* ── 1. Style Selection Chips ───────────────────────────── */}
                 <div className="lp-inputwrap" style={{ marginBottom: 18 }}>
-                  <label className="lp-label">فكرة جديدة — عشان تغيّر كل البرومبتات مع بعض</label>
+                  <label className="lp-label">اختر ستايل وطابع الاستيكر (Design Style)</label>
                   <p className="lp-hint">
-                    لو عايز اتجاه مختلف تمامًا، اكتب هنا وصف الفكرة الجديدة (زي: «فكرة مينيمال بألوان محايدة» أو «رسومات طبيعية بمكونات نباتية»).
-                    البرومبتات كلها هتتغير مع بعض عشان تفضل متناسقة.
+                    اضغط على الستايل المناسب لمنتجك، وسيتم فورًا تحديث برومبت الاستيكر الكامل ومكوناته وتحليل الألوان.
                   </p>
-                  <textarea
-                    className="lp-ta"
-                    style={{ minHeight: 72 }}
-                    value={newIdeaText}
-                    onChange={(e) => setNewIdeaText(e.target.value)}
-                    placeholder="مثال: فكرة بصرية دافية وعضوية تركّز على مكوّن الكافور، خلفية كريمية، خطوط ناعمة..."
-                  />
-                  <div className="lp-row" style={{ marginTop: 10 }}>
-                    <button className="lp-btn" onClick={runNewIdea} disabled={promptsBusy || !newIdeaText.trim()}>
-                      {promptsBusy ? "بيعيد التوليد…" : "ولّد فكرة جديدة"}
-                    </button>
-                    {promptsBusy ? null : (
-                      <button className="lp-btn lp-btn-ghost" onClick={regenPrompts} disabled={promptsBusy}>
-                        أعد توليد البرومبتات الحالية
+                  <div className="lp-chips" style={{ marginTop: 8 }}>
+                    {STYLES.map((s) => (
+                      <button
+                        key={s}
+                        className="lp-chip"
+                        data-on={style === s ? 1 : 0}
+                        onClick={() => setStyle(s)}
+                      >
+                        {s}
                       </button>
-                    )}
+                    ))}
                   </div>
-                  {promptsErr ? <div className="lp-err" style={{ marginTop: 8 }}>{promptsErr}</div> : null}
                 </div>
 
-                {!(data.prompts || []).length ? (
-                  <div className="lp-err">
-                    البرومبتات مجتش المرة دي. اضغط «جهّز العناصر» تاني — التقسيم هيفضل زي ما هو.
+                {/* ── 2. Full Sticker Master Prompt ─────────────────────── */}
+                <div className="lp-inputwrap" style={{ marginBottom: 20, borderColor: "var(--cyan)" }}>
+                  <div className="lp-phead">
+                    <h3 className="lp-ptitle" style={{ color: "var(--cyan)" }}>
+                      ✨ برومبت الاستيكر الكامل للوجه (Full Sticker Prompt — DATA Reserved)
+                    </h3>
+                    <button
+                      className="lp-btn"
+                      onClick={() =>
+                        copy(
+                          buildHtmlFacePrompt({ face: "front", data, concept: concept || localConcept(desc, style, "front", brand), style, die, slots: slotsFor("front"), hasLogo: !!logo }),
+                          "master-front"
+                        )
+                      }
+                    >
+                      {copied === "master-front" ? "اتنسخ البرومبت الكامل" : "نسخ برومبت الاستيكر الكامل"}
+                    </button>
                   </div>
-                ) : null}
+                  <p className="lp-hint" style={{ marginTop: 6 }}>
+                    برومبت شامل لوجه الاستيكر بالكامل يضم النسب، الألوان، وأماكن مخصصة محجوزة ومكتوب عليها كلمة <b>"DATA"</b> لتركها فارغة للنصوص والداتا المطبوعة!
+                  </p>
+                  <div className="lp-ptext" style={{ marginTop: 10 }}>
+                    {buildHtmlFacePrompt({ face: "front", data, concept: concept || localConcept(desc, style, "front", brand), style, die, slots: slotsFor("front"), hasLogo: !!logo })}
+                  </div>
+                </div>
+
+                {/* ── 3. Individual Component Prompts (300 DPI) ─────────── */}
+                <p className="lp-eyebrow" style={{ marginTop: 22 }}>
+                  مكونات وعناصر الاستيكر المنفصلة — <b>(300 DPI Transparent Assets)</b>
+                </p>
+                <p className="lp-hint" style={{ marginBottom: 14 }}>
+                  خذ برومبت كل مكون بشكل مستقل وارفعه لمولد الصور للحصول على عنصر نقي وعالي الجودة لخلفية شفافة لتجميعه في التصميم!
+                </p>
+
                 {(data.prompts || []).map((p, i) => (
                   <div className="lp-prompt" key={i}>
                     <div className="lp-phead">
-                      <h3 className="lp-ptitle">{p.title}</h3>
+                      <h3 className="lp-ptitle">🧩 مكون {i + 1}: {p.title}</h3>
                       <button className="lp-btn lp-btn-ghost" onClick={() => copy(p.p, "pr" + i)}>
-                        {copied === "pr" + i ? "اتنسخ" : "Copy Prompt"}
+                        {copied === "pr" + i ? "اتنسخ" : "نسخ برومبت المكون"}
                       </button>
                     </div>
                     <p className="lp-pplace">
-                      <strong>{p.face === "front" ? "الوش" : "الضهر"}</strong> — {p.place}
+                      <strong>{p.face === "front" ? "الوجه الأمامي" : "الوجه الخلفي"}</strong> — الموضع: {p.place}
                     </p>
                     <div className="lp-ptext">{p.p}</div>
                   </div>
                 ))}
-                <p className="lp-note">
-                  لو الأداة مش بتطلع خلفية شفافة، غيّر آخر البرومبت لـ pure white background
-                  وشيلها بعدين من الإليستريتور.
-                </p>
+
+                {/* ── 4. Design Decisions & Rationale Analysis ──────────── */}
+                <div className="lp-dir" style={{ marginTop: 26 }}>
+                  <p className="lp-eyebrow">تحليل قرارات التصميم والتميز التنافسي</p>
+                  <p className="lp-hint">
+                    لماذا تم اختيار هذه الألوان والتركيب البصري لهذا المنتج خصيصًا؟ مرجع شامل للعرض والموافقات:
+                  </p>
+                  {buildRationale(concept || localConcept(desc, style, "front", brand), style, die, desc).map((d, i) => (
+                    <div key={i} style={{ marginBottom: 10 }}>
+                      <p className="lp-dirq">📌 {d.q}</p>
+                      <p className="lp-dira">{d.a}</p>
+                    </div>
+                  ))}
+                </div>
               </>
             ) : null}
 
