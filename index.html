@@ -500,7 +500,7 @@ function extractJSON(raw) {
 
 /* Google retires model IDs on a schedule, so each call walks a list
    newest-first and moves on when one returns 404. */
-const TEXT_MODELS = ["gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
+const TEXT_MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-flash-latest", "gemini-3.6-flash", "gemini-3.7-flash"];
 const IMAGE_MODELS = ["gemini-3.1-flash-image", "gemini-3-pro-image", "gemini-2.5-flash-image"];
 
 const isRetired = (msg) =>
@@ -2735,8 +2735,14 @@ function LabelPrepTool() {
       setKeyState("ok");
       setKeyMsg(model);
     } catch (e) {
-      setKeyState("fallback");
-      setKeyMsg("شغال بالمحرك المحلّي / AI المجاني السريع");
+      try {
+        await askOpenRouter("system test", "ping");
+        setKeyState("ok");
+        setKeyMsg("OpenRouter Free AI (openrouter/free)");
+      } catch {
+        setKeyState("fallback");
+        setKeyMsg("شغال بالمحرك المحلّي");
+      }
     }
   };
 
