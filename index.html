@@ -1390,11 +1390,22 @@ function Slot({ img, label, hint, minH, onPick, onClear, id }) {
   );
 }
 
-function ArabicSpace({ note }) {
+function ArabicSpace({ note, items }) {
+  const arItems = (items || []).filter((e) => e && e.ar && e.ar.trim());
   return (
     <div className="lp-arspace">
       <span>مساحة محجوزة للنص العربي</span>
-      {note ? <em>{note}</em> : null}
+      {arItems.length ? (
+        <div style={{ marginTop: 6, textAlign: "center", fontSize: "11.5px", lineHeight: 1.65, color: "var(--ink)" }}>
+          {arItems.map((e, i) => (
+            <div key={i} style={{ marginBottom: 3 }}>
+              <b>{e.ar}</b>
+            </div>
+          ))}
+        </div>
+      ) : note ? (
+        <em>{note}</em>
+      ) : null}
     </div>
   );
 }
@@ -1552,6 +1563,97 @@ function buildFacePrompt({ face, data, concept, style, die, slots, hasLogo }) {
     ``,
     `Sharp vector-clean edges, print-quality, high resolution, evenly lit, no photographic texture.`,
   ].filter(Boolean).join("\n");
+}
+
+function buildHtmlFacePrompt({ face, data, concept, style, die, slots, hasLogo }) {
+  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
+  const bg = pal[0] || "#F4F5F3";
+  const ink = pal[1] || "#16181C";
+  const accent = pal[2] || ink;
+  const items = (face === "front" ? data.front : data.back) || [];
+  const get = (k) => items.find((e) => e.k === k);
+  const name = get("name")?.t || get("title")?.t || data.product?.en || "PRODUCT";
+  const nameAr = get("name")?.ar || get("title")?.ar || "";
+  const claim = get("claim")?.t || "";
+  const claimAr = get("claim")?.ar || "";
+  const badge = get("badge")?.t || "";
+  const vol = get("volume")?.t || "--- ml";
+  const volAr = get("volume")?.ar || "";
+  const ing = get("ingredients")?.t || "";
+  const ingAr = get("ingredients")?.ar || "";
+  const usage = get("usage")?.t || "";
+  const usageAr = get("usage")?.ar || "";
+  const warning = get("warning")?.t || "";
+  const warningAr = get("warning")?.ar || "";
+  const storage = get("storage")?.t || "";
+  const storageAr = get("storage")?.ar || "";
+
+  const W = die && die.confirmed && die.w > 0 ? Math.round(die.wMM || die.w * 10) : 80;
+  const H = die && die.confirmed && die.h > 0 ? Math.round(die.hMM || die.h * 10) : 152;
+  const ratio = (H / W).toFixed(2);
+  const sizeNote = die && die.confirmed
+    ? `${round1(die.w)} × ${round1(die.h)} ${die.unit} (${W}mm × ${H}mm)`
+    : "مقاس افتراضي — ارفع ملف السكينة في تاب Die-Cut للمقاس الحقيقي";
+
+  const artList = slots.map((s, i) => `  - IMAGE ${i + 1}: ${s.title} → ${i === 0 ? "البانل الرئيسي، كامل العرض" : "بانل مساعد أسفل الرئيسي"}`).join("\n");
+
+  const logoLine = hasLogo ? `  - LOGO → ارفعه كـ PNG شفاف، يتحط في البند العلوي على الوش` : "  - لا يوجد لوجو مرفوع";
+
+  const frontContent = [
+    `  [بند علوي بلون ${accent}]`,
+    `    ↳ اللوجو: ${hasLogo ? "مرفوع ← ضعه هنا" : "مساحة فارغة"}`,
+    `  [اسم المنتج — EN]: "${name}"  |  [AR]: "${nameAr || "مساحة محجوزة للعربي"}"`,
+    claim ? `  [Claim — EN]: "${claim}"  |  [AR]: "${claimAr || "مساحة محجوزة"}"` : null,
+    `  [بانل الرسمة الرئيسية — كامل العرض]`,
+    artList || `    (لا توجد رسومات مرفوعة — اترك المساحة فارغة)`,
+    badge ? `  [بادچ]: "${badge}"` : null,
+    `  [مساحة النص العربي] — لا تكتب فيها أي نص، ابقها فارغة تمامًا`,
+    `  [تذييل بلون ${accent}]`,
+    `    ↳ الحجم: "${vol}"  |  بالعربي: "${volAr}"`,
+  ].filter(Boolean).join("\n");
+
+  const backContent = [
+    `  [بند علوي بلون ${accent}]`,
+    `    ↳ اسم المنتج: "${name}"`,
+    ing ? `  [المكونات — EN]: "${ing.slice(0, 80)}${ing.length > 80 ? "..." : ""}"` : null,
+    ingAr ? `  [المكونات — AR]: "${ingAr}"` : `  [مساحة مكونات عربي] — فارغة`,
+    slots.length ? `  [بانل رسومات مساعدة]:\n${artList}` : null,
+    usage ? `  [طريقة الاستخدام]: "${usage}"` : null,
+    usageAr ? `  [طريقة الاستخدام عربي]: "${usageAr}"` : `  [مساحة استخدام عربي] — فارغة`,
+    warning ? `  [تحذيرات]: "${warning}"` : null,
+    warningAr ? `  [تحذيرات عربي]: "${warningAr}"` : `  [مساحة تحذيرات عربي] — فارغة`,
+    storage ? `  [التخزين]: "${storage}"` : null,
+    `  [مساحة النص العربي] — لا تكتب فيها أي نص، ابقها فارغة تمامًا`,
+    `  [تذييل بلون ${accent}]`,
+    `    ↳ "${vol}" — "For external use only"`,
+  ].filter(Boolean).join("\n");
+
+  return [
+    `━━━ HTML LABEL FACE PROMPT — ${face === "front" ? "FRONT / الوجه الأمامي" : "BACK / الوجه الخلفي"} ━━━`,
+    ``,
+    `CANVAS SIZE: ${sizeNote}`,
+    `ASPECT RATIO: 1 : ${ratio}  (العرض : الارتفاع)`,
+    `STYLE: ${style}`,
+    `COLOUR PALETTE: ${pal.join(" · ")}`,
+    `  Background → ${bg}  |  Text → ${ink}  |  Accent → ${accent}`,
+    ``,
+    `REFERENCE IMAGES TO UPLOAD:`,
+    logoLine,
+    artList || "  - لا توجد رسومات",
+    ``,
+    `LAYOUT — from top to bottom:`,
+    face === "front" ? frontContent : backContent,
+    ``,
+    `CRITICAL TEXT RULES:`,
+    `  • اكتب النصوص الإنجليزية بالضبط كما هي أعلاه — ولا تغيّر حرف.`,
+    `  • كل مساحة مكتوب عليها "مساحة محجوزة للعربي" — اتركها فارغة بيضاء.`,
+    `  • لا تكتب عربي بنفسك ولو حرف واحد.`,
+    `  • لا تضف كلمات أو رموز أو باركود أو أيقونات غير موجودة أعلاه.`,
+    `  • لا تختلق اسم براند جديد.`,
+    ``,
+    `OUTPUT: flat label artwork, straight-on view, no shadows, no 3D, no bottle — the label itself only.`,
+    `Fill canvas edge to edge. Sharp vector-clean print quality. High resolution 300 DPI.`,
+  ].join("\n");
 }
 
 /* Image generation runs on Gemini's image model, which accepts reference
@@ -1966,7 +2068,7 @@ function FaceRender({ face, items, slots, concept, die, art, logo, extras,
                 })
               : null}
 
-            <ArabicSpace note={face === "front" ? "اسم المنتج والادعاء بالعربي" : "الوصف والمكونات والتحذيرات بالعربي"} />
+            <ArabicSpace items={items} note={face === "front" ? "اسم المنتج والادعاء بالعربي" : "الوصف والمكونات والتحذيرات بالعربي"} />
 
             {face === "front" ? (
               <div className="lp-strip" style={{ gridTemplateColumns: "1fr 1fr" }}>
@@ -2513,6 +2615,41 @@ function LabelPrepTool() {
   const [conBusy, setConBusy] = useState(false);
   const [conErr, setConErr] = useState("");
 
+  const [newIdeaText, setNewIdeaText] = useState("");
+  const [promptsBusy, setPromptsBusy] = useState(false);
+  const [promptsErr, setPromptsErr] = useState("");
+
+  const regenPrompts = async () => {
+    if (!data) return;
+    setPromptsBusy(true); setPromptsErr("");
+    try {
+      const r = await askClaudeRetry(SYS_PROMPTS, desc.trim());
+      if ((r.prompts || []).length) {
+        setData((d) => ({ ...d, prompts: r.prompts }));
+      } else throw new Error("empty");
+    } catch {
+      setPromptsErr("مقدرتش أعيد التوليد. جرّب تاني.");
+    } finally {
+      setPromptsBusy(false);
+    }
+  };
+
+  const runNewIdea = async () => {
+    if (!data || !newIdeaText.trim()) return;
+    setPromptsBusy(true); setPromptsErr("");
+    try {
+      const SYS_NEW_IDEA = SYS_PROMPTS + `\n\nThe user wants a NEW creative direction: "${newIdeaText.trim()}". Generate 4 fully new, coherent prompts matching this direction.`;
+      const r = await askClaudeRetry(SYS_NEW_IDEA, desc.trim());
+      if ((r.prompts || []).length) {
+        setData((d) => ({ ...d, prompts: r.prompts }));
+      } else throw new Error("empty");
+    } catch {
+      setPromptsErr("مقدرتش أولّد الفكرة الجديدة. جرّب تاني.");
+    } finally {
+      setPromptsBusy(false);
+    }
+  };
+
   const run = async () => {
     const input = desc.trim();
     if (!input) return;
@@ -2790,6 +2927,34 @@ function LabelPrepTool() {
                 <p className="lp-eyebrow">
                   انسخ البرومبت زي ما هو في أداة توليد الصور
                 </p>
+
+                {/* ── New Idea panel ─────────────────────────────── */}
+                <div className="lp-inputwrap" style={{ marginBottom: 18 }}>
+                  <label className="lp-label">فكرة جديدة — عشان تغيّر كل البرومبتات مع بعض</label>
+                  <p className="lp-hint">
+                    لو عايز اتجاه مختلف تمامًا، اكتب هنا وصف الفكرة الجديدة (زي: «فكرة مينيمال بألوان محايدة» أو «رسومات طبيعية بمكونات نباتية»).
+                    البرومبتات كلها هتتغير مع بعض عشان تفضل متناسقة.
+                  </p>
+                  <textarea
+                    className="lp-ta"
+                    style={{ minHeight: 72 }}
+                    value={newIdeaText}
+                    onChange={(e) => setNewIdeaText(e.target.value)}
+                    placeholder="مثال: فكرة بصرية دافية وعضوية تركّز على مكوّن الكافور، خلفية كريمية، خطوط ناعمة..."
+                  />
+                  <div className="lp-row" style={{ marginTop: 10 }}>
+                    <button className="lp-btn" onClick={runNewIdea} disabled={promptsBusy || !newIdeaText.trim()}>
+                      {promptsBusy ? "بيعيد التوليد…" : "ولّد فكرة جديدة"}
+                    </button>
+                    {promptsBusy ? null : (
+                      <button className="lp-btn lp-btn-ghost" onClick={regenPrompts} disabled={promptsBusy}>
+                        أعد توليد البرومبتات الحالية
+                      </button>
+                    )}
+                  </div>
+                  {promptsErr ? <div className="lp-err" style={{ marginTop: 8 }}>{promptsErr}</div> : null}
+                </div>
+
                 {!(data.prompts || []).length ? (
                   <div className="lp-err">
                     البرومبتات مجتش المرة دي. اضغط «جهّز العناصر» تاني — التقسيم هيفضل زي ما هو.
@@ -3297,23 +3462,7 @@ function LabelPrepTool() {
                       />
                     </div>
 
-                    <div className="lp-row" style={{ marginTop: 14 }}>
-                      {["front", "back"].map((f) => (
-                        <button key={f} className="lp-btn lp-btn-ghost"
-                                onClick={() => saveSticker(f)} disabled={saveBusy === f}>
-                          {saveBusy === f
-                            ? "بيحفظ…"
-                            : `${sticker[f] ? "احفظ تاني" : "احفظ"} ${f === "front" ? "الوش" : "الضهر"} PNG`}
-                        </button>
-                      ))}
-                    </div>
-                    {saveErr ? <div className="lp-err">{saveErr}</div> : null}
-                    {sticker.front || sticker.back ? (
-                      <p className="lp-note" style={{ marginTop: 10 }}>
-                        الاستيكر اتحفظ. البرومبت تحت اتغيّر — بقى بيقول لأداة الصور تلف
-                        الصورة دي على العبوة زي ما هي، بدل ما توصفلها التصميم بالكلام.
-                      </p>
-                    ) : null}
+
 
                     {artErr ? <div className="lp-err" style={{ marginTop: 14 }}>{artErr}</div> : null}
 
@@ -3328,8 +3477,8 @@ function LabelPrepTool() {
                     <div className="lp-dir" style={{ marginTop: 26 }}>
                       <p className="lp-eyebrow">برومبتات التصميم</p>
                       <p className="lp-hint">
-                        للأدوات اللي بتقبل رفع صور مرجعية. ارفع اللوجو الأول وبعده رسومات
-                        الوجه ده بنفس الترتيب اللي تحت، عشان الأرقام في البرومبت تطابقها.
+                        وصف HTML كامل للوجه بالبيانات الحقيقية والرسومات مضبوط على أبعاد العبوة.
+                        انسخ البرومبت وارفعه على أداة توليد الصور مع الرسومات المرجعية.
                       </p>
 
                       {[
@@ -3337,30 +3486,9 @@ function LabelPrepTool() {
                         { face: "back", label: "الوجه الخلفي" },
                       ].map(({ face, label }) => {
                         const s = slotsFor(face);
-                        const text = sticker[face]
-                          ? buildWrapPrompt({
-                              face, concept, style, die,
-                              container: "spray bottle",
-                            })
-                          : buildFacePrompt({
-                              face, data, concept, style, die, slots: s, hasLogo: !!logo,
-                            });
+                        const text = buildHtmlFacePrompt({ face, data, concept, style, die, slots: s, hasLogo: !!logo });
                         return (
                           <div key={face} style={{ marginTop: 18 }}>
-                            {sticker[face] ? (
-                              <div className="lp-order">
-                                <span><b>1</b> صورة العبوة</span>
-                                <span><b>2</b> ملف الاستيكر المحفوظ</span>
-                              </div>
-                            ) : (
-                              <div className="lp-order">
-                                {(logo ? ["اللوجو"] : []).concat(s.map((x) => x.title))
-                                  .map((t, i) => (
-                                    <span key={i}><b>{i + 1}</b> {t}</span>
-                                  ))}
-                              </div>
-                            )}
-
                             <div className="lp-phead" style={{ marginTop: 12 }}>
                               <span style={{
                                 fontFamily: "'IBM Plex Mono', monospace", fontSize: 9.5,
