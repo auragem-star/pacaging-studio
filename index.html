@@ -1736,7 +1736,7 @@ async function askGeminiImageModel(model, promptText, images) {
 
   const url =
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
-    encodeURIComponent(GEMINI_KEY);
+    encodeURIComponent(getGeminiKey());
 
   let res;
   try {
@@ -1767,7 +1767,7 @@ async function askGeminiImageModel(model, promptText, images) {
 }
 
 async function askGeminiImage(promptText, images, onWait) {
-  if (!GEMINI_KEY) throw new Error("no-key");
+  if (!getGeminiKey()) throw new Error("no-key");
   let last;
   for (const m of IMAGE_MODELS) {
     // Image quotas are tight, so a 429 is worth waiting out rather than failing.
@@ -3583,7 +3583,7 @@ function LabelPrepTool() {
 
                       {applyErr ? <div className="lp-err" style={{ marginTop: 12 }}>{applyErr}</div> : null}
 
-                      {!GEMINI_KEY ? (
+                      {!getGeminiKey() ? (
                         <div className="lp-banner" style={{ marginTop: 12 }}>
                           <strong>الخطوة دي محتاجة مفتاح Gemini.</strong>{" "}
                           حطه في الخانة أول الصفحة. من غيره باقي الأداة شغالة عادي.
