@@ -651,18 +651,45 @@ async function askClaude(system, user) {
   return extractJSON(whole);
 }
 
+async function askOpenAICompatible(apiKey, endpoint, model, system, user) {
+  let res;
+  try {
+    res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          { role: "system", content: `${system}\n\nReturn JSON ONLY.` },
+          { role: "user", content: user }
+        ],
+      }),
+    });
+  } catch (netErr) {
+    throw new Error("network: " + (netErr.message || "fetch failed"));
+  }
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  const data = await res.json();
+  const raw = data?.choices?.[0]?.message?.content || "";
+  if (!raw.trim()) throw new Error("empty response");
+  return extractJSON(raw);
+}
+
 async function askModel(system, user) {
   if (GEMINI_KEYS.length > 0) {
     try {
       return await askGemini(system, user);
     } catch (e) {
-      console.warn("Gemini keys failed, trying Pollinations free AI fallback...", e);
+      console.warn("Gemini keys exhausted, checking secondary providers...", e);
     }
   }
   try {
-    return await askPollinations(system, user);
-  } catch (e) {
     return await askClaude(system, user);
+  } catch (e) {
+    throw e;
   }
 }
 
