@@ -129,6 +129,10 @@ const CSS = `
 .lp-keychk { color: var(--ink-soft); }
 .lp-keyok { color: #1E7A3C; }
 .lp-keybad { color: var(--magenta); white-space: normal; }
+.lp-keymodel {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-style: normal;
+  font-weight: 400; color: var(--ink-soft); margin-inline-start: 7px; direction: ltr;
+}
 
 /* ---------- tabs ---------- */
 .lp-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--rule); margin: 30px 0 20px; flex-wrap: wrap; }
@@ -487,13 +491,21 @@ function extractJSON(raw) {
   return JSON.parse(clean.slice(s, e + 1));
 }
 
+/* Google retires model IDs on a schedule, so each call walks a list
+   newest-first and moves on when one returns 404. */
+const TEXT_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
+const IMAGE_MODELS = ["gemini-3.1-flash-image", "gemini-3-pro-image", "gemini-2.5-flash-image"];
+
+const isRetired = (msg) =>
+  /http 404/.test(msg) || /no longer available|not found|is not supported/i.test(msg);
+
 /* Provider key lives in memory only — never written into the file. */
 let GEMINI_KEY = "";
 const setGeminiKey = (k) => { GEMINI_KEY = (k || "").trim(); };
 
-async function askGemini(system, user) {
+async function askGeminiModel(model, system, user) {
   const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
     encodeURIComponent(GEMINI_KEY);
 
   let res;
@@ -511,7 +523,7 @@ async function askGemini(system, user) {
       }),
     });
   } catch (netErr) {
-    throw new Error("network: " + (netErr.message || "fetch failed"));
+    throw new Error("blocked: " + (netErr.message || "fetch failed"));
   }
 
   if (!res.ok) {
@@ -529,6 +541,19 @@ async function askGemini(system, user) {
     .join("");
   if (!raw.trim()) throw new Error("empty response");
   return extractJSON(raw);
+}
+
+async function askGemini(system, user) {
+  let last;
+  for (const m of TEXT_MODELS) {
+    try {
+      return await askGeminiModel(m, system, user);
+    } catch (e) {
+      last = e;
+      if (!isRetired(e.message || "")) throw e;
+    }
+  }
+  throw last;
 }
 
 async function askClaude(system, user) {
@@ -1301,6 +1326,35 @@ function ensureArtZone(c) {
    needs the brand's own font and is set in Illustrator.
    ============================================================ */
 
+/* Rasterises a DOM node to a high-resolution PNG. The library is fetched
+   on first use, so this needs a connection; everything else works offline. */
+let H2C = null;
+async function loadH2C() {
+  if (H2C) return H2C;
+  if (window.html2canvas) { H2C = window.html2canvas; return H2C; }
+  await new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("مقدرتش أحمّل مكتبة الحفظ — اتأكد من النت"));
+    document.head.appendChild(s);
+  });
+  if (!window.html2canvas) throw new Error("مكتبة الحفظ محمّلتش");
+  H2C = window.html2canvas;
+  return H2C;
+}
+
+async function nodeToPNG(node, scale = 3) {
+  const h2c = await loadH2C();
+  const canvas = await h2c(node, {
+    scale,
+    backgroundColor: null,
+    useCORS: true,
+    logging: false,
+  });
+  return canvas.toDataURL("image/png");
+}
+
 function Slot({ img, label, hint, minH, onPick, onClear, id }) {
   return (
     <div className="lp-slot" style={{ minHeight: minH || 90 }}>
@@ -1336,14 +1390,74 @@ function ArabicSpace({ note }) {
 /* Composes a prompt for image tools that accept reference uploads
    (Nano Banana, GPT Image, Flux Kontext). Every asset is numbered so
    the tool places what the user supplies instead of inventing its own. */
-function buildFrontPrompt({ data, concept, style, die, slots, hasLogo }) {
+/* When the sticker has been exported as an image, the tool stops
+   describing the design and hands over the artwork itself. */
+function buildWrapPrompt({ face, concept, style, die, container }) {
   const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
   const bgSpec = backgroundFor(style, pal);
-  const get = (k) => (data.front || []).find((e) => e.k === k);
-  const name = get("name")?.t || data.product?.en || "PRODUCT";
+
+  const size = die && die.confirmed && die.w > 0 && die.h > 0
+    ? `The label measures ${round1(die.w)} x ${round1(die.h)} ${die.unit}, proportion ${ratioText(die.wMM, die.hMM)}. Keep this proportion exactly — do not stretch or squash it.`
+    : `Keep the label's original proportion exactly — do not stretch or squash it.`;
+
+  return [
+    `IMAGE 1 is a photograph of a real ${container}.`,
+    `IMAGE 2 is the finished label artwork.`,
+    ``,
+    `Apply IMAGE 2 onto the ${container} in IMAGE 1 as a printed wrap-around label.`,
+    ``,
+    `ARTWORK — critical:`,
+    `  Use IMAGE 2 exactly as supplied. Do not redesign it, do not redraw it, do not re-typeset it.`,
+    `  Do not change any colour, position, size relationship or element inside it.`,
+    `  Do not add any text, logo, barcode, seal or graphic that is not already in IMAGE 2.`,
+    `  Do not remove anything from it. Blank areas in the artwork must stay blank.`,
+    `  Every letter must read exactly as it appears in IMAGE 2, with no spelling changes.`,
+    ``,
+    `PLACEMENT:`,
+    `  ${size}`,
+    `  Wrap it around the curved surface with correct cylindrical perspective, so the`,
+    `  artwork compresses gradually toward the left and right edges of the container.`,
+    `  Centre it horizontally on the face shown, with even margins above and below.`,
+    `  Follow the container's existing contours — the label bends with the surface, it does not float flat on top.`,
+    ``,
+    `LIGHTING AND MATERIAL:`,
+    `  Match the photograph's own lighting direction, intensity and colour temperature.`,
+    `  The label reads as matte printed vinyl with a faint sheen where the light falls,`,
+    `  slightly darker where the surface curves away.`,
+    `  Add a very subtle edge shadow where the label meets the container so it sits on the surface.`,
+    `  Keep the artwork's colours faithful: the design is built on ${pal.join(", ")}`,
+    `  over ${bgSpec.name === undefined ? "its own background" : "a background treated as " + bgLineFor(style)}.`,
+    `  Do not shift the hue, saturation or brightness of the artwork.`,
+    ``,
+    `PHOTOGRAPH — critical:`,
+    `  Keep IMAGE 1 completely unchanged: same container shape, same angle, same cap,`,
+    `  same background, same surface, same shadows, same depth of field.`,
+    `  Do not move the container, do not recolour it, do not replace the scene.`,
+    ``,
+    `Photorealistic product photography, sharp label print, natural result.`,
+  ].join("\n");
+}
+
+function bgLineFor(style) {
+  return style === "Modern & Bold" ? "a hard-edged diagonal two-tone split"
+    : style === "Minimal" ? "a flat single colour"
+    : style === "Medical & Professional" ? "a colour block across the top ending in a shallow arc"
+    : style === "Luxury" ? "a deep diagonal gradient with a thin inner border"
+    : style === "Natural & Organic" ? "soft blurred organic colour blooms"
+    : style === "Playful & Colorful" ? "a diagonal gradient with blurred colour circles"
+    : "a smooth vertical gradient";
+}
+
+function buildFacePrompt({ face, data, concept, style, die, slots, hasLogo }) {
+  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
+  const bgSpec = backgroundFor(style, pal);
+  const items = (face === "front" ? data.front : data.back) || [];
+  const get = (k) => items.find((e) => e.k === k);
+  const name = get("name")?.t || get("title")?.t || data.product?.en || "PRODUCT";
   const claim = get("claim")?.t || "";
   const badge = get("badge")?.t || "";
   const vol = get("volume")?.t || "--- ml";
+  const ing = get("ingredients")?.t || "";
 
   const ratio = die && die.confirmed && die.w > 0 && die.h > 0
     ? `${round1(die.w)} x ${round1(die.h)} ${die.unit} (aspect ${ratioText(die.wMM, die.hMM)})`
@@ -1370,8 +1484,26 @@ function buildFrontPrompt({ data, concept, style, die, slots, hasLogo }) {
     : style === "Playful & Colorful" ? "a diagonal gradient with two large blurred colour circles cropped by the edges"
     : "a smooth vertical gradient from light at the top to slightly deeper at the bottom, with a soft glow above the centre";
 
+  const layout = [
+    `Colour band across the very top${hasLogo ? " holding the logo" : ""}.`,
+    `Product name "${name}" — large, bold, condensed sans-serif, centered, tight letter spacing.`,
+    face === "front" && claim
+      ? `Claim line "${claim}" — small uppercase, wide letter spacing, centered, in the accent colour.` : null,
+    `Main artwork panel — the largest visual element, spanning the full width.`,
+    face === "front" && badge
+      ? `Badge "${badge}" — small pill outline with a rounded border, centered, accent colour.` : null,
+    face === "back" && ing
+      ? `A small uppercase "INGREDIENTS" heading with a thin rule beside it, followed by: ${ing}` : null,
+    face === "back"
+      ? `Small uppercase headings "HOW TO USE", "WARNINGS & PRECAUTIONS" and "STORAGE", each with a thin rule beside it and a few short lines of small body text underneath.` : null,
+    `An EMPTY rectangular area reserved for Arabic text. Leave it completely blank. Do not write Arabic. Do not write any placeholder characters in it.`,
+    face === "back"
+      ? `Footer band across the bottom containing "${vol}" on one side and "For external use only" on the other.`
+      : `Footer band across the bottom containing only "${vol}" on the left.`,
+  ].filter(Boolean).map((s, i) => `  ${i + 1}. ${s}`);
+
   return [
-    `Product label design, front face only. Flat straight-on view of the label artwork itself — not a bottle, not a mockup, not a 3D render, no shadows, no background scene, no hands, no packaging photography.`,
+    `Product label design, ${face === "front" ? "front" : "back"} face only. Flat straight-on view of the label artwork itself — not a bottle, not a mockup, not a 3D render, no shadows, no background scene, no hands, no packaging photography.`,
     ``,
     `CANVAS: ${ratio}. Fill the entire canvas edge to edge.`,
     ``,
@@ -1386,17 +1518,11 @@ function buildFrontPrompt({ data, concept, style, die, slots, hasLogo }) {
     ...assets.map((a) => "  " + a),
     ``,
     `LAYOUT, top to bottom:`,
-    `  1. Colour band across the very top holding the logo.`,
-    `  2. Product name "${name}" — large, bold, condensed sans-serif, centered, tight letter spacing.`,
-    claim ? `  3. Claim line "${claim}" — small uppercase, wide letter spacing, centered, in the accent colour.` : null,
-    `  4. Main artwork panel — the largest visual element, spanning the full width.`,
-    badge ? `  5. Badge "${badge}" — small pill outline with a rounded border, centered, accent colour.` : null,
-    `  6. An EMPTY rectangular area reserved for Arabic text. Leave it completely blank. Do not write Arabic. Do not write any placeholder characters in it.`,
-    `  7. Footer band across the bottom containing only "${vol}" on the left.`,
+    ...layout,
     ``,
     `TEXT RULES — critical:`,
     `  Render ONLY the exact English strings quoted above, spelled exactly as written.`,
-    `  Do NOT add any other words, taglines, ingredient lists, barcodes, icons, symbols, seals, certification marks or decorative text.`,
+    `  Do NOT add any other words, taglines, ${face === "back" ? "extra ingredients, " : "ingredient lists, "}barcodes, icons, symbols, seals, certification marks or decorative text.`,
     `  Do NOT invent a brand name. Do NOT add Arabic or any non-Latin script.`,
     ``,
     `Sharp vector-clean edges, print-quality, high resolution, evenly lit, no photographic texture.`,
@@ -1408,33 +1534,37 @@ function buildFrontPrompt({ data, concept, style, die, slots, hasLogo }) {
 /* Cheap round-trip to confirm the key actually works before the user
    discovers it silently fell back to the local engine. */
 async function verifyGeminiKey(key) {
-  const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
-    encodeURIComponent(key);
-  let res;
-  try {
-    res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: "Reply with the single word: ok" }] }],
-        generationConfig: { maxOutputTokens: 5 },
-      }),
-    });
-  } catch (netErr) {
-    throw new Error("network: " + (netErr.message || "Failed to fetch"));
-  }
-  if (!res.ok) {
+  let last;
+  for (const model of TEXT_MODELS) {
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
+      encodeURIComponent(key);
+    let res;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: "Reply with the single word: ok" }] }],
+          generationConfig: { maxOutputTokens: 5 },
+        }),
+      });
+    } catch (e) {
+      // The request never left the page — almost always a sandbox that only
+      // permits its own host, not a problem with the key.
+      throw new Error("blocked: " + (e.message || "fetch failed"));
+    }
+    if (res.ok) return model;
+
     let detail = "";
     try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
-    throw new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+    last = new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+    if (!isRetired(last.message)) throw last;
   }
-  return true;
+  throw last;
 }
 
-async function askGeminiImage(promptText, images) {
-  if (!GEMINI_KEY) throw new Error("no-key");
-
+async function askGeminiImageModel(model, promptText, images) {
   const parts = [];
   images.forEach((im) => {
     const m = /^data:([^;]+);base64,(.*)$/.exec(im.dataUrl || "");
@@ -1444,7 +1574,7 @@ async function askGeminiImage(promptText, images) {
   parts.push({ text: promptText });
 
   const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=" +
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
     encodeURIComponent(GEMINI_KEY);
 
   let res;
@@ -1455,7 +1585,7 @@ async function askGeminiImage(promptText, images) {
       body: JSON.stringify({ contents: [{ parts }] }),
     });
   } catch (e) {
-    throw new Error("network: " + (e.message || "fetch failed"));
+    throw new Error("blocked: " + (e.message || "fetch failed"));
   }
 
   if (!res.ok) {
@@ -1473,6 +1603,29 @@ async function askGeminiImage(promptText, images) {
     throw new Error(txt ? "no-image: " + txt.slice(0, 120) : "no-image");
   }
   return `data:${blob.mime_type || blob.mimeType || "image/png"};base64,${blob.data}`;
+}
+
+async function askGeminiImage(promptText, images, onWait) {
+  if (!GEMINI_KEY) throw new Error("no-key");
+  let last;
+  for (const m of IMAGE_MODELS) {
+    // Image quotas are tight, so a 429 is worth waiting out rather than failing.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        return await askGeminiImageModel(m, promptText, images);
+      } catch (e) {
+        last = e;
+        const msg = e.message || "";
+        if (isRetired(msg)) break;                 // try the next model
+        if (!msg.startsWith("http 429")) throw e;  // not a quota problem
+        if (attempt === 2) break;
+        const secs = 12 * (attempt + 1);
+        if (onWait) onWait(secs);
+        await new Promise((r) => setTimeout(r, secs * 1000));
+      }
+    }
+  }
+  throw last;
 }
 
 /* Instruction for placing the label onto a real product photo. */
@@ -1669,7 +1822,7 @@ function SectionHead({ text, color }) {
 }
 
 function FaceRender({ face, items, slots, concept, die, art, logo, extras,
-                     onPick, onClear, tag, style }) {
+                     onPick, onClear, tag, style, onNode }) {
   const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
   const bg = pal[0] || "#F4F5F3";
   const ink = pal[1] || "#16181C";
@@ -1717,7 +1870,8 @@ function FaceRender({ face, items, slots, concept, die, art, logo, extras,
   return (
     <div className="lp-facewrap">
       <div className="lp-facecap">{tag}</div>
-      <div ref={boxRef} className="lp-sticker"
+      <div ref={(el) => { boxRef.current = el; if (onNode) onNode(face, el); }}
+           className="lp-sticker"
            style={{
              backgroundColor: bg,
              backgroundImage: bgSpec.css,
@@ -1817,6 +1971,7 @@ function FaceRender({ face, items, slots, concept, die, art, logo, extras,
 
 function buildRationale(concept, style, die, brief) {
   const pal = concept.palette || [];
+  const hex = (i) => pal[i]?.hex || "";
   const out = [];
 
   out.push({
@@ -1827,21 +1982,21 @@ function buildRationale(concept, style, die, brief) {
 
   if (pal[0]) {
     out.push({
-      q: `ليه لون الخلفية ${pal[0]}؟`,
+      q: `ليه لون الخلفية ${hex(0)}؟`,
       a: `${pal[0].role || "لون الخلفية"}. بيشيل باقي العناصر من غير ما ينافسها، ` +
          `وبيدي تباين كافي للنصوص عشان تفضل مقروءة على الرف.`,
     });
   }
   if (pal[1]) {
     out.push({
-      q: `ليه اسم المنتج بلون ${pal[1]}؟`,
+      q: `ليه اسم المنتج بلون ${hex(1)}؟`,
       a: `${pal[1].role || "لون النص الأساسي"}. أعلى تباين مع الخلفية، عشان الاسم ` +
          `يبقى أول حاجة تتقري من مسافة.`,
     });
   }
   if (pal[2]) {
     out.push({
-      q: `ليه لون واحد بس (${pal[2]}) للفايدة والعناوين؟`,
+      q: `ليه لون واحد بس (${hex(2)}) للفايدة والعناوين؟`,
       a: `${pal[2].role || "اللون المميز"}. لون مميز واحد بيوجّه العين لمكان واحد. ` +
          `لو اتوزع على كذا عنصر بيفقد وظيفته وبيبقى زحمة.`,
     });
@@ -2218,26 +2373,62 @@ function LabelPrepTool() {
     try {
       const s = slotsFor(face);
       const refs = [shot];
-      if (logo) refs.push(logo);
-      s.forEach((x) => { const a = art[artKey(x.key)]; if (a) refs.push(a); });
+      let prompt;
 
-      const prompt = buildApplyPrompt({
-        face, data, concept, style, die, slots: s,
-        hasLogo: !!logo, nRefs: refs.length,
-      });
-      const url = await askGeminiImage(prompt, refs);
+      if (sticker[face]) {
+        // The finished artwork exists as an image, so hand that over directly.
+        refs.push({ dataUrl: sticker[face] });
+        prompt = buildWrapPrompt({ face, concept, style, die, container: "spray bottle" });
+      } else {
+        if (logo) refs.push(logo);
+        s.forEach((x) => { const a = art[artKey(x.key)]; if (a) refs.push(a); });
+        prompt = buildApplyPrompt({
+          face, data, concept, style, die, slots: s,
+          hasLogo: !!logo, nRefs: refs.length,
+        });
+      }
+      const url = await askGeminiImage(prompt, refs, (secs) =>
+        setApplyBusy(`wait:${secs}`)
+      );
       setApplied((p) => ({ ...p, [face]: url }));
     } catch (e) {
       const m = e.message || "";
       setApplyErr(
         m === "no-key" ? "محتاج مفتاح Gemini في أول الصفحة عشان الخطوة دي تشتغل."
         : m.startsWith("no-image") ? "جيميني رجّع نص مش صورة. جرّب تاني أو غيّر صورة المنتج."
-        : m.startsWith("http 429") ? "الطلبات كتير دلوقتي. استنى شوية وجرّب تاني."
-        : m.includes("network") ? "مفيش اتصال. اتأكد من النت."
+        : m.startsWith("http 429") ? "خلصت حصة توليد الصور. الحصة المجانية صغيرة جدًا — استنى شوية وجرّب، أو فعّل الفوترة في Google Cloud. في الوقت ده انسخ برومبت الوجه فوق واستخدمه في أي أداة صور تانية."
+        : m.startsWith("http 403") ? "جوجل رفضت الطلب: " + m.replace(/^http 403:?\s*/, "")
+        : m.startsWith("blocked") ? "النداء اتحجب من الصفحة دي. شغّل الملف على جهازك."
         : "حصلت مشكلة: " + m
       );
     } finally {
       setApplyBusy("");
+    }
+  };
+
+  // Exported sticker PNGs, keyed by face.
+  const faceNodes = useRef({});
+  const [sticker, setSticker] = useState({});
+  const [saveBusy, setSaveBusy] = useState("");
+  const [saveErr, setSaveErr] = useState("");
+
+  const registerNode = (face, el) => { faceNodes.current[face] = el; };
+
+  const saveSticker = async (face) => {
+    const node = faceNodes.current[face];
+    if (!node) return;
+    setSaveBusy(face); setSaveErr("");
+    try {
+      const url = await nodeToPNG(node, 3);
+      setSticker((p) => ({ ...p, [face]: url }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sticker-${face}.png`;
+      a.click();
+    } catch (e) {
+      setSaveErr(e.message || "مقدرتش أحفظ الصورة");
+    } finally {
+      setSaveBusy("");
     }
   };
 
@@ -2259,17 +2450,19 @@ function LabelPrepTool() {
     keyTimer.current = setTimeout(async () => {
       setKeyState("checking");
       try {
-        await verifyGeminiKey(k);
-        setKeyState("ok"); setKeyMsg("");
+        const model = await verifyGeminiKey(k);
+        setKeyState("ok"); setKeyMsg(model);
       } catch (e) {
         const m = e.message || "";
         setKeyState("bad");
         setKeyMsg(
-          m.startsWith("http 400") ? "المفتاح مش مقبول"
-          : m.startsWith("http 403") ? "المفتاح مرفوض أو الخدمة مش مفعّلة عليه"
+          m.startsWith("blocked") ? "النداء اتحجب من الصفحة دي — المفتاح غالبًا سليم. نزّل ملف الـ HTML وشغّله على جهازك."
+          : isRetired(m) ? "أسماء الموديلات اتغيرت عند جوجل. قولي وهحدّثها."
+          : m.startsWith("http 400") ? "المفتاح مش مقبول — " + m.replace(/^http 400:?\s*/, "")
+          : m.startsWith("http 403") ? "جوجل رفضت المفتاح. الرسالة منها: " + m.replace(/^http 403:?\s*/, "")
           : m.startsWith("http 429") ? "المفتاح شغال بس الطلبات كتير دلوقتي"
           : m.startsWith("http 5") ? "السيرفر مش راد — جرّب تاني"
-          : ("خطأ في الاتصال: " + m)
+          : "مقدرتش أوصل للسيرفر: " + m
         );
       }
     }, 700);
@@ -2298,20 +2491,23 @@ function LabelPrepTool() {
 
     let split, prompts, usedLocal = false;
 
-    try {
-      setStage("بيقسّم العناصر…");
-      split = await askClaudeRetry(SYS_SPLIT, input);
-    } catch {
+    // Both calls are independent, so they run together rather than in sequence.
+    setStage("بيقسّم العناصر ويكتب البرومبتات…");
+    const [splitRes, promptRes] = await Promise.allSettled([
+      askClaudeRetry(SYS_SPLIT, input),
+      askClaudeRetry(SYS_PROMPTS, input),
+    ]);
+
+    if (splitRes.status === "fulfilled") {
+      split = splitRes.value;
+    } else {
       split = localSplit(input);
       usedLocal = true;
     }
 
-    try {
-      setStage("بيكتب البرومبتات…");
-      const r = await askClaudeRetry(SYS_PROMPTS, input);
-      prompts = r.prompts || [];
-      if (!prompts.length) throw new Error("empty");
-    } catch {
+    if (promptRes.status === "fulfilled" && (promptRes.value.prompts || []).length) {
+      prompts = promptRes.value.prompts;
+    } else {
       prompts = localPrompts(input).prompts;
       usedLocal = true;
     }
@@ -2448,6 +2644,9 @@ function LabelPrepTool() {
           <p className="lp-hint">
             من غير مفتاح الأداة شغالة بالمحرّك المحلي. مع المفتاح الصياغة بتبقى أذكى.
             المفتاح بيفضل في المتصفح بتاعك بس ومش بيتحفظ في الملف — كل واحد يحط مفتاحه.
+            <br />
+            <b>مهم:</b> المفتاح بيشتغل في ملف الـ HTML لما تفتحه على جهازك.
+            جوه Claude النداء لجوجل بيتحجب، فالأداة بتكمل بالمحرّك المحلي.
           </p>
           <div className="lp-row" style={{ marginTop: 0 }}>
             <input
@@ -2465,7 +2664,12 @@ function LabelPrepTool() {
               {showKey ? "إخفاء" : "إظهار"}
             </button>
             {keyState === "checking" ? <span className="lp-keychk">بيتأكد…</span> : null}
-            {keyState === "ok" ? <span className="lp-keyok">اشتغل يا حوده ✓</span> : null}
+            {keyState === "ok" ? (
+              <span className="lp-keyok">
+                اشتغل يا حوده ✓
+                {keyMsg ? <em className="lp-keymodel">{keyMsg}</em> : null}
+              </span>
+            ) : null}
             {keyState === "bad" ? <span className="lp-keybad">{keyMsg}</span> : null}
           </div>
         </div>
@@ -3053,16 +3257,34 @@ function LabelPrepTool() {
                         items={data.front || []} slots={slotsFor("front")}
                         concept={concept} die={die} style={style}
                         art={art} logo={logo} extras={extras}
-                        onPick={pickSlot} onClear={clearSlot}
+                        onPick={pickSlot} onClear={clearSlot} onNode={registerNode}
                       />
                       <FaceRender
                         face="back" tag="Back / الضهر"
                         items={data.back || []} slots={slotsFor("back")}
                         concept={concept} die={die} style={style}
                         art={art} logo={logo} extras={extras}
-                        onPick={pickSlot} onClear={clearSlot}
+                        onPick={pickSlot} onClear={clearSlot} onNode={registerNode}
                       />
                     </div>
+
+                    <div className="lp-row" style={{ marginTop: 14 }}>
+                      {["front", "back"].map((f) => (
+                        <button key={f} className="lp-btn lp-btn-ghost"
+                                onClick={() => saveSticker(f)} disabled={saveBusy === f}>
+                          {saveBusy === f
+                            ? "بيحفظ…"
+                            : `${sticker[f] ? "احفظ تاني" : "احفظ"} ${f === "front" ? "الوش" : "الضهر"} PNG`}
+                        </button>
+                      ))}
+                    </div>
+                    {saveErr ? <div className="lp-err">{saveErr}</div> : null}
+                    {sticker.front || sticker.back ? (
+                      <p className="lp-note" style={{ marginTop: 10 }}>
+                        الاستيكر اتحفظ. البرومبت تحت اتغيّر — بقى بيقول لأداة الصور تلف
+                        الصورة دي على العبوة زي ما هي، بدل ما توصفلها التصميم بالكلام.
+                      </p>
+                    ) : null}
 
                     {artErr ? <div className="lp-err" style={{ marginTop: 14 }}>{artErr}</div> : null}
 
@@ -3075,39 +3297,55 @@ function LabelPrepTool() {
                     ) : null}
 
                     <div className="lp-dir" style={{ marginTop: 26 }}>
-                      <p className="lp-eyebrow">برومبت الوجه الأمامي</p>
+                      <p className="lp-eyebrow">برومبتات التصميم</p>
                       <p className="lp-hint">
-                        للأدوات اللي بتقبل رفع صور مرجعية (Nano Banana، GPT Image، Flux Kontext).
-                        ارفع اللوجو الأول وبعده الرسومات بنفس ترتيب الأسماء اللي تحت، عشان
-                        الأرقام في البرومبت تطابقها.
+                        للأدوات اللي بتقبل رفع صور مرجعية. ارفع اللوجو الأول وبعده رسومات
+                        الوجه ده بنفس الترتيب اللي تحت، عشان الأرقام في البرومبت تطابقها.
                       </p>
 
-                      <div className="lp-order">
-                        {(logo ? ["اللوجو"] : []).concat(slotsFor("front").map((s) => s.title))
-                          .map((t, i) => (
-                            <span key={i}><b>{i + 1}</b> {t}</span>
-                          ))}
-                      </div>
+                      {[
+                        { face: "front", label: "الوجه الأمامي" },
+                        { face: "back", label: "الوجه الخلفي" },
+                      ].map(({ face, label }) => {
+                        const s = slotsFor(face);
+                        const text = sticker[face]
+                          ? buildWrapPrompt({
+                              face, concept, style, die,
+                              container: "spray bottle",
+                            })
+                          : buildFacePrompt({
+                              face, data, concept, style, die, slots: s, hasLogo: !!logo,
+                            });
+                        return (
+                          <div key={face} style={{ marginTop: 18 }}>
+                            {sticker[face] ? (
+                              <div className="lp-order">
+                                <span><b>1</b> صورة العبوة</span>
+                                <span><b>2</b> ملف الاستيكر المحفوظ</span>
+                              </div>
+                            ) : (
+                              <div className="lp-order">
+                                {(logo ? ["اللوجو"] : []).concat(s.map((x) => x.title))
+                                  .map((t, i) => (
+                                    <span key={i}><b>{i + 1}</b> {t}</span>
+                                  ))}
+                              </div>
+                            )}
 
-                      <div className="lp-phead" style={{ marginTop: 12 }}>
-                        <span style={{
-                          fontFamily: "'IBM Plex Mono', monospace", fontSize: 9.5,
-                          letterSpacing: "0.12em", textTransform: "uppercase", color: "#5C6169",
-                        }}>Front face prompt</span>
-                        <button className="lp-btn lp-btn-ghost"
-                                onClick={() => copy(buildFrontPrompt({
-                                  data, concept, style, die,
-                                  slots: slotsFor("front"), hasLogo: !!logo,
-                                }), "frontprompt")}>
-                          {copied === "frontprompt" ? "اتنسخ" : "Copy Prompt"}
-                        </button>
-                      </div>
-                      <div className="lp-ptext">
-                        {buildFrontPrompt({
-                          data, concept, style, die,
-                          slots: slotsFor("front"), hasLogo: !!logo,
-                        })}
-                      </div>
+                            <div className="lp-phead" style={{ marginTop: 12 }}>
+                              <span style={{
+                                fontFamily: "'IBM Plex Mono', monospace", fontSize: 9.5,
+                                letterSpacing: "0.12em", textTransform: "uppercase", color: "#5C6169",
+                              }}>{label}</span>
+                              <button className="lp-btn lp-btn-ghost"
+                                      onClick={() => copy(text, "prompt-" + face)}>
+                                {copied === "prompt-" + face ? "اتنسخ" : "Copy Prompt"}
+                              </button>
+                            </div>
+                            <div className="lp-ptext">{text}</div>
+                          </div>
+                        );
+                      })}
                     </div>
 
                     <div className="lp-dir" style={{ marginTop: 22 }}>
@@ -3157,8 +3395,10 @@ function LabelPrepTool() {
 
                             <div className="lp-row">
                               <button className="lp-btn" onClick={() => applyToProduct(face)}
-                                      disabled={!shot || applyBusy === face}>
-                                {applyBusy === face ? "بيركّب…" : "ركّب الاستيكر"}
+                                      disabled={!shot || applyBusy === face || applyBusy.startsWith("wait:")}>
+                                {applyBusy.startsWith("wait:")
+                                  ? `الحصة خلصت — بيستنى ${applyBusy.slice(5)} ثانية…`
+                                  : applyBusy === face ? "بيركّب…" : "ركّب الاستيكر"}
                               </button>
                               {shot ? (
                                 <label className="lp-btn lp-btn-ghost" htmlFor={`shot-${face}`}
