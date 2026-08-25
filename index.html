@@ -1753,42 +1753,54 @@ function buildHtmlFacePrompt({ face, data, concept, style, die, slots, hasLogo }
     : style === "Playful & Colorful" ? `vibrant colorful background with diagonal gradients of ${accent} and ${soft}`
     : `smooth vertical gradient from ${bg} down to a soft accent tone of ${accent}`;
 
+  const imageReferencesList = [];
+  imageReferencesList.push(`- REFERENCE IMAGE 1 (LAYOUT TEMPLATE): Uploaded ${face.toUpperCase()} TEMPLATE PNG. Follow its exact composition, visual zones, text spacing, and 1:${ratio} aspect ratio.`);
+  if (hasLogo) {
+    imageReferencesList.push(`- REFERENCE IMAGE 2 (BRAND LOGO): Uploaded PNG logo. Place centered inside the top header band (${accent}). Keep crisp and proportional.`);
+  }
+  (slots || []).forEach((s, idx) => {
+    const num = hasLogo ? idx + 3 : idx + 2;
+    const pos = idx === 0
+      ? `Place strictly inside the main central artwork panel (center 38% height) on the template. Scale perfectly to fit within the designated graphic frame.`
+      : `Place strictly inside the secondary supporting artwork panel on the template.`;
+    imageReferencesList.push(`- REFERENCE IMAGE ${num} (${s.title.toUpperCase()} ARTWORK): Generated artwork PNG. ${pos}`);
+  });
+
   const layoutPrompt = face === "front" ? [
-    `1. HEADER BAND (top 12% height): Solid accent band (${accent}) with the brand logo neatly centered and proportionally scaled inside.`,
-    `2. PRODUCT NAME (next 15% height): Bold, elegant typography displaying "${name}" in clean ${ink} color. Dominant heading size, perfectly centered with balanced margins.`,
-    claim ? `3. CLAIM LINE (next 8% height): Tagline text "${claim}" centered in ${accent} color with subtle letter spacing, smaller than title.` : null,
-    `4. MAIN ARTWORK PANEL (center 38% height): Bounded graphic panel containing a high-quality product illustration. The image must be contained within its frame, perfectly centered, not overflowing, not touching text margins.`,
+    `1. HEADER BAND (top 12% height): Solid accent band (${accent}) containing the brand logo centered.`,
+    `2. PRODUCT NAME (next 15% height): Bold typography displaying "${name}" in clean ${ink} color. Dominant heading size, centered.`,
+    claim ? `3. CLAIM LINE (next 8% height): Tagline text "${claim}" centered in ${accent} color.` : null,
+    `4. MAIN ARTWORK PANEL (center 38% height): Place Reference Image for main artwork strictly inside this bounded panel on the template. Perfectly centered, not overflowing.`,
     badge ? `5. BADGE (next 7% height): Neatly proportioned pill-shaped badge displaying "${badge}".` : null,
-    `6. ARABIC RESERVED AREA (next 12% height): Clean, completely empty rectangular space reserved for Arabic translation. No text, no symbols inside.`,
-    `7. FOOTER BAND (bottom 8% height): Solid bottom bar (${soft}) containing volume "${vol}" neatly aligned.`
+    `6. ARABIC RESERVED AREA (next 12% height): Clean, completely empty rectangular space reserved for Arabic translation. LEAVE 100% BLANK AND UNTOUCHED.`,
+    `7. FOOTER BAND (bottom 8% height): Solid bottom bar (${soft}) containing volume "${vol}".`
   ].filter(Boolean).join("\n") : [
-    `1. HEADER BAND (top 12% height): Solid bar (${accent}) with product title "${name}" cleanly typeset.`,
-    ing ? `2. INGREDIENTS SECTION (next 20% height): Section title "INGREDIENTS" followed by neatly formatted text: ${ing}` : null,
-    `3. SUPPORTING GRAPHICS (next 25% height): Bounded secondary ingredient illustration panel, perfectly sized and centered without crowding text.`,
-    `4. USAGE & WARNINGS (next 20% height): Structured, aligned text blocks for "HOW TO USE", "WARNINGS & PRECAUTIONS", and "STORAGE".`,
-    `5. ARABIC RESERVED AREA (next 15% height): Clean, completely empty rectangular space reserved for Arabic text.`,
+    `1. HEADER BAND (top 12% height): Solid bar (${accent}) with product title "${name}".`,
+    ing ? `2. INGREDIENTS SECTION (next 20% height): Section title "INGREDIENTS" followed by: ${ing}` : null,
+    `3. SUPPORTING GRAPHICS (next 25% height): Insert supporting artwork reference image strictly inside this bounded panel on the template.`,
+    `4. USAGE & WARNINGS (next 20% height): Structured text blocks for "HOW TO USE", "WARNINGS & PRECAUTIONS", and "STORAGE".`,
+    `5. ARABIC RESERVED AREA (next 15% height): Clean, completely empty rectangular space reserved for Arabic text. LEAVE 100% BLANK AND UNTOUCHED.`,
     `6. FOOTER BAND (bottom 8% height): Bottom bar containing "${vol}" and "For external use only".`
   ].filter(Boolean).join("\n");
 
   return [
-    `PROMPT FOR ${face.toUpperCase()} LABEL ARTWORK — HIGH-PRECISION BALANCED PACKAGING DESIGN:`,
+    `PROMPT FOR MULTI-IMAGE COMPOSITING — ${face.toUpperCase()} PACKAGING LABEL DESIGN:`,
     ``,
-    `A professional 2D flat-lay graphic design layout of a pharmaceutical/cosmetic packaging label.`,
-    `Aspect ratio: 1:${ratio} (${W}mm width x ${H}mm height). Edge-to-edge canvas composition.`,
+    `I am uploading a LAYOUT TEMPLATE PNG along with INDIVIDUAL ARTWORK PNGs. Construct a clean 2D flat packaging label by compositing the uploaded artwork images onto the provided template.`,
+    `Aspect ratio: 1:${ratio} (${W}mm width x ${H}mm height).`,
     ``,
-    `BRAND & VISUAL HARMONY RULES (CRITICAL):`,
-    `- Unified Packaging DNA: Shares exact colors (${bg}, ${ink}, ${accent}, ${soft}), margin rules, and typographic hierarchy with the matching ${face === "front" ? "Back" : "Front"} label.`,
-    `- Strict Visual Scale: Title typography must be clear and dominant, illustrations bounded within central graphic frames, text blocks neatly aligned along a single vertical center axis.`,
-    `- No Overcrowding & No Disproportionate Elements: All graphics and text must maintain balanced breathing room (even padding on left, right, top, bottom).`,
-    `- Background Treatment: ${bgLine}`,
+    `UPLOADED REFERENCE IMAGES MAPPING:`,
+    ...imageReferencesList,
     ``,
-    `STRUCTURED TOP-TO-BOTTOM COMPOSITION:`,
+    `TOP-TO-BOTTOM COMPOSITION ON TEMPLATE:`,
     layoutPrompt,
     ``,
-    `STRICT COMPOSITION & TEXT INSTRUCTIONS:`,
-    `- Render ONLY the exact English text specified above with 100% accurate spelling.`,
-    `- Keep the designated Arabic area 100% blank, empty, and clean.`,
-    `- Sharp vector-clean print quality, 300 DPI, flat artwork layout only (no bottle mockup, no 3D distortion, no hands, no environment background).`
+    `STRICT COMPOSITING RULES:`,
+    `- Do NOT swap or displace the uploaded images. Place each artwork image strictly into its designated panel on the template.`,
+    `- Keep all designated Arabic & translation data areas 100% blank and empty as reserved layout space.`,
+    `- Exact Palette: Background ${bg}, Text ${ink}, Accent ${accent}, Soft ${soft}. Background treatment: ${bgLine}.`,
+    `- Render ONLY the exact English text specified above with 100% correct spelling.`,
+    `- Output a flat 2D vector-clean print artwork, 300 DPI (no 3D bottle distortion, no shadows, no hands).`
   ].join("\n");
 }
 
@@ -3566,10 +3578,22 @@ function LabelPrepTool() {
                   </div>
                 ) : (
                   <>
-                    <div className="lp-banner">
-                      <strong>معاينة تقريبية.</strong>{" "}
-                      النصوص الإنجليزية بخطوط بديلة مش خطوط البراند، والنص العربي مساحته
-                      محجوزة بس. الشكل ده للعرض والموافقة على الاتجاه — التنفيذ في الإليستريتور.
+                    <div className="lp-banner" style={{ marginTop: 14 }}>
+                      <strong>طريقة عمل التيمبلت والتوليد النهائي:</strong>
+                      <ol className="lp-steps" style={{ margin: "6px 0 0", paddingInlineStart: 18 }}>
+                        <li>حمّل تيمبلت الوش أو الضهر (Template PNG) بالضغط على الأزرار بالأسفل.</li>
+                        <li>انسخ البرومبت المخصص للوجه المرفق بأسفل الصفحة.</li>
+                        <li>ارفع صورة التيمبلت وصور الرسومات المرفوعة لمولد الصور (Midjourney / Flux) ليقوم بتجميع وتوليد الاستيكر النهائي في مكان كل رسمة، مع ترك المساحات المحجوزة فارغة للداتا!</li>
+                      </ol>
+                    </div>
+
+                    <div className="lp-row" style={{ marginTop: 14, gap: 12 }}>
+                      <button className="lp-btn" onClick={() => saveSticker("front")} disabled={!!saveBusy}>
+                        {saveBusy === "front" ? "جاري تحضير التيمبلت…" : "📥 تحميل تيمبلت الوش (Front Template PNG)"}
+                      </button>
+                      <button className="lp-btn" onClick={() => saveSticker("back")} disabled={!!saveBusy}>
+                        {saveBusy === "back" ? "جاري تحضير التيمبلت…" : "📥 تحميل تيمبلت الضهر (Back Template PNG)"}
+                      </button>
                     </div>
 
                     <div className="lp-faces">
