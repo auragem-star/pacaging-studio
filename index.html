@@ -507,13 +507,39 @@ const isRetired = (msg) =>
   /http 404/.test(msg) || /no longer available|not found|is not supported/i.test(msg);
 
 /* Provider key lives in memory only — never written into the file. */
-let GEMINI_KEY = "";
-const setGeminiKey = (k) => { GEMINI_KEY = (k || "").trim(); };
+/* Provider keys live in memory only — supports multiple keys separated by comma/space/newline */
+let GEMINI_KEYS = [];
+const setGeminiKey = (k) => {
+  GEMINI_KEYS = (k || "").split(/[\s,\n]+/).map((x) => x.trim()).filter(Boolean);
+};
+const getGeminiKey = () => GEMINI_KEYS[0] || "";
 
-async function askGeminiModel(model, system, user) {
+async function askPollinations(system, user) {
+  let res;
+  try {
+    res = await fetch("https://text.pollinations.ai/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user }
+        ],
+        jsonMode: true
+      }),
+    });
+  } catch (netErr) {
+    throw new Error("network: " + (netErr.message || "fetch failed"));
+  }
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  const text = await res.text();
+  return extractJSON(text);
+}
+
+async function askGeminiModelWithKey(key, model, system, user) {
   const url =
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
-    encodeURIComponent(GEMINI_KEY);
+    encodeURIComponent(key);
 
   let res;
   try {
@@ -552,12 +578,19 @@ async function askGeminiModel(model, system, user) {
 
 async function askGemini(system, user) {
   let last;
-  for (const m of TEXT_MODELS) {
-    try {
-      return await askGeminiModel(m, system, user);
-    } catch (e) {
-      last = e;
-      if (!isRetired(e.message || "")) throw e;
+  const keys = GEMINI_KEYS.length ? GEMINI_KEYS : [""];
+  for (const k of keys) {
+    if (!k) continue;
+    for (const m of TEXT_MODELS) {
+      try {
+        return await askGeminiModelWithKey(k, m, system, user);
+      } catch (e) {
+        last = e;
+        const msg = e.message || "";
+        // If retired, try next model with same key. If 429/403 rate limit, move to next key!
+        if (msg.startsWith("http 429") || msg.startsWith("http 403")) break;
+        if (!isRetired(msg)) throw e;
+      }
     }
   }
   throw last;
@@ -611,8 +644,18 @@ async function askClaude(system, user) {
 }
 
 async function askModel(system, user) {
-  if (GEMINI_KEY) return askGemini(system, user);
-  return askClaude(system, user);
+  if (GEMINI_KEYS.length > 0) {
+    try {
+      return await askGemini(system, user);
+    } catch (e) {
+      console.warn("Gemini keys failed, trying Pollinations free AI fallback...", e);
+    }
+  }
+  try {
+    return await askPollinations(system, user);
+  } catch (e) {
+    return await askClaude(system, user);
+  }
 }
 
 async function askClaudeRetry(system, user, tries = 2) {
@@ -1660,34 +1703,44 @@ function buildHtmlFacePrompt({ face, data, concept, style, die, slots, hasLogo }
    images alongside the instruction. Returns a data URL. */
 /* Cheap round-trip to confirm the key actually works before the user
    discovers it silently fell back to the local engine. */
-async function verifyGeminiKey(key) {
+async function verifyGeminiKey(keyInput) {
+  const keys = (keyInput || "").split(/[\s,\n]+/).map((x) => x.trim()).filter(Boolean);
+  if (!keys.length) throw new Error("no-keys");
+  let validCount = 0;
+  let firstModel = "";
   let last;
-  for (const model of TEXT_MODELS) {
-    const url =
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
-      encodeURIComponent(key);
-    let res;
-    try {
-      res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: "Reply with the single word: ok" }] }],
-          generationConfig: { maxOutputTokens: 5 },
-        }),
-      });
-    } catch (e) {
-      // The request never left the page — almost always a sandbox that only
-      // permits its own host, not a problem with the key.
-      throw new Error("blocked: " + (e.message || "fetch failed"));
+  for (const k of keys) {
+    let keyOk = false;
+    for (const model of TEXT_MODELS) {
+      const url =
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
+        encodeURIComponent(k);
+      let res;
+      try {
+        res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "Reply with the single word: ok" }] }],
+            generationConfig: { maxOutputTokens: 5 },
+          }),
+        });
+      } catch (e) {
+        throw new Error("blocked: " + (e.message || "fetch failed"));
+      }
+      if (res.ok) {
+        validCount++;
+        if (!firstModel) firstModel = model;
+        keyOk = true;
+        break;
+      }
+      let detail = "";
+      try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
+      last = new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+      if (!isRetired(last.message)) break;
     }
-    if (res.ok) return model;
-
-    let detail = "";
-    try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
-    last = new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
-    if (!isRetired(last.message)) throw last;
   }
+  if (validCount > 0) return `${validCount} مفتاح شغال (${firstModel})`;
   throw last;
 }
 
@@ -2809,10 +2862,9 @@ function LabelPrepTool() {
           </label>
           <p className="lp-hint">
             من غير مفتاح الأداة شغالة بالمحرّك المحلي. مع المفتاح الصياغة بتبقى أذكى.
-            المفتاح بيفضل في المتصفح بتاعك بس ومش بيتحفظ في الملف — كل واحد يحط مفتاحه.
+            <b>يمكنك وضع أكثر من مفتاح وتفصل بينهم بفارزة (,)</b> للتبديل التلقائي بينهم فوراً لو أحد المفاتيح خلصت حصته!
             <br />
-            <b>مهم:</b> المفتاح بيشتغل في ملف الـ HTML لما تفتحه على جهازك.
-            جوه Claude النداء لجوجل بيتحجب، فالأداة بتكمل بالمحرّك المحلي.
+            <b>مهم:</b> لو كل المفاتيح تعطلت، الأداة بتكمل تلقائياً بالمحرك المجاني لضمان عدم توقف العمل وتوليد البرومبتات دائماً.
           </p>
           <div className="lp-row" style={{ marginTop: 0 }}>
             <input
