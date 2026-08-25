@@ -1642,40 +1642,41 @@ function buildHtmlFacePrompt({ face, data, concept, style, die, slots, hasLogo }
     : `smooth vertical gradient from ${bg} down to a soft accent tone of ${accent}`;
 
   const layoutPrompt = face === "front" ? [
-    `1. TOP HEADER BAND: Solid accent band (${accent}) containing the centered brand logo.`,
-    `2. PRODUCT NAME: Bold typography displaying exact text "${name}" in clean ${ink} color.`,
-    claim ? `3. CLAIM LINE: Tagline text "${claim}" centered in ${accent} color.` : null,
-    `4. MAIN VISUAL ARTWORK: Large central artwork panel spanning full width, displaying photorealistic product illustration.`,
-    badge ? `5. BADGE: Small pill-shaped accent badge containing "${badge}".` : null,
-    `6. ARABIC RESERVED AREA: Clean blank rectangular space reserved for Arabic translation.`,
-    `7. FOOTER BAND: Solid bottom bar in ${soft} containing volume "${vol}".`
+    `1. HEADER BAND (top 12% height): Solid accent band (${accent}) with the brand logo neatly centered and proportionally scaled inside.`,
+    `2. PRODUCT NAME (next 15% height): Bold, elegant typography displaying "${name}" in clean ${ink} color. Dominant heading size, perfectly centered with balanced margins.`,
+    claim ? `3. CLAIM LINE (next 8% height): Tagline text "${claim}" centered in ${accent} color with subtle letter spacing, smaller than title.` : null,
+    `4. MAIN ARTWORK PANEL (center 38% height): Bounded graphic panel containing a high-quality product illustration. The image must be contained within its frame, perfectly centered, not overflowing, not touching text margins.`,
+    badge ? `5. BADGE (next 7% height): Neatly proportioned pill-shaped badge displaying "${badge}".` : null,
+    `6. ARABIC RESERVED AREA (next 12% height): Clean, completely empty rectangular space reserved for Arabic translation. No text, no symbols inside.`,
+    `7. FOOTER BAND (bottom 8% height): Solid bottom bar (${soft}) containing volume "${vol}" neatly aligned.`
   ].filter(Boolean).join("\n") : [
-    `1. TOP HEADER BAND: Solid bar (${accent}) containing product title "${name}".`,
-    ing ? `2. INGREDIENTS SECTION: Heading "INGREDIENTS" followed by: ${ing}` : null,
-    `3. SUPPORTING GRAPHICS: Secondary ingredient illustration panel.`,
-    `4. USAGE & WARNINGS: Structured sections for "HOW TO USE", "WARNINGS & PRECAUTIONS", and "STORAGE".`,
-    `5. ARABIC RESERVED AREA: Clean blank rectangular space reserved for Arabic text.`,
-    `6. FOOTER BAND: Bottom bar containing "${vol}" and "For external use only".`
+    `1. HEADER BAND (top 12% height): Solid bar (${accent}) with product title "${name}" cleanly typeset.`,
+    ing ? `2. INGREDIENTS SECTION (next 20% height): Section title "INGREDIENTS" followed by neatly formatted text: ${ing}` : null,
+    `3. SUPPORTING GRAPHICS (next 25% height): Bounded secondary ingredient illustration panel, perfectly sized and centered without crowding text.`,
+    `4. USAGE & WARNINGS (next 20% height): Structured, aligned text blocks for "HOW TO USE", "WARNINGS & PRECAUTIONS", and "STORAGE".`,
+    `5. ARABIC RESERVED AREA (next 15% height): Clean, completely empty rectangular space reserved for Arabic text.`,
+    `6. FOOTER BAND (bottom 8% height): Bottom bar containing "${vol}" and "For external use only".`
   ].filter(Boolean).join("\n");
 
   return [
-    `PROMPT FOR ${face.toUpperCase()} LABEL DESIGN (${style.toUpperCase()} STYLE):`,
+    `PROMPT FOR ${face.toUpperCase()} LABEL ARTWORK — HIGH-PRECISION BALANCED PACKAGING DESIGN:`,
     ``,
-    `A high-resolution, flat 2D straight-on Graphic Design layout of a packaging label face.`,
-    `Canvas aspect ratio: 1:${ratio} (${W}mm width x ${H}mm height).`,
+    `A professional 2D flat-lay graphic design layout of a pharmaceutical/cosmetic packaging label.`,
+    `Aspect ratio: 1:${ratio} (${W}mm width x ${H}mm height). Edge-to-edge canvas composition.`,
     ``,
-    `VISUAL STYLE & COLORS:`,
-    `- Theme: ${style}`,
-    `- Palette: Background ${bg}, Text ${ink}, Accent ${accent}, Soft ${soft}`,
+    `BRAND & VISUAL HARMONY RULES (CRITICAL):`,
+    `- Unified Packaging DNA: Shares exact colors (${bg}, ${ink}, ${accent}, ${soft}), margin rules, and typographic hierarchy with the matching ${face === "front" ? "Back" : "Front"} label.`,
+    `- Strict Visual Scale: Title typography must be clear and dominant, illustrations bounded within central graphic frames, text blocks neatly aligned along a single vertical center axis.`,
+    `- No Overcrowding & No Disproportionate Elements: All graphics and text must maintain balanced breathing room (even padding on left, right, top, bottom).`,
     `- Background Treatment: ${bgLine}`,
     ``,
-    `TOP-TO-BOTTOM LAYOUT & CONTENT:`,
+    `STRUCTURED TOP-TO-BOTTOM COMPOSITION:`,
     layoutPrompt,
     ``,
-    `STRICT DESIGN & TEXT RULES:`,
-    `- Render ONLY the exact English text specified above with 100% correct spelling.`,
-    `- Keep the designated Arabic area completely blank and clear.`,
-    `- Vector-clean edges, professional packaging design, print-ready 300 DPI, flat lay artwork (no bottle, no 3D shadow, no hands).`
+    `STRICT COMPOSITION & TEXT INSTRUCTIONS:`,
+    `- Render ONLY the exact English text specified above with 100% accurate spelling.`,
+    `- Keep the designated Arabic area 100% blank, empty, and clean.`,
+    `- Sharp vector-clean print quality, 300 DPI, flat artwork layout only (no bottle mockup, no 3D distortion, no hands, no environment background).`
   ].join("\n");
 }
 
