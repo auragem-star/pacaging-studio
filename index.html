@@ -405,6 +405,13 @@ const CSS = `
   cursor: pointer; font-size: 14px; padding: 0;
 }
 
+/* Export mode — strip everything that belongs to the editor, not the label. */
+.lp-sticker.lp-export .lp-slotx { display: none !important; }
+.lp-sticker.lp-export .lp-slotempty { opacity: 0 !important; border-color: transparent !important; }
+.lp-sticker.lp-export .lp-arspace { border-color: transparent !important; }
+.lp-sticker.lp-export .lp-arspace span,
+.lp-sticker.lp-export .lp-arspace em { visibility: hidden !important; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 `;
 
@@ -673,10 +680,17 @@ function parseBrief(text) {
   const t = (text || "").trim();
   const flat = t.replace(/\s+/g, " ");
 
-  // Product name: first chunk before an em-dash, colon or full stop.
-  let name = (t.split(/\n/)[0] || t).split(/—|--| - |[:.]/)[0].trim();
+  // Descriptions often open with a face marker like "FRONT" — that is a
+  // section label, not the product name.
+  const isMarker = (s) =>
+    /^(front|back|face|الوش|الوجه|الضهر|الخلف|الأمامي|الخلفي)\s*[:：-]?\s*$/i.test(s.trim());
+
+  const lines = t.split(/\n/).map((l) => l.trim()).filter(Boolean);
+  let first = lines.find((l) => !isMarker(l)) || t;
+
+  let name = first.split(/—|--| - |[:.]/)[0].trim();
   if (name.length > 60) name = name.slice(0, 60).trim();
-  if (!name) name = "Product";
+  if (!name || isMarker(name)) name = "Product";
 
   // Ingredients: everything after an ingredients marker.
   let ingredients = [];
@@ -1294,7 +1308,7 @@ function Dieline({ items, face }) {
 
       <text x={W / 2} y={H - 3} textAnchor="middle" fill="#5C6169"
             style={{ font: "500 8px 'IBM Plex Mono', monospace", letterSpacing: "0.12em" }}>
-        {face === "front" ? "FRONT — TRIM + BLEED" : "BACK — TRIM + BLEED"}
+        {face === "front" ? "TRIM + BLEED" : "TRIM + BLEED"}
       </text>
     </svg>
   );
@@ -1406,12 +1420,23 @@ function buildWrapPrompt({ face, concept, style, die, container }) {
     ``,
     `Apply IMAGE 2 onto the ${container} in IMAGE 1 as a printed wrap-around label.`,
     ``,
-    `ARTWORK — critical:`,
-    `  Use IMAGE 2 exactly as supplied. Do not redesign it, do not redraw it, do not re-typeset it.`,
-    `  Do not change any colour, position, size relationship or element inside it.`,
-    `  Do not add any text, logo, barcode, seal or graphic that is not already in IMAGE 2.`,
-    `  Do not remove anything from it. Blank areas in the artwork must stay blank.`,
-    `  Every letter must read exactly as it appears in IMAGE 2, with no spelling changes.`,
+    `ARTWORK — keep the design, fix the craft:`,
+    `  Keep every element that is in IMAGE 2: the same logo, the same photograph,`,
+    `  the same wording, the same colours, and the same top-to-bottom order.`,
+    `  Do NOT add any text, logo, barcode, seal, icon or graphic that is not in IMAGE 2.`,
+    `  Do NOT remove any element. Do NOT change any wording or spelling.`,
+    `  Do NOT introduce colours outside ${pal.join(", ")}.`,
+    ``,
+    `  You MAY refine the execution so it looks professionally typeset:`,
+    `  balance the element sizes so the product name reads as the clear headline`,
+    `  and the main image sits as the dominant visual;`,
+    `  even out the margins and the vertical spacing between blocks;`,
+    `  clean up any ragged or hard-cut edges on the supplied images and blend them`,
+    `  smoothly into the label background;`,
+    `  align everything to a single consistent centre axis.`,
+    ``,
+    `  Any area that is blank in IMAGE 2 must stay blank — do not fill it,`,
+    `  do not put placeholder words in it, do not draw a box around it.`,
     ``,
     `PLACEMENT:`,
     `  ${size}`,
@@ -2418,7 +2443,10 @@ function LabelPrepTool() {
     const node = faceNodes.current[face];
     if (!node) return;
     setSaveBusy(face); setSaveErr("");
+    node.classList.add("lp-export");
     try {
+      // Let the browser paint the export styles before capturing.
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       const url = await nodeToPNG(node, 3);
       setSticker((p) => ({ ...p, [face]: url }));
       const a = document.createElement("a");
@@ -2428,6 +2456,7 @@ function LabelPrepTool() {
     } catch (e) {
       setSaveErr(e.message || "مقدرتش أحفظ الصورة");
     } finally {
+      node.classList.remove("lp-export");
       setSaveBusy("");
     }
   };
@@ -3253,14 +3282,14 @@ function LabelPrepTool() {
 
                     <div className="lp-faces">
                       <FaceRender
-                        face="front" tag="Front / الوش"
+                        face="front" tag="الوش"
                         items={data.front || []} slots={slotsFor("front")}
                         concept={concept} die={die} style={style}
                         art={art} logo={logo} extras={extras}
                         onPick={pickSlot} onClear={clearSlot} onNode={registerNode}
                       />
                       <FaceRender
-                        face="back" tag="Back / الضهر"
+                        face="back" tag="الضهر"
                         items={data.back || []} slots={slotsFor("back")}
                         concept={concept} die={die} style={style}
                         art={art} logo={logo} extras={extras}
