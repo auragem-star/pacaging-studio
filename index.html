@@ -2597,40 +2597,24 @@ function LabelPrepTool() {
   };
 
   const [localMode, setLocalMode] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [showKey, setShowKey] = useState(false);
-  const [keyState, setKeyState] = useState("");   // "" | checking | ok | bad
+  const [keyState, setKeyState] = useState("checking");   // checking | ok | fallback
   const [keyMsg, setKeyMsg] = useState("");
-  const keyTimer = useRef(null);
 
-  const onKeyChange = (v) => {
-    setApiKey(v);
-    setGeminiKey(v);
-    setKeyState(""); setKeyMsg("");
-    if (keyTimer.current) clearTimeout(keyTimer.current);
-    const k = v.trim();
-    if (!k) return;
-    // Wait for typing to settle before spending a call.
-    keyTimer.current = setTimeout(async () => {
-      setKeyState("checking");
-      try {
-        const model = await verifyGeminiKey(k);
-        setKeyState("ok"); setKeyMsg(model);
-      } catch (e) {
-        const m = e.message || "";
-        setKeyState("bad");
-        setKeyMsg(
-          m.startsWith("blocked") ? "النداء اتحجب من الصفحة دي — المفتاح غالبًا سليم. نزّل ملف الـ HTML وشغّله على جهازك."
-          : isRetired(m) ? "أسماء الموديلات اتغيرت عند جوجل. قولي وهحدّثها."
-          : m.startsWith("http 400") ? "المفتاح مش مقبول — " + m.replace(/^http 400:?\s*/, "")
-          : m.startsWith("http 403") ? "جوجل رفضت المفتاح. الرسالة منها: " + m.replace(/^http 403:?\s*/, "")
-          : m.startsWith("http 429") ? "المفتاح شغال بس الطلبات كتير دلوقتي"
-          : m.startsWith("http 5") ? "السيرفر مش راد — جرّب تاني"
-          : "مقدرتش أوصل للسيرفر: " + m
-        );
-      }
-    }, 700);
+  const checkAiConnection = async () => {
+    setKeyState("checking");
+    try {
+      const model = await verifyGeminiKey(DEFAULT_EMBEDDED_KEYS.join(","));
+      setKeyState("ok");
+      setKeyMsg(model);
+    } catch (e) {
+      setKeyState("fallback");
+      setKeyMsg("شغال بالمحرك المحلّي / AI المجاني السريع");
+    }
   };
+
+  useLayoutEffect(() => {
+    checkAiConnection();
+  }, []);
   const [tab, setTab] = useState("split");
   const [copied, setCopied] = useState("");
 
@@ -2836,40 +2820,30 @@ function LabelPrepTool() {
           <div className="lp-stamp">LABEL PREP / v1</div>
         </header>
 
-        <div className="lp-inputwrap">
-          <label className="lp-label" htmlFor="apikey">
-            مفتاح Gemini (اختياري)
-          </label>
-          <p className="lp-hint">
-            من غير مفتاح الأداة شغالة بالمحرّك المحلي. مع المفتاح الصياغة بتبقى أذكى.
-            <b>يمكنك وضع أكثر من مفتاح وتفصل بينهم بفارزة (,)</b> للتبديل التلقائي بينهم فوراً لو أحد المفاتيح خلصت حصته!
-            <br />
-            <b>مهم:</b> لو كل المفاتيح تعطلت، الأداة بتكمل تلقائياً بالمحرك المجاني لضمان عدم توقف العمل وتوليد البرومبتات دائماً.
-          </p>
-          <div className="lp-row" style={{ marginTop: 0 }}>
-            <input
-              id="apikey"
-              className="lp-ta"
-              type={showKey ? "text" : "password"}
-              style={{ minHeight: 0, height: 42, flex: "1 1 240px", direction: "ltr", textAlign: "left" }}
-              value={apiKey}
-              onChange={(e) => onKeyChange(e.target.value)}
-              placeholder="AIza…"
-              autoComplete="off"
-              spellCheck="false"
-            />
-            <button className="lp-btn lp-btn-ghost" onClick={() => setShowKey((v) => !v)}>
-              {showKey ? "إخفاء" : "إظهار"}
-            </button>
-            {keyState === "checking" ? <span className="lp-keychk">بيتأكد…</span> : null}
-            {keyState === "ok" ? (
-              <span className="lp-keyok">
-                اشتغل يا حوده ✓
-                {keyMsg ? <em className="lp-keymodel">{keyMsg}</em> : null}
+        <div className="lp-inputwrap" style={{ padding: "14px 18px", marginBottom: 14 }}>
+          {keyState === "checking" ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13.5 }}>
+              <span className="lp-keychk">جاري فحص اتصال الـ AI بالمفاتيح المدمجة…</span>
+            </div>
+          ) : keyState === "ok" ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, fontSize: 13.5 }}>
+              <span style={{ color: "var(--cyan)", fontWeight: 600 }}>
+                ✨ أنت شغال بالـ AI <span style={{ fontFamily: "monospace", fontSize: 11.5, opacity: 0.85, marginInlineStart: 6 }}>({keyMsg})</span>
               </span>
-            ) : null}
-            {keyState === "bad" ? <span className="lp-keybad">{keyMsg}</span> : null}
-          </div>
+              <button className="lp-btn lp-btn-ghost" style={{ padding: "4px 12px", fontSize: 12 }} onClick={checkAiConnection}>
+                إعادة فحص الاتصال
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, fontSize: 13.5 }}>
+              <span style={{ color: "var(--amber)", fontWeight: 600 }}>
+                ⚡ أنت شغال بالمحرك المحلي / AI المجاني السريع
+              </span>
+              <button className="lp-btn lp-btn-ghost" style={{ padding: "4px 12px", fontSize: 12 }} onClick={checkAiConnection}>
+                إعادة فحص الـ AI
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="lp-inputwrap">
