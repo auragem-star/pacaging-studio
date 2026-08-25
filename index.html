@@ -493,7 +493,7 @@ const setGeminiKey = (k) => { GEMINI_KEY = (k || "").trim(); };
 
 async function askGemini(system, user) {
   const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
     encodeURIComponent(GEMINI_KEY);
 
   let res;
@@ -1409,7 +1409,7 @@ function buildFrontPrompt({ data, concept, style, die, slots, hasLogo }) {
    discovers it silently fell back to the local engine. */
 async function verifyGeminiKey(key) {
   const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
     encodeURIComponent(key);
   let res;
   try {
