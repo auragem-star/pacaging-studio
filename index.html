@@ -16,7 +16,7 @@
 <div id="root"><div id="boot">بيحمّل…</div></div>
 
 <script type="text/babel" data-presets="react">
-const { useState } = React;
+const { useState, useRef, useLayoutEffect } = React;
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap');
@@ -124,6 +124,11 @@ const CSS = `
 .lp-btn-ghost:hover:not(:disabled) { background: #fff; border-color: var(--ink); color: var(--ink); }
 
 .lp-err { border-right: 3px solid var(--magenta); background: #fff; padding: 12px 14px; font-size: 13px; line-height: 1.6; margin-top: 12px; }
+
+.lp-keychk, .lp-keyok, .lp-keybad { font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.lp-keychk { color: var(--ink-soft); }
+.lp-keyok { color: #1E7A3C; }
+.lp-keybad { color: var(--magenta); white-space: normal; }
 
 /* ---------- tabs ---------- */
 .lp-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--rule); margin: 30px 0 20px; flex-wrap: wrap; }
@@ -294,6 +299,107 @@ const CSS = `
   font-weight: 400; color: var(--ink-soft); margin-top: 3px; direction: ltr; text-align: left;
 }
 .lp-artrow .lp-btn { padding: 7px 12px; font-size: 12px; }
+
+/* ---------- final mockup ---------- */
+.lp-faces { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; }
+.lp-facewrap { min-width: 0; }
+.lp-facecap {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px;
+}
+.lp-sticker {
+  border: 1px solid var(--rule); overflow: hidden; position: relative;
+}
+.lp-stickerin {
+  position: absolute; top: 0; left: 0;
+  transform-origin: top left;
+  display: flex; flex-direction: column;
+  box-sizing: border-box;
+}
+.lp-pad { padding: 13px 15px; display: flex; flex-direction: column; gap: 11px; }
+.lp-band { flex: 0 0 auto; }
+.lp-logoslot { min-height: 38px; display: flex; align-items: center; justify-content: center; }
+.lp-hair { height: 1px; width: 100%; }
+
+.lp-sname {
+  font-family: 'IBM Plex Sans Condensed', sans-serif; font-weight: 700;
+  font-size: 27px; line-height: 1.05; letter-spacing: -0.015em;
+  text-align: center; direction: ltr; overflow-wrap: anywhere;
+}
+.lp-sclaim {
+  font-size: 11px; font-weight: 600; text-align: center; direction: ltr;
+  line-height: 1.45; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.lp-sbadge {
+  align-self: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; padding: 6px 14px; direction: ltr;
+  border: 1.5px solid currentColor; border-radius: 999px; text-transform: uppercase;
+}
+.lp-hero { padding: 10px 12px; }
+
+.lp-sechead { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; direction: ltr; }
+.lp-sechead span {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.16em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.lp-sechead i { display: block; height: 1px; flex: 1; opacity: 0.35; }
+
+.lp-sblock { direction: ltr; text-align: left; }
+.lp-sbody { font-size: 10px; line-height: 1.65; opacity: 0.85; overflow-wrap: anywhere; }
+.lp-slines { display: flex; flex-direction: column; gap: 4px; }
+.lp-slines span { display: block; height: 3px; width: 100%; opacity: 0.15; }
+
+.lp-strip { display: grid; gap: 8px; }
+
+.lp-arspace {
+  border: 1px dashed currentColor; padding: 9px; text-align: center; opacity: 0.5;
+}
+.lp-arspace span { display: block; font-size: 10px; }
+.lp-arspace em { display: block; font-size: 9.5px; font-style: normal; margin-top: 3px; opacity: 0.8; }
+
+.lp-foot {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px;
+  letter-spacing: 0.08em; direction: ltr; text-transform: uppercase;
+}
+
+.lp-order { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.lp-order span {
+  border: 1px solid var(--rule); background: #fff; padding: 5px 10px; font-size: 12px;
+}
+.lp-order b {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--paper); background: var(--ink); padding: 1px 5px; margin-inline-end: 6px;
+}
+
+.lp-steps { margin: 10px 0 0; padding-inline-start: 20px; }
+.lp-steps li { font-size: 12.5px; line-height: 1.75; color: var(--ink-soft); margin-bottom: 7px; }
+
+/* ---------- product mockup ---------- */
+.lp-mockgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; margin-top: 14px; }
+.lp-mockcol { min-width: 0; }
+.lp-mockshot { border: 1px solid var(--rule); background: #fff; padding: 10px; margin-bottom: 10px; }
+.lp-mockshot img { width: 100%; height: auto; max-height: 260px; object-fit: contain; display: block; }
+.lp-mockout { border: 1px solid var(--ink); background: #fff; padding: 10px; margin-top: 10px; }
+.lp-mockout img { width: 100%; height: auto; display: block; margin-bottom: 10px; }
+.lp-mockout a { display: inline-block; text-decoration: none; }
+
+
+.lp-slot { position: relative; display: flex; align-items: center; justify-content: center; }
+.lp-slotimg { max-width: 100%; max-height: 190px; object-fit: contain; display: block; }
+.lp-slotempty {
+  width: 100%; height: 100%; min-height: inherit; border: 1px dashed currentColor;
+  opacity: 0.5; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px; cursor: pointer; padding: 10px 8px; text-align: center;
+}
+.lp-slotempty:hover { opacity: 0.85; }
+.lp-slotempty b { font-size: 11px; }
+.lp-slotempty span { font-size: 9.5px; }
+.lp-slotx {
+  position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; line-height: 1;
+  border: 1px solid var(--rule); background: #fff; color: var(--ink);
+  cursor: pointer; font-size: 14px; padding: 0;
+}
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 `;
@@ -1188,6 +1294,589 @@ function ensureArtZone(c) {
   return { ...c, zones };
 }
 
+/* ============================================================
+   FINAL MOCKUP
+   Renders the actual split content with real typography and the
+   uploaded artwork. Arabic copy is left as reserved space — it
+   needs the brand's own font and is set in Illustrator.
+   ============================================================ */
+
+function Slot({ img, label, hint, minH, onPick, onClear, id }) {
+  return (
+    <div className="lp-slot" style={{ minHeight: minH || 90 }}>
+      {img ? (
+        <>
+          <img src={img.dataUrl} alt={label} className="lp-slotimg" />
+          <button className="lp-slotx" onClick={onClear} aria-label={`شيل ${label}`}>×</button>
+        </>
+      ) : (
+        <label className="lp-slotempty" htmlFor={id}>
+          <b>{label}</b>
+          {hint ? <span>{hint}</span> : null}
+        </label>
+      )}
+      <input id={id} type="file" style={{ display: "none" }}
+             accept="image/png,image/webp,image/jpeg"
+             onChange={(e) => onPick(e.target.files?.[0])} />
+    </div>
+  );
+}
+
+function ArabicSpace({ note }) {
+  return (
+    <div className="lp-arspace">
+      <span>مساحة محجوزة للنص العربي</span>
+      {note ? <em>{note}</em> : null}
+    </div>
+  );
+}
+
+/* Background treatments per style. Each one is a real gradient recipe,
+   plus the steps a designer follows to rebuild it in Illustrator. */
+/* Composes a prompt for image tools that accept reference uploads
+   (Nano Banana, GPT Image, Flux Kontext). Every asset is numbered so
+   the tool places what the user supplies instead of inventing its own. */
+function buildFrontPrompt({ data, concept, style, die, slots, hasLogo }) {
+  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
+  const bgSpec = backgroundFor(style, pal);
+  const get = (k) => (data.front || []).find((e) => e.k === k);
+  const name = get("name")?.t || data.product?.en || "PRODUCT";
+  const claim = get("claim")?.t || "";
+  const badge = get("badge")?.t || "";
+  const vol = get("volume")?.t || "--- ml";
+
+  const ratio = die && die.confirmed && die.w > 0 && die.h > 0
+    ? `${round1(die.w)} x ${round1(die.h)} ${die.unit} (aspect ${ratioText(die.wMM, die.hMM)})`
+    : "tall portrait wrap-around label, roughly 1:1.9";
+
+  const assets = [];
+  let n = 1;
+  if (hasLogo) assets.push(`IMAGE ${n++} — BRAND LOGO. Place centered inside the top colour band. Keep it small, do not enlarge, do not redraw, do not recolour.`);
+  slots.forEach((s, i) => {
+    // Placement hints are Arabic in the UI; the prompt stays fully English.
+    const where = i === 0
+      ? "This is the main visual — place it in the large artwork panel, spanning the full width."
+      : "Place it in the smaller supporting row beneath the main artwork.";
+    assets.push(`IMAGE ${n++} — ${String(s.title).toUpperCase()}. ${where} Use exactly as supplied. Do not redraw, restyle or replace it.`);
+  });
+  if (!assets.length) assets.push("No reference images supplied — leave the artwork area empty as a plain panel.");
+
+  const bgLine =
+    style === "Modern & Bold" ? "a hard-edged diagonal two-tone split, no blur on the dividing edge"
+    : style === "Minimal" ? "a completely flat single colour, no gradient at all"
+    : style === "Medical & Professional" ? "a solid colour block across the top third ending in a shallow downward arc"
+    : style === "Luxury" ? "a deep diagonal gradient with a thin inner border line"
+    : style === "Natural & Organic" ? "soft organic blurred colour blooms at the bottom and top-left over a flat base"
+    : style === "Playful & Colorful" ? "a diagonal gradient with two large blurred colour circles cropped by the edges"
+    : "a smooth vertical gradient from light at the top to slightly deeper at the bottom, with a soft glow above the centre";
+
+  return [
+    `Product label design, front face only. Flat straight-on view of the label artwork itself — not a bottle, not a mockup, not a 3D render, no shadows, no background scene, no hands, no packaging photography.`,
+    ``,
+    `CANVAS: ${ratio}. Fill the entire canvas edge to edge.`,
+    ``,
+    `STYLE: ${style}. Clean modern pharmaceutical and cosmetic packaging design.`,
+    ``,
+    `COLOUR PALETTE — use these exact colours and no others:`,
+    ...(concept.palette || []).map((c) => `  ${c.hex}`),
+    ``,
+    `BACKGROUND: ${bgLine}. This background must be clearly visible — never a flat empty field unless the style calls for it.`,
+    ``,
+    `SUPPLIED IMAGES — I am uploading these. Place them, do not generate substitutes:`,
+    ...assets.map((a) => "  " + a),
+    ``,
+    `LAYOUT, top to bottom:`,
+    `  1. Colour band across the very top holding the logo.`,
+    `  2. Product name "${name}" — large, bold, condensed sans-serif, centered, tight letter spacing.`,
+    claim ? `  3. Claim line "${claim}" — small uppercase, wide letter spacing, centered, in the accent colour.` : null,
+    `  4. Main artwork panel — the largest visual element, spanning the full width.`,
+    badge ? `  5. Badge "${badge}" — small pill outline with a rounded border, centered, accent colour.` : null,
+    `  6. An EMPTY rectangular area reserved for Arabic text. Leave it completely blank. Do not write Arabic. Do not write any placeholder characters in it.`,
+    `  7. Footer band across the bottom containing only "${vol}" on the left.`,
+    ``,
+    `TEXT RULES — critical:`,
+    `  Render ONLY the exact English strings quoted above, spelled exactly as written.`,
+    `  Do NOT add any other words, taglines, ingredient lists, barcodes, icons, symbols, seals, certification marks or decorative text.`,
+    `  Do NOT invent a brand name. Do NOT add Arabic or any non-Latin script.`,
+    ``,
+    `Sharp vector-clean edges, print-quality, high resolution, evenly lit, no photographic texture.`,
+  ].filter(Boolean).join("\n");
+}
+
+/* Image generation runs on Gemini's image model, which accepts reference
+   images alongside the instruction. Returns a data URL. */
+/* Cheap round-trip to confirm the key actually works before the user
+   discovers it silently fell back to the local engine. */
+async function verifyGeminiKey(key) {
+  const url =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
+    encodeURIComponent(key);
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: "Reply with the single word: ok" }] }],
+      generationConfig: { maxOutputTokens: 5 },
+    }),
+  });
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
+    throw new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+  }
+  return true;
+}
+
+async function askGeminiImage(promptText, images) {
+  if (!GEMINI_KEY) throw new Error("no-key");
+
+  const parts = [];
+  images.forEach((im) => {
+    const m = /^data:([^;]+);base64,(.*)$/.exec(im.dataUrl || "");
+    if (!m) return;
+    parts.push({ inline_data: { mime_type: m[1], data: m[2] } });
+  });
+  parts.push({ text: promptText });
+
+  const url =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=" +
+    encodeURIComponent(GEMINI_KEY);
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts }] }),
+    });
+  } catch (e) {
+    throw new Error("network: " + (e.message || "fetch failed"));
+  }
+
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
+    throw new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+  }
+
+  const j = await res.json();
+  const out = (j?.candidates?.[0]?.content?.parts || [])
+    .find((p) => p.inline_data || p.inlineData);
+  const blob = out?.inline_data || out?.inlineData;
+  if (!blob?.data) {
+    const txt = (j?.candidates?.[0]?.content?.parts || []).map((p) => p.text).filter(Boolean).join(" ");
+    throw new Error(txt ? "no-image: " + txt.slice(0, 120) : "no-image");
+  }
+  return `data:${blob.mime_type || blob.mimeType || "image/png"};base64,${blob.data}`;
+}
+
+/* Instruction for placing the label onto a real product photo. */
+function buildApplyPrompt({ face, data, concept, style, die, slots, hasLogo, nRefs }) {
+  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
+  const items = (face === "front" ? data.front : data.back) || [];
+  const get = (k) => items.find((e) => e.k === k);
+  const name = get("name")?.t || get("title")?.t || data.product?.en || "PRODUCT";
+  const claim = get("claim")?.t || "";
+  const badge = get("badge")?.t || "";
+  const vol = get("volume")?.t || "--- ml";
+  const ing = get("ingredients")?.t || "";
+
+  const bgLine =
+    style === "Modern & Bold" ? "a hard-edged diagonal two-tone split"
+    : style === "Minimal" ? "a completely flat single colour"
+    : style === "Medical & Professional" ? "a solid colour block across the top third ending in a shallow downward arc"
+    : style === "Luxury" ? "a deep diagonal gradient with a thin inner border line"
+    : style === "Natural & Organic" ? "soft blurred organic colour blooms over a flat base"
+    : style === "Playful & Colorful" ? "a diagonal gradient with large blurred colour circles"
+    : "a smooth vertical gradient, lighter at the top";
+
+  const refs = [];
+  let n = 2; // image 1 is always the product photo
+  if (hasLogo) refs.push(`  IMAGE ${n++} — the brand logo. Place it in the top colour band of the label.`);
+  slots.forEach((s, i) => {
+    refs.push(`  IMAGE ${n++} — artwork "${s.title}". ${i === 0 ? "This is the main visual, place it as the largest element on the label." : "Place it smaller, below the main visual."} Use it as supplied, do not redraw it.`);
+  });
+
+  const content = [
+    `Colour band at the top${hasLogo ? " holding the logo" : ""}.`,
+    `Product name "${name}" — large, bold, condensed sans-serif, centered.`,
+    face === "front" && claim ? `Claim "${claim}" — small uppercase, wide letter spacing, centered.` : null,
+    `Main artwork area — the largest visual element.`,
+    face === "front" && badge ? `Badge "${badge}" — small rounded outline pill, centered.` : null,
+    face === "back" && ing ? `A small "INGREDIENTS" heading followed by: ${ing}` : null,
+    face === "back" ? `Small section headings "HOW TO USE", "WARNINGS & PRECAUTIONS", "STORAGE", each followed by a few short lines of small body text.` : null,
+    `A blank rectangular area reserved for Arabic text — leave it completely empty, write nothing in it.`,
+    `Footer band containing "${vol}".`,
+  ].filter(Boolean).map((s, i) => `  ${i + 1}. ${s}`);
+
+  return [
+    `IMAGE 1 is a photograph of a real product container. Keep this photograph exactly as it is — same container shape, same angle, same lighting, same background, same shadows. Do not replace the container, do not move it, do not change the scene.`,
+    ``,
+    `Your only task: design a product label and apply it onto the container in IMAGE 1, wrapping naturally around its surface with correct perspective, curvature and lighting so it looks physically printed on.`,
+    ``,
+    `LABEL DESIGN — ${face === "front" ? "front face" : "back face"}, style: ${style}.`,
+    `Background of the label: ${bgLine}.`,
+    `Use only these colours: ${pal.join(", ")}.`,
+    die && die.confirmed
+      ? `The label is a tall wrap-around shape, proportion ${ratioText(die.wMM, die.hMM)}.`
+      : `The label is a tall wrap-around shape.`,
+    ``,
+    refs.length ? `REFERENCE IMAGES — I am supplying these, place them, do not invent substitutes:` : `No reference artwork supplied.`,
+    ...refs,
+    ``,
+    `LABEL CONTENT, top to bottom:`,
+    ...content,
+    ``,
+    `TEXT RULES — critical:`,
+    `  Render ONLY the exact English strings quoted above, spelled exactly as written.`,
+    `  Do NOT add extra words, taglines, barcodes, seals, certification marks or decorative text.`,
+    `  Do NOT write Arabic or any non-Latin script anywhere.`,
+    `  Do NOT change the product photograph itself.`,
+    ``,
+    `Photorealistic result, sharp label print, consistent with the original photo's lighting and depth of field.`,
+  ].filter(Boolean).join("\n");
+}
+
+function backgroundFor(style, pal) {
+  const c0 = pal[0] || "#F4F5F3";
+  const c1 = pal[1] || "#16181C";
+  const c2 = pal[2] || c1;
+  const c3 = pal[3] || c2;
+
+  const R = {
+    "Clean & Premium": {
+      name: "تدرج رأسي ناعم مع توهج علوي",
+      css: [
+        `radial-gradient(120% 55% at 50% -8%, ${hexA(c2, 0.30)} 0%, ${hexA(c2, 0)} 62%)`,
+        `linear-gradient(180deg, #ffffff 0%, ${c0} 46%, ${hexA(c3, 0.55)} 100%)`,
+      ].join(", "),
+      howto: [
+        "مستطيل بمقاس السكينة، وعليه Linear Gradient رأسي من الأبيض أعلى للون الخلفية في النص وأغمق شوية تحت.",
+        `فوقه دايرة كبيرة بلون ${c2} بشفافية ٣٠٪، تتحط نصها بره الحافة العلوية.`,
+        "على الدايرة Radial Gradient من اللون للشفاف، و Blend Mode = Multiply بنسبة خفيفة.",
+        "المهم إن التدرج يكون رأسي بحت — أي ميل بيخلي الشكل مضطرب.",
+      ],
+    },
+    "Modern & Bold": {
+      name: "قطع قطري بلونين",
+      css: [
+        `linear-gradient(118deg, ${c0} 0%, ${c0} 47%, ${c2} 47.2%, ${c2} 100%)`,
+      ].join(", "),
+      howto: [
+        "مستطيل بلون الخلفية الأساسي كطبقة سفلية.",
+        `فوقه مثلث أو مستطيل مايل بزاوية ٢٨° بلون ${c2}، يغطي الجزء السفلي.`,
+        "الحافة تفضل حادة تمامًا — من غير Feather ولا تدرج، ده أساس الشكل.",
+        "خلي النصوص كلها في الجزء الفاتح، والرسمة تعدي على الحد الفاصل عشان تربط الجزئين.",
+      ],
+    },
+    "Natural & Organic": {
+      name: "توهج سفلي بشكل عضوي",
+      css: [
+        `radial-gradient(85% 42% at 50% 108%, ${hexA(c2, 0.55)} 0%, ${hexA(c2, 0)} 70%)`,
+        `radial-gradient(70% 34% at 12% -6%, ${hexA(c3, 0.40)} 0%, ${hexA(c3, 0)} 72%)`,
+        `linear-gradient(180deg, ${c0} 0%, ${c0} 100%)`,
+      ].join(", "),
+      howto: [
+        "خلفية بلون واحد ثابت كطبقة أساس.",
+        `شكل بيضاوي بلون ${c2} أسفل الاستيكر، نصه بره الحافة، بشفافية ٥٥٪ و Gaussian Blur عالي.`,
+        `شكل بيضاوي تاني أصغر بلون ${c3} أعلى الشمال بنفس المعالجة بشفافية ٤٠٪.`,
+        "الأشكال تبقى غير منتظمة شوية — الانتظام التام بيضيّع الإحساس الطبيعي.",
+      ],
+    },
+    "Medical & Professional": {
+      name: "كتلة علوية بقوس سفلي",
+      css: [
+        `radial-gradient(140% 30% at 50% 30%, ${c2} 0%, ${c2} 58%, ${hexA(c2, 0)} 58.4%)`,
+        `linear-gradient(180deg, ${c0} 0%, ${c0} 100%)`,
+      ].join(", "),
+      howto: [
+        "خلفية بيضا أو فاتحة كأساس.",
+        `مستطيل بلون ${c2} يغطي التلت العلوي من الاستيكر.`,
+        "قوس دائري كبير أسفل المستطيل بيديله حافة منحنية لأسفل — ده اللي بيدي الإحساس الطبي الحديث.",
+        "خلي القوس ضحل — الانحناء الزيادة بيخلي الشكل طفولي مش طبي.",
+      ],
+    },
+    Luxury: {
+      name: "تدرج عميق بإطار رفيع",
+      css: [
+        `radial-gradient(100% 60% at 50% 0%, ${hexA(c2, 0.22)} 0%, ${hexA(c2, 0)} 68%)`,
+        `linear-gradient(165deg, ${c0} 0%, ${hexA(c3, 0.85)} 55%, ${c0} 100%)`,
+      ].join(", "),
+      howto: [
+        "تدرج خطي بزاوية ١٦٥° بين لون الخلفية ودرجة أغمق منه في النص.",
+        `توهج خفيف بلون ${c2} أعلى النص بشفافية ٢٢٪ لمحاكاة انعكاس ضوء.`,
+        `إطار داخلي رفيع (0.5pt) بلون ${c2} على بعد ٤ مم من الحواف.`,
+        "قلل عدد العناصر — الفخامة بتيجي من الفراغ مش من الزحمة.",
+      ],
+    },
+    Minimal: {
+      name: "سطح شبه مسطح بخط فاصل",
+      css: [
+        `linear-gradient(180deg, ${c0} 0%, ${c0} 99.4%, ${hexA(c1, 0.18)} 99.4%)`,
+      ].join(", "),
+      howto: [
+        "لون واحد مسطح تمامًا للخلفية، من غير أي تدرج.",
+        `خط أفقي رفيع واحد بلون ${c1} بشفافية ١٨٪ أسفل الاستيكر.`,
+        "كل الإيقاع البصري بيتبني من المسافات وأحجام الخط، مش من الخلفية.",
+        "قاوم إغراء إضافة أي شكل — أي إضافة بتكسر الاتجاه.",
+      ],
+    },
+    "Playful & Colorful": {
+      name: "تدرج قطري مع كتلة دائرية",
+      css: [
+        `radial-gradient(38% 20% at 82% 16%, ${hexA(c3, 0.85)} 0%, ${hexA(c3, 0)} 66%)`,
+        `radial-gradient(46% 24% at 14% 84%, ${hexA(c2, 0.75)} 0%, ${hexA(c2, 0)} 68%)`,
+        `linear-gradient(140deg, ${c0} 0%, ${hexA(c3, 0.35)} 100%)`,
+      ].join(", "),
+      howto: [
+        "تدرج خطي قطري بزاوية ١٤٠° بين لون الخلفية ودرجة منه بلون مساعد.",
+        `دايرة بلون ${c3} أعلى اليمين ودايرة بلون ${c2} أسفل الشمال، الاتنين بـ Gaussian Blur عالي.`,
+        "الدواير تكون مقصوصة على حواف الاستيكر عشان تدي إحساس بالحركة.",
+        "خلي منطقة النص فاضية من الدواير عشان القراءة ما تتأثرش.",
+      ],
+    },
+  };
+
+  return R[style] || R["Clean & Premium"];
+}
+
+function hexA(hex, a) {
+  const h = (hex || "#000000").replace("#", "");
+  if (h.length !== 6) return `rgba(0,0,0,${a})`;
+  return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`;
+}
+
+function Band({ children, bg, fg, tall }) {
+  return (
+    <div className="lp-band" style={{ background: bg, color: fg, padding: tall ? "14px 15px" : "9px 15px" }}>
+      {children}
+    </div>
+  );
+}
+
+function SectionHead({ text, color }) {
+  return (
+    <div className="lp-sechead" style={{ color }}>
+      <span>{text}</span>
+      <i style={{ background: color }} />
+    </div>
+  );
+}
+
+function FaceRender({ face, items, slots, concept, die, art, logo, extras,
+                     onPick, onClear, tag, style }) {
+  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
+  const bg = pal[0] || "#F4F5F3";
+  const ink = pal[1] || "#16181C";
+  const accent = pal[2] || ink;
+  const soft = pal[3] || accent;
+  const bgSpec = backgroundFor(style, pal);
+
+  const ratio = die && die.confirmed && die.w > 0 && die.h > 0 ? die.h / die.w : 1.9;
+
+  const boxRef = useRef(null);
+  const innerRef = useRef(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const fit = () => {
+      const box = boxRef.current, inner = innerRef.current;
+      if (!box || !inner) return;
+      const availH = box.clientHeight, needH = inner.scrollHeight;
+      if (!availH || !needH) return;
+      setScale(needH > availH ? Math.max(availH / needH, 0.4) : 1);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    if (boxRef.current) ro.observe(boxRef.current);
+    if (innerRef.current) ro.observe(innerRef.current);
+    return () => ro.disconnect();
+  });
+
+  const get = (k) => items.find((e) => e.k === k);
+  const name = get("name") || get("title");
+  const claim = get("claim");
+  const badge = get("badge");
+  const vol = get("volume");
+  const ing = get("ingredients");
+
+  const hero = slots[0];
+  const rest = slots.slice(1);
+
+  const artSlot = (s, i, base) => (
+    <Slot key={s.key} id={`slot-${face}-${i}`} img={art[artKey(s.key)]}
+          label={s.title} hint={s.hint} minH={base}
+          onPick={(f2) => onPick(s.key, f2)} onClear={() => onClear(s.key)} />
+  );
+
+  return (
+    <div className="lp-facewrap">
+      <div className="lp-facecap">{tag}</div>
+      <div ref={boxRef} className="lp-sticker"
+           style={{
+             backgroundColor: bg,
+             backgroundImage: bgSpec.css,
+             color: ink,
+             aspectRatio: `1 / ${round1(ratio)}`,
+           }}>
+        <div ref={innerRef} className="lp-stickerin" style={{ transform: `scale(${scale})`, width: `${100 / scale}%` }}>
+
+          <Band bg={accent} fg={readable(accent)} tall>
+            <div className="lp-logoslot" >
+              <Slot id={`slot-logo-${face}`} img={logo} label="ارفع اللوجو"
+                    hint="PNG شفاف" minH={38}
+                    onPick={(fl) => onPick("logo", fl)} onClear={() => onClear("logo")} />
+            </div>
+          </Band>
+
+          <div className="lp-pad">
+            {name ? (
+              <div className="lp-sname">{name.t}</div>
+            ) : null}
+            {face === "front" && claim ? (
+              <div className="lp-sclaim" style={{ color: accent }}>{claim.t}</div>
+            ) : null}
+            <div className="lp-hair" style={{ background: hexA(ink, 0.22) }} />
+          </div>
+
+          {hero ? (
+            <div className="lp-hero" style={{ background: hexA(accent, 0.07) }}>
+              {artSlot(hero, 0, face === "front" ? 150 : 96)}
+            </div>
+          ) : null}
+
+          <div className="lp-pad">
+            {face === "front" && badge ? (
+              <div className="lp-sbadge"
+                   style={{ borderColor: accent, color: accent }}>{badge.t}</div>
+            ) : null}
+
+            {face === "back" && ing ? (
+              <div className="lp-sblock">
+                <SectionHead text="Ingredients" color={accent} />
+                <div className="lp-sbody">{ing.t}</div>
+              </div>
+            ) : null}
+
+            {rest.length ? (
+              <div className="lp-strip" style={{ gridTemplateColumns: `repeat(${Math.min(rest.length, 3)}, 1fr)` }}>
+                {rest.map((s, i) => artSlot(s, i + 1, 74))}
+              </div>
+            ) : null}
+
+            {face === "back"
+              ? ["usage", "warning", "storage"].map((k) => {
+                  const e = get(k);
+                  if (!e) return null;
+                  const head = k === "usage" ? "How To Use" : k === "warning" ? "Warnings & Precautions" : "Storage";
+                  return (
+                    <div className="lp-sblock" key={k}>
+                      <SectionHead text={head} color={accent} />
+                      <div className="lp-slines">
+                        <span style={{ background: ink }} />
+                        <span style={{ background: ink }} />
+                        <span style={{ background: ink, width: "68%" }} />
+                      </div>
+                    </div>
+                  );
+                })
+              : null}
+
+            <ArabicSpace note={face === "front" ? "اسم المنتج والادعاء بالعربي" : "الوصف والمكونات والتحذيرات بالعربي"} />
+
+            {face === "front" ? (
+              <div className="lp-strip" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                {[0, 1].map((n) => (
+                  <Slot key={n} id={`slot-extra-${face}-${n}`} img={extras[`${face}-${n}`]}
+                        label="عنصر إضافي" hint="اختياري" minH={62}
+                        onPick={(fl) => onPick(`extra:${face}-${n}`, fl)}
+                        onClear={() => onClear(`extra:${face}-${n}`)} />
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          <Band bg={hexA(soft, 0.9)} fg={readable(soft)}>
+            <div className="lp-foot">
+              <span>{vol ? vol.t : "--- ml"}</span>
+              <span>{face === "front" ? "" : "For external use only"}</span>
+            </div>
+          </Band>
+
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+function buildRationale(concept, style, die, brief) {
+  const pal = concept.palette || [];
+  const out = [];
+
+  out.push({
+    q: "ليه الاتجاه ده تحديدًا؟",
+    a: `الستايل المختار ${style}. كل قرار تحت — الألوان، أحجام الخط، توزيع المساحات — ` +
+       `متبني عليه، فلو الاتجاه اتغير الشكل كله بيتغير معاه.`,
+  });
+
+  if (pal[0]) {
+    out.push({
+      q: `ليه لون الخلفية ${pal[0]}؟`,
+      a: `${pal[0].role || "لون الخلفية"}. بيشيل باقي العناصر من غير ما ينافسها، ` +
+         `وبيدي تباين كافي للنصوص عشان تفضل مقروءة على الرف.`,
+    });
+  }
+  if (pal[1]) {
+    out.push({
+      q: `ليه اسم المنتج بلون ${pal[1]}؟`,
+      a: `${pal[1].role || "لون النص الأساسي"}. أعلى تباين مع الخلفية، عشان الاسم ` +
+         `يبقى أول حاجة تتقري من مسافة.`,
+    });
+  }
+  if (pal[2]) {
+    out.push({
+      q: `ليه لون واحد بس (${pal[2]}) للفايدة والعناوين؟`,
+      a: `${pal[2].role || "اللون المميز"}. لون مميز واحد بيوجّه العين لمكان واحد. ` +
+         `لو اتوزع على كذا عنصر بيفقد وظيفته وبيبقى زحمة.`,
+    });
+  }
+
+  out.push({
+    q: "ليه فيه مساحات مكتوب عليها «مساحة محجوزة للنص العربي»؟",
+    a: "النص العربي محتاج خط البراند وضبط تشكيل ومسافات، وده بيتعمل في الإليستريتور. " +
+       "المساحة محجوزة بحجمها الحقيقي عشان الترتيب يفضل مضبوط بعد ما يتكتب.",
+  });
+
+  out.push({
+    q: "ليه الرسومات في الأماكن دي؟",
+    a: "الرسمة الأساسية في وسط الوش لأنها اللي بتوصل وظيفة المنتج من غير قراية. " +
+       "رسومات المكونات على الضهر لأنها بتدعم الثقة بعد ما العميل يكون اتشد أصلاً.",
+  });
+
+  if (die && die.confirmed) {
+    out.push({
+      q: "المقاس ده جه منين؟",
+      a: `من ملف السكينة اللي اترفع: ${round1(die.w)} × ${round1(die.h)} ${die.unit}، ` +
+         `نسبة ${ratioText(die.wMM, die.hMM)}. المعاينة اتبنت على النسبة دي مش على نسبة افتراضية.`,
+    });
+  } else {
+    out.push({
+      q: "المقاس ده نهائي؟",
+      a: "لأ. مفيش ملف سكينة اتأكد، فالنسبة دي افتراضية. ارفع ملف السكينة في تاب Die-Cut " +
+         "عشان المعاينة تطلع بنسبة العبوة الحقيقية.",
+    });
+  }
+
+  out.push({
+    q: "إيه اللي المصمم محتاج يعمله بعد كده؟",
+    a: "يرصّ نفس الداتا في الإليستريتور على ملف السكينة، بخطوط البراند، ويضيف النص العربي " +
+       "في مساحاته، ويظبط الرسومات على دقة الطباعة.",
+  });
+
+  return out;
+}
+
 function readable(hex) {
   const h = (hex || "#888888").replace("#", "");
   if (h.length !== 6) return "#16181C";
@@ -1457,13 +2146,128 @@ function LabelPrepTool() {
     });
   };
 
+  const [logo, setLogo] = useState(null);
+  const [extras, setExtras] = useState({});
+
+  // One entry point for every slot on the final mockup.
+  const pickSlot = async (which, file) => {
+    if (!file) return;
+    setArtErr("");
+    try {
+      const img = await readArtImage(file);
+      if (which === "logo") setLogo(img);
+      else if (which.startsWith("extra:")) {
+        const k = which.slice(6);
+        setExtras((p) => ({ ...p, [k]: img }));
+      } else {
+        setArt((p) => ({ ...p, [artKey(which)]: img }));
+      }
+    } catch (e) {
+      setArtErr(e.message || "مقدرتش أحمّل الصورة");
+    }
+  };
+
+  const clearSlot = (which) => {
+    if (which === "logo") setLogo(null);
+    else if (which.startsWith("extra:")) {
+      const k = which.slice(6);
+      setExtras((p) => { const n = { ...p }; delete n[k]; return n; });
+    } else clearArt(which);
+  };
+
+  // Every generated prompt gets its own slot, so two back prompts
+  // produce two upload spots rather than one.
+  const slotsFor = (face) => {
+    const fromPrompts = (data?.prompts || [])
+      .filter((p) => (p.face || "front") === face)
+      .map((p) => ({ key: p.title, title: p.title, hint: p.place || "" }));
+    if (fromPrompts.length) return fromPrompts;
+    // Fall back to any artwork element in the split.
+    return (face === "front" ? data?.front : data?.back || [])
+      .filter((e) => e.k === "art")
+      .map((e) => ({ key: e.t, title: e.t, hint: e.n || "" }));
+  };
+
+  // Real product photos + the composited results.
+  const [shotFront, setShotFront] = useState(null);
+  const [shotBack, setShotBack] = useState(null);
+  const [applied, setApplied] = useState({});
+  const [applyBusy, setApplyBusy] = useState("");
+  const [applyErr, setApplyErr] = useState("");
+
+  const pickShot = async (face, file) => {
+    if (!file) return;
+    setApplyErr("");
+    try {
+      const img = await readArtImage(file);
+      (face === "front" ? setShotFront : setShotBack)(img);
+    } catch (e) {
+      setApplyErr(e.message || "مقدرتش أحمّل الصورة");
+    }
+  };
+
+  const applyToProduct = async (face) => {
+    const shot = face === "front" ? shotFront : shotBack;
+    if (!shot) return;
+    setApplyBusy(face); setApplyErr("");
+    try {
+      const s = slotsFor(face);
+      const refs = [shot];
+      if (logo) refs.push(logo);
+      s.forEach((x) => { const a = art[artKey(x.key)]; if (a) refs.push(a); });
+
+      const prompt = buildApplyPrompt({
+        face, data, concept, style, die, slots: s,
+        hasLogo: !!logo, nRefs: refs.length,
+      });
+      const url = await askGeminiImage(prompt, refs);
+      setApplied((p) => ({ ...p, [face]: url }));
+    } catch (e) {
+      const m = e.message || "";
+      setApplyErr(
+        m === "no-key" ? "محتاج مفتاح Gemini في أول الصفحة عشان الخطوة دي تشتغل."
+        : m.startsWith("no-image") ? "جيميني رجّع نص مش صورة. جرّب تاني أو غيّر صورة المنتج."
+        : m.startsWith("http 429") ? "الطلبات كتير دلوقتي. استنى شوية وجرّب تاني."
+        : m.includes("network") ? "مفيش اتصال. اتأكد من النت."
+        : "حصلت مشكلة: " + m
+      );
+    } finally {
+      setApplyBusy("");
+    }
+  };
+
   const [localMode, setLocalMode] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
+  const [keyState, setKeyState] = useState("");   // "" | checking | ok | bad
+  const [keyMsg, setKeyMsg] = useState("");
+  const keyTimer = useRef(null);
 
   const onKeyChange = (v) => {
     setApiKey(v);
     setGeminiKey(v);
+    setKeyState(""); setKeyMsg("");
+    if (keyTimer.current) clearTimeout(keyTimer.current);
+    const k = v.trim();
+    if (!k) return;
+    // Wait for typing to settle before spending a call.
+    keyTimer.current = setTimeout(async () => {
+      setKeyState("checking");
+      try {
+        await verifyGeminiKey(k);
+        setKeyState("ok"); setKeyMsg("");
+      } catch (e) {
+        const m = e.message || "";
+        setKeyState("bad");
+        setKeyMsg(
+          m.startsWith("http 400") ? "المفتاح مش مقبول"
+          : m.startsWith("http 403") ? "المفتاح مرفوض أو الخدمة مش مفعّلة عليه"
+          : m.startsWith("http 429") ? "المفتاح شغال بس الطلبات كتير دلوقتي"
+          : m.startsWith("http 5") ? "السيرفر مش راد — جرّب تاني"
+          : "مقدرتش أوصل للسيرفر"
+        );
+      }
+    }, 700);
   };
   const [tab, setTab] = useState("split");
   const [copied, setCopied] = useState("");
@@ -1655,6 +2459,9 @@ function LabelPrepTool() {
             <button className="lp-btn lp-btn-ghost" onClick={() => setShowKey((v) => !v)}>
               {showKey ? "إخفاء" : "إظهار"}
             </button>
+            {keyState === "checking" ? <span className="lp-keychk">بيتأكد…</span> : null}
+            {keyState === "ok" ? <span className="lp-keyok">اشتغل يا حوده ✓</span> : null}
+            {keyState === "bad" ? <span className="lp-keybad">{keyMsg}</span> : null}
           </div>
         </div>
 
@@ -1717,6 +2524,10 @@ function LabelPrepTool() {
               <button className="lp-tab" data-on={tab === "concept" ? 1 : 0}
                       onClick={() => setTab("concept")} role="tab" aria-selected={tab === "concept"}>
                 Label Concept
+              </button>
+              <button className="lp-tab" data-on={tab === "final" ? 1 : 0}
+                      onClick={() => setTab("final")} role="tab" aria-selected={tab === "final"}>
+                التصميم النهائي
               </button>
             </div>
 
@@ -2205,6 +3016,199 @@ function LabelPrepTool() {
                     غيّر الـ Style أو النطاق الأول لو عايز تجرّب مزاج تاني.
                   </p>
                 ) : null}
+              </>
+            ) : null}
+
+            {tab === "final" ? (
+              <>
+                <p className="lp-eyebrow">
+                  معاينة الشكل النهائي — <b>مرجع للعرض والموافقة</b>
+                </p>
+
+                {!concept ? (
+                  <div className="lp-ctrl">
+                    <p className="lp-hint" style={{ marginBottom: 12 }}>
+                      محتاج تنشئ التصور الأول عشان الألوان والاتجاه يتحددوا.
+                    </p>
+                    <button className="lp-btn" onClick={() => setTab("concept")}>
+                      روح لـ Label Concept
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="lp-banner">
+                      <strong>معاينة تقريبية.</strong>{" "}
+                      النصوص الإنجليزية بخطوط بديلة مش خطوط البراند، والنص العربي مساحته
+                      محجوزة بس. الشكل ده للعرض والموافقة على الاتجاه — التنفيذ في الإليستريتور.
+                    </div>
+
+                    <div className="lp-faces">
+                      <FaceRender
+                        face="front" tag="Front / الوش"
+                        items={data.front || []} slots={slotsFor("front")}
+                        concept={concept} die={die} style={style}
+                        art={art} logo={logo} extras={extras}
+                        onPick={pickSlot} onClear={clearSlot}
+                      />
+                      <FaceRender
+                        face="back" tag="Back / الضهر"
+                        items={data.back || []} slots={slotsFor("back")}
+                        concept={concept} die={die} style={style}
+                        art={art} logo={logo} extras={extras}
+                        onPick={pickSlot} onClear={clearSlot}
+                      />
+                    </div>
+
+                    {artErr ? <div className="lp-err" style={{ marginTop: 14 }}>{artErr}</div> : null}
+
+                    {Object.values(art).concat(logo ? [logo] : [], Object.values(extras))
+                      .some((a) => a && !a.hasAlpha) ? (
+                      <div className="lp-banner" style={{ marginTop: 14 }}>
+                        <strong>في صورة من غير خلفية شفافة.</strong>{" "}
+                        هتبان بمربع حواليها. أعد توليدها بـ PNG بشفافية.
+                      </div>
+                    ) : null}
+
+                    <div className="lp-dir" style={{ marginTop: 26 }}>
+                      <p className="lp-eyebrow">برومبت الوجه الأمامي</p>
+                      <p className="lp-hint">
+                        للأدوات اللي بتقبل رفع صور مرجعية (Nano Banana، GPT Image، Flux Kontext).
+                        ارفع اللوجو الأول وبعده الرسومات بنفس ترتيب الأسماء اللي تحت، عشان
+                        الأرقام في البرومبت تطابقها.
+                      </p>
+
+                      <div className="lp-order">
+                        {(logo ? ["اللوجو"] : []).concat(slotsFor("front").map((s) => s.title))
+                          .map((t, i) => (
+                            <span key={i}><b>{i + 1}</b> {t}</span>
+                          ))}
+                      </div>
+
+                      <div className="lp-phead" style={{ marginTop: 12 }}>
+                        <span style={{
+                          fontFamily: "'IBM Plex Mono', monospace", fontSize: 9.5,
+                          letterSpacing: "0.12em", textTransform: "uppercase", color: "#5C6169",
+                        }}>Front face prompt</span>
+                        <button className="lp-btn lp-btn-ghost"
+                                onClick={() => copy(buildFrontPrompt({
+                                  data, concept, style, die,
+                                  slots: slotsFor("front"), hasLogo: !!logo,
+                                }), "frontprompt")}>
+                          {copied === "frontprompt" ? "اتنسخ" : "Copy Prompt"}
+                        </button>
+                      </div>
+                      <div className="lp-ptext">
+                        {buildFrontPrompt({
+                          data, concept, style, die,
+                          slots: slotsFor("front"), hasLogo: !!logo,
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="lp-dir" style={{ marginTop: 22 }}>
+                      <p className="lp-eyebrow">
+                        الخلفية — <b>{backgroundFor(style, (concept.palette || []).map((p) => p.hex)).name}</b>
+                      </p>
+                      <p className="lp-hint">
+                        دي مش خلفية سادة. المصمم بيبنيها في الإليستريتور بالخطوات دي:
+                      </p>
+                      <ol className="lp-steps">
+                        {backgroundFor(style, (concept.palette || []).map((p) => p.hex)).howto
+                          .map((s, i) => <li key={i}>{s}</li>)}
+                      </ol>
+                    </div>
+
+                    <div className="lp-dir" style={{ marginTop: 26 }}>
+                      <p className="lp-eyebrow">
+                        الاستيكر على المنتج — <b>محاكاة</b>
+                      </p>
+                      <p className="lp-hint">
+                        ارفع صورة العبوة الحقيقية (وش وضهر)، وجيميني هيرسم الاستيكر على العبوة.
+                        النتيجة تقريبية مش نسخة من المعاينة اللي فوق — راجع الكتابة قبل ما تعرضها.
+                      </p>
+
+                      <div className="lp-mockgrid">
+                        {[
+                          { face: "front", label: "وش العبوة", shot: shotFront },
+                          { face: "back", label: "ضهر العبوة", shot: shotBack },
+                        ].map(({ face, label, shot }) => (
+                          <div className="lp-mockcol" key={face}>
+                            <div className="lp-facecap">{label}</div>
+
+                            <div className="lp-mockshot">
+                              {shot ? (
+                                <img src={shot.dataUrl} alt={label} />
+                              ) : (
+                                <label className="lp-slotempty" htmlFor={`shot-${face}`}
+                                       style={{ minHeight: 120 }}>
+                                  <b>ارفع صورة العبوة</b>
+                                  <span>خلفية بسيطة وإضاءة واضحة</span>
+                                </label>
+                              )}
+                              <input id={`shot-${face}`} type="file" style={{ display: "none" }}
+                                     accept="image/png,image/webp,image/jpeg"
+                                     onChange={(e) => pickShot(face, e.target.files?.[0])} />
+                            </div>
+
+                            <div className="lp-row">
+                              <button className="lp-btn" onClick={() => applyToProduct(face)}
+                                      disabled={!shot || applyBusy === face}>
+                                {applyBusy === face ? "بيركّب…" : "ركّب الاستيكر"}
+                              </button>
+                              {shot ? (
+                                <label className="lp-btn lp-btn-ghost" htmlFor={`shot-${face}`}
+                                       style={{ cursor: "pointer" }}>غيّر الصورة</label>
+                              ) : null}
+                            </div>
+
+                            {applied[face] ? (
+                              <div className="lp-mockout">
+                                <img src={applied[face]} alt={`النتيجة — ${label}`} />
+                                <a className="lp-btn lp-btn-ghost" href={applied[face]}
+                                   download={`mockup-${face}.png`}>نزّل الصورة</a>
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+
+                      {applyErr ? <div className="lp-err" style={{ marginTop: 12 }}>{applyErr}</div> : null}
+
+                      {!GEMINI_KEY ? (
+                        <div className="lp-banner" style={{ marginTop: 12 }}>
+                          <strong>الخطوة دي محتاجة مفتاح Gemini.</strong>{" "}
+                          حطه في الخانة أول الصفحة. من غيره باقي الأداة شغالة عادي.
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="lp-dir" style={{ marginTop: 26 }}>
+                      <p className="lp-eyebrow">تحليل القرارات البصرية</p>
+                      {buildRationale(concept, style, die, desc).map((d, i) => (
+                        <div key={i}>
+                          <p className="lp-dirq">{d.q}</p>
+                          <p className="lp-dira">{d.a}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {(concept.direction || []).length ? (
+                      <div className="lp-dir" style={{ marginTop: 18 }}>
+                        <p className="lp-eyebrow">ترتيب المعلومات</p>
+                        {(concept.direction || []).map((d, i) => (
+                          <div key={i}>
+                            <p className="lp-dirq">{d.q}</p>
+                            <p className="lp-dira">{d.a}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    <p className="lp-note">
+                      الصور بتفضل في الجلسة دي بس. لو قفلت الصفحة هتحتاج ترفعها تاني.
+                    </p>
+                  </>
+                )}
               </>
             ) : null}
           </>
