@@ -1025,65 +1025,143 @@ function localDirector(text) {
   return { items: items.slice(0, 4) };
 }
 
-const PALETTES = {
+const PALETTES_MULTI = {
   "Clean & Premium": [
-    { hex: "#F4F5F3", role: "خلفية نظيفة" },
-    { hex: "#16324F", role: "اسم المنتج والنص الأساسي" },
-    { hex: "#2E8BC0", role: "لون مميّز للفايدة" },
-    { hex: "#C9CFD4", role: "فواصل ومساحات ثانوية" },
+    [
+      { hex: "#F4F5F3", role: "خلفية نظيفة" },
+      { hex: "#16324F", role: "اسم المنتج والنص الأساسي" },
+      { hex: "#2E8BC0", role: "لون مميّز للفايدة" },
+      { hex: "#C9CFD4", role: "فواصل ومساحات ثانوية" },
+    ],
+    [
+      { hex: "#EAF2F8", role: "خلفية سماوية هادية" },
+      { hex: "#0D2B45", role: "النص واللوجو" },
+      { hex: "#203C56", role: "الفايدة والعناوين" },
+      { hex: "#547A9E", role: "تفاصيل ثانوية" },
+    ],
+    [
+      { hex: "#F7F9FB", role: "خلفية نقية" },
+      { hex: "#1E293B", role: "النص الداكن" },
+      { hex: "#0EA5E9", role: "لون التميز الفيروزي" },
+      { hex: "#94A3B8", role: "خطوط وفواصل" },
+    ],
   ],
   "Modern & Bold": [
-    { hex: "#101014", role: "خلفية غامقة" },
-    { hex: "#F5F5F0", role: "النص الأساسي" },
-    { hex: "#FF4D2E", role: "لون صادم للفايدة" },
-    { hex: "#5B5B66", role: "تفاصيل ثانوية" },
+    [
+      { hex: "#101014", role: "خلفية غامقة" },
+      { hex: "#F5F5F0", role: "النص الأساسي" },
+      { hex: "#FF4D2E", role: "لون صادم للفايدة" },
+      { hex: "#5B5B66", role: "تفاصيل ثانوية" },
+    ],
+    [
+      { hex: "#0F172A", role: "خلفية كحلي داكن" },
+      { hex: "#F8FAFC", role: "النص الأبيض" },
+      { hex: "#F59E0B", role: "برتقالي جريء" },
+      { hex: "#475569", role: "فواصل وعناصر ثانوية" },
+    ],
+    [
+      { hex: "#18181B", role: "خلفية فحمية" },
+      { hex: "#FAFAFA", role: "النص الناصع" },
+      { hex: "#10B981", role: "أخضر كهربائي نيون" },
+      { hex: "#52525B", role: "ظلال وتقسيمات" },
+    ],
   ],
   "Natural & Organic": [
-    { hex: "#EFEAD9", role: "خلفية ورقية" },
-    { hex: "#2F4A32", role: "النص الأساسي" },
-    { hex: "#7A9A5B", role: "المكونات الطبيعية" },
-    { hex: "#C4A265", role: "لمسة دافية" },
+    [
+      { hex: "#EFEAD9", role: "خلفية ورقية" },
+      { hex: "#2F4A32", role: "النص الأساسي" },
+      { hex: "#7A9A5B", role: "المكونات الطبيعية" },
+      { hex: "#C4A265", role: "لمسة دافية" },
+    ],
+    [
+      { hex: "#F4EBD9", role: "خلفية قمحية" },
+      { hex: "#3B2F2F", role: "النص الأساسي الخشبي" },
+      { hex: "#8A6D3B", role: "لون الأعشاب الجافة" },
+      { hex: "#D4B886", role: "تفاصيل بصرية" },
+    ],
+    [
+      { hex: "#E8F0E6", role: "خلفية زيتونية فاتحة" },
+      { hex: "#1C3B2B", role: "نص زيتوني داكن" },
+      { hex: "#4D7C5D", role: "لون الأوراق الخضراء" },
+      { hex: "#B8C9B1", role: "فواصل ناعمة" },
+    ],
   ],
   "Medical & Professional": [
-    { hex: "#FFFFFF", role: "خلفية بيضاء صافية" },
-    { hex: "#0B3C5D", role: "اسم المنتج" },
-    { hex: "#00A0B0", role: "لون الفايدة العلاجية" },
-    { hex: "#D64545", role: "تنبيهات ومناطق الألم" },
+    [
+      { hex: "#FFFFFF", role: "خلفية بيضاء صافية" },
+      { hex: "#0B3C5D", role: "اسم المنتج" },
+      { hex: "#00A0B0", role: "لون الفايدة العلاجية" },
+      { hex: "#D64545", role: "تنبيهات ومناطق الألم" },
+    ],
+    [
+      { hex: "#F8FAFC", role: "خلفية بيضاء عيادية" },
+      { hex: "#1E3A8A", role: "ازرق كحلي طبي" },
+      { hex: "#0284C7", role: "سماوي علاج وسريع" },
+      { hex: "#CBD5E1", role: "رمادي معقم" },
+    ],
+    [
+      { hex: "#F0FDFA", role: "خلفية تعقيم ناصعة" },
+      { hex: "#065F46", role: "أخضر صيدلاني" },
+      { hex: "#0D9488", role: "فيروزي طبي" },
+      { hex: "#99F6E4", role: "لمسات ثانوية" },
+    ],
   ],
   Luxury: [
-    { hex: "#141210", role: "خلفية عميقة" },
-    { hex: "#EDE6D6", role: "النص الأساسي" },
-    { hex: "#B9975B", role: "لمسة ذهبية" },
-    { hex: "#4A4238", role: "ظلال وتفاصيل" },
+    [
+      { hex: "#141210", role: "خلفية عميقة" },
+      { hex: "#EDE6D6", role: "النص الأساسي" },
+      { hex: "#B9975B", role: "لمسة ذهبية" },
+      { hex: "#4A4238", role: "ظلال وتفاصيل" },
+    ],
+    [
+      { hex: "#0A0A0A", role: "أسود فاخر" },
+      { hex: "#F3E5AB", role: "ذهبي شامبين" },
+      { hex: "#D4AF37", role: "ذهب براق" },
+      { hex: "#333333", role: "تفاصيل فاخرة" },
+    ],
+    [
+      { hex: "#1A0F1A", role: "خلفية بنفسجية عميقة" },
+      { hex: "#F5E6CC", role: "نص عاجي" },
+      { hex: "#C5A059", role: "إطار ذهبي" },
+      { hex: "#4A324A", role: "ظلال ناعمة" },
+    ],
   ],
   Minimal: [
-    { hex: "#FAFAF8", role: "خلفية شبه بيضاء" },
-    { hex: "#1A1A1A", role: "كل النصوص" },
-    { hex: "#8C8C8C", role: "معلومات ثانوية" },
-    { hex: "#E2E2DE", role: "فواصل خفيفة" },
+    [
+      { hex: "#FAFAF8", role: "خلفية شبه بيضاء" },
+      { hex: "#1A1A1A", role: "كل النصوص" },
+      { hex: "#8C8C8C", role: "معلومات ثانوية" },
+      { hex: "#E2E2DE", role: "فواصل خفيفة" },
+    ],
+    [
+      { hex: "#F5F5F5", role: "رمادي ناصع" },
+      { hex: "#000000", role: "أسود قاطع" },
+      { hex: "#666666", role: "نصوص ثانوية" },
+      { hex: "#CCCCCC", role: "خطوط رفيعة" },
+    ],
   ],
   "Playful & Colorful": [
-    { hex: "#FFF4E0", role: "خلفية دافية" },
-    { hex: "#22313F", role: "النص الأساسي" },
-    { hex: "#FF6B6B", role: "لون رئيسي مرح" },
-    { hex: "#4ECDC4", role: "لون مساعد" },
+    [
+      { hex: "#FFF4E0", role: "خلفية دافية" },
+      { hex: "#22313F", role: "النص الأساسي" },
+      { hex: "#FF6B6B", role: "لون رئيسي مرح" },
+      { hex: "#4ECDC4", role: "لون مساعد" },
+    ],
+    [
+      { hex: "#FEF08A", role: "خلفية صفراء مبهجة" },
+      { hex: "#1E1B4B", role: "نص داكن" },
+      { hex: "#EC4899", role: "وردي حيوي" },
+      { hex: "#06B6D4", role: "أزرق حاد" },
+    ],
   ],
 };
 
-const TYPE_BY_STYLE = {
-  "Clean & Premium": { display: "Geometric sans, medium weight, wide tracking", body: "Neutral humanist sans" },
-  "Modern & Bold": { display: "Heavy condensed grotesque, tight tracking", body: "Clean grotesque, regular" },
-  "Natural & Organic": { display: "Soft humanist serif", body: "Rounded humanist sans" },
-  "Medical & Professional": { display: "Clinical grotesque, semibold", body: "Highly legible sans, generous leading" },
-  Luxury: { display: "High-contrast didone serif, letterspaced", body: "Light classic serif" },
-  Minimal: { display: "Light grotesque, generous tracking", body: "Same family, regular weight" },
-  "Playful & Colorful": { display: "Rounded bold sans", body: "Friendly rounded sans" },
-};
-
-function localConcept(text, style, scope, brand) {
+function localConcept(text, style, scope, brand, seed = 0) {
   const b = parseBrief(text);
   const T = b.traits;
-  const palette = PALETTES[style] || PALETTES["Clean & Premium"];
+  const options = PALETTES_MULTI[style] || PALETTES_MULTI["Clean & Premium"];
+  const palette = options[Math.abs(seed) % options.length];
+
   const type = {
     ...(TYPE_BY_STYLE[style] || TYPE_BY_STYLE["Clean & Premium"]),
     note: "خلي اسم المنتج أكبر عنصر، والمعلومات الثانوية بحجم واحد ثابت",
@@ -2788,9 +2866,13 @@ function LabelPrepTool() {
     finally { setOneBusy(-1); }
   };
 
+  const [conceptSeed, setConceptSeed] = useState(0);
+
   // --- Feature 2 handlers ---
   const runConcept = async () => {
     setConBusy(true); setConErr("");
+    const nextSeed = conceptSeed + 1;
+    setConceptSeed(nextSeed);
     const scopeLabel = SCOPES.find((s) => s.id === scope)?.label || "Front Label Concept";
     const ing = (data?.back || [])
       .filter((e) => e.k === "ingredients")
@@ -2803,17 +2885,18 @@ function LabelPrepTool() {
       assets ? `Proposed visual assets: ${assets}` : "",
       `Design style: ${style}`,
       `Scope: ${scopeLabel}`,
+      `Variation Seed: ${nextSeed}`,
       die && die.confirmed
         ? `Label proportion: ${round1(die.w)} x ${round1(die.h)} ${die.unit} (aspect ${ratioText(die.wMM, die.hMM)}). Lay the hierarchy out to suit this proportion.`
         : "",
-      concept ? "Give a DIFFERENT visual direction from the previous one." : "",
+      "Give a FRESH, DISTINCT visual concept direction with a unique color palette, different zone weights, and new rationale.",
     ].filter(Boolean).join("\n");
     try {
       const r = await askClaudeRetry(SYS_CONCEPT, brief);
       if (!r || !(r.zones || []).length) throw new Error("empty");
       setConcept(ensureArtZone(r));
     } catch {
-      setConcept(ensureArtZone(localConcept(desc, style, scope, brand)));
+      setConcept(ensureArtZone(localConcept(desc, style, scope, brand, nextSeed)));
       setLocalMode(true);
     } finally {
       setConBusy(false);
