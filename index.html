@@ -1728,14 +1728,14 @@ function buildFacePrompt({ face, data, concept, style, die, slots, hasLogo }) {
 }
 
 function buildHtmlFacePrompt({ face, data, concept, style, die, slots, hasLogo }) {
-  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
+  const pal = (concept?.palette || []).map((p) => p?.hex).filter(Boolean);
   const bg = pal[0] || "#F4F5F3";
   const ink = pal[1] || "#16181C";
   const accent = pal[2] || ink;
   const soft = pal[3] || accent;
-  const items = (face === "front" ? data.front : data.back) || [];
-  const get = (k) => items.find((e) => e.k === k);
-  const name = get("name")?.t || get("title")?.t || data.product?.en || "PRODUCT";
+  const items = (face === "front" ? data?.front : data?.back) || [];
+  const get = (k) => items.find((e) => e?.k === k);
+  const name = get("name")?.t || get("title")?.t || data?.product?.en || "PRODUCT";
   const claim = get("claim")?.t || "";
   const badge = get("badge")?.t || "";
   const vol = get("volume")?.t || "--- ml";
@@ -2259,7 +2259,7 @@ function FaceRender({ face, items, slots, concept, die, art, logo, extras,
 }
 
 function buildRationale(concept, style, die, brief) {
-  const pal = concept.palette || [];
+  const pal = concept?.palette || [];
   const hex = (i) => pal[i]?.hex || "";
   const out = [];
 
