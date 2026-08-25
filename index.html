@@ -500,13 +500,14 @@ function extractJSON(raw) {
 
 /* Google retires model IDs on a schedule, so each call walks a list
    newest-first and moves on when one returns 404. */
-const TEXT_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
+const TEXT_MODELS = ["gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
 const IMAGE_MODELS = ["gemini-3.1-flash-image", "gemini-3-pro-image", "gemini-2.5-flash-image"];
 
 const isRetired = (msg) =>
   /http 404/.test(msg) || /no longer available|not found|is not supported/i.test(msg);
 
 const DEFAULT_EMBEDDED_KEYS = [
+  atob("QVEuQWI4Uk42TEMzZDI1Rms5bkVXWmZrOHZ2SFJqMTJNTHBEQmlfM1V6Z01qdGNjUEhLclE="),
   atob("QVEuQWI4Uk42THFIc3pSRERuQjVaTEhvVVpUWjd5d05IOFQta0lJQ3R2X0JZdlVMMElobVE="),
   atob("QVEuQWI4Uk42TGFzOXRLNk5uSlUySUF5SWNYNmRGQWJRUUF0c0RqaF9sc3k1ZXhfNk04Q1E="),
   atob("QVEuQWI4Uk42Sm40RGFCVVpsdlRhUldZY3dacmRrTmR0a3QxUTFucTRDMm51Wm1lQWhxcUE="),
