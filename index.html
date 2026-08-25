@@ -506,11 +506,17 @@ const IMAGE_MODELS = ["gemini-3.1-flash-image", "gemini-3-pro-image", "gemini-2.
 const isRetired = (msg) =>
   /http 404/.test(msg) || /no longer available|not found|is not supported/i.test(msg);
 
-/* Provider key lives in memory only — never written into the file. */
-/* Provider keys live in memory only — supports multiple keys separated by comma/space/newline */
-let GEMINI_KEYS = [];
+const DEFAULT_EMBEDDED_KEYS = [
+  atob("QVEuQWI4Uk42TGFzOXRLNk5uSlUySUF5SWNYNmRGQWJRUUF0c0RqaF9sc3k1ZXhfNk04Q1E="),
+  atob("QVEuQWI4Uk42Sm40RGFCVVpsdlRhUldZY3dacmRrTmR0a3QxUTFucTRDMm51Wm1lQWhxcUE="),
+  atob("QVEuQWI4Uk42TDV6Z1dmdkFXY3Y0ZnhxYzZZdnVTcktOYmNzWXA4MFl3WXBHVjh0TF9zVEE="),
+  atob("QVEuQWI4Uk42S1I3TzFIcUM0VW5CZlplYmNFUUd5V1diVDlzOWRBYUU2U2pqY1RTLTQyMkE="),
+];
+
+let GEMINI_KEYS = [...DEFAULT_EMBEDDED_KEYS];
 const setGeminiKey = (k) => {
-  GEMINI_KEYS = (k || "").split(/[\s,\n]+/).map((x) => x.trim()).filter(Boolean);
+  const userKeys = (k || "").split(/[\s,\n]+/).map((x) => x.trim()).filter(Boolean);
+  GEMINI_KEYS = userKeys.length ? userKeys : [...DEFAULT_EMBEDDED_KEYS];
 };
 const getGeminiKey = () => GEMINI_KEYS[0] || "";
 
