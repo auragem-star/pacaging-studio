@@ -1619,89 +1619,63 @@ function buildHtmlFacePrompt({ face, data, concept, style, die, slots, hasLogo }
   const bg = pal[0] || "#F4F5F3";
   const ink = pal[1] || "#16181C";
   const accent = pal[2] || ink;
+  const soft = pal[3] || accent;
   const items = (face === "front" ? data.front : data.back) || [];
   const get = (k) => items.find((e) => e.k === k);
   const name = get("name")?.t || get("title")?.t || data.product?.en || "PRODUCT";
-  const nameAr = get("name")?.ar || get("title")?.ar || "";
   const claim = get("claim")?.t || "";
-  const claimAr = get("claim")?.ar || "";
   const badge = get("badge")?.t || "";
   const vol = get("volume")?.t || "--- ml";
-  const volAr = get("volume")?.ar || "";
   const ing = get("ingredients")?.t || "";
-  const ingAr = get("ingredients")?.ar || "";
-  const usage = get("usage")?.t || "";
-  const usageAr = get("usage")?.ar || "";
-  const warning = get("warning")?.t || "";
-  const warningAr = get("warning")?.ar || "";
-  const storage = get("storage")?.t || "";
-  const storageAr = get("storage")?.ar || "";
 
   const W = die && die.confirmed && die.w > 0 ? Math.round(die.wMM || die.w * 10) : 80;
   const H = die && die.confirmed && die.h > 0 ? Math.round(die.hMM || die.h * 10) : 152;
   const ratio = (H / W).toFixed(2);
-  const sizeNote = die && die.confirmed
-    ? `${round1(die.w)} × ${round1(die.h)} ${die.unit} (${W}mm × ${H}mm)`
-    : "مقاس افتراضي — ارفع ملف السكينة في تاب Die-Cut للمقاس الحقيقي";
 
-  const artList = slots.map((s, i) => `  - IMAGE ${i + 1}: ${s.title} → ${i === 0 ? "البانل الرئيسي، كامل العرض" : "بانل مساعد أسفل الرئيسي"}`).join("\n");
+  const bgLine =
+    style === "Modern & Bold" ? `two-tone diagonal split background combining ${bg} and ${accent}`
+    : style === "Minimal" ? `clean minimal flat solid background in ${bg}`
+    : style === "Medical & Professional" ? `medical professional packaging layout with a top color block in ${accent} ending in a curved arc over ${bg}`
+    : style === "Luxury" ? `luxury deep gradient background in ${bg} with a subtle gold accent line`
+    : style === "Natural & Organic" ? `organic botanical background with soft blurred color gradients of ${accent} over ${bg}`
+    : style === "Playful & Colorful" ? `vibrant colorful background with diagonal gradients of ${accent} and ${soft}`
+    : `smooth vertical gradient from ${bg} down to a soft accent tone of ${accent}`;
 
-  const logoLine = hasLogo ? `  - LOGO → ارفعه كـ PNG شفاف، يتحط في البند العلوي على الوش` : "  - لا يوجد لوجو مرفوع";
-
-  const frontContent = [
-    `  [بند علوي بلون ${accent}]`,
-    `    ↳ اللوجو: ${hasLogo ? "مرفوع ← ضعه هنا" : "مساحة فارغة"}`,
-    `  [اسم المنتج — EN]: "${name}"  |  [AR]: "${nameAr || "مساحة محجوزة للعربي"}"`,
-    claim ? `  [Claim — EN]: "${claim}"  |  [AR]: "${claimAr || "مساحة محجوزة"}"` : null,
-    `  [بانل الرسمة الرئيسية — كامل العرض]`,
-    artList || `    (لا توجد رسومات مرفوعة — اترك المساحة فارغة)`,
-    badge ? `  [بادچ]: "${badge}"` : null,
-    `  [مساحة النص العربي] — لا تكتب فيها أي نص، ابقها فارغة تمامًا`,
-    `  [تذييل بلون ${accent}]`,
-    `    ↳ الحجم: "${vol}"  |  بالعربي: "${volAr}"`,
-  ].filter(Boolean).join("\n");
-
-  const backContent = [
-    `  [بند علوي بلون ${accent}]`,
-    `    ↳ اسم المنتج: "${name}"`,
-    ing ? `  [المكونات — EN]: "${ing.slice(0, 80)}${ing.length > 80 ? "..." : ""}"` : null,
-    ingAr ? `  [المكونات — AR]: "${ingAr}"` : `  [مساحة مكونات عربي] — فارغة`,
-    slots.length ? `  [بانل رسومات مساعدة]:\n${artList}` : null,
-    usage ? `  [طريقة الاستخدام]: "${usage}"` : null,
-    usageAr ? `  [طريقة الاستخدام عربي]: "${usageAr}"` : `  [مساحة استخدام عربي] — فارغة`,
-    warning ? `  [تحذيرات]: "${warning}"` : null,
-    warningAr ? `  [تحذيرات عربي]: "${warningAr}"` : `  [مساحة تحذيرات عربي] — فارغة`,
-    storage ? `  [التخزين]: "${storage}"` : null,
-    `  [مساحة النص العربي] — لا تكتب فيها أي نص، ابقها فارغة تمامًا`,
-    `  [تذييل بلون ${accent}]`,
-    `    ↳ "${vol}" — "For external use only"`,
+  const layoutPrompt = face === "front" ? [
+    `1. TOP HEADER BAND: Solid accent band (${accent}) containing the centered brand logo.`,
+    `2. PRODUCT NAME: Bold typography displaying exact text "${name}" in clean ${ink} color.`,
+    claim ? `3. CLAIM LINE: Tagline text "${claim}" centered in ${accent} color.` : null,
+    `4. MAIN VISUAL ARTWORK: Large central artwork panel spanning full width, displaying photorealistic product illustration.`,
+    badge ? `5. BADGE: Small pill-shaped accent badge containing "${badge}".` : null,
+    `6. ARABIC RESERVED AREA: Clean blank rectangular space reserved for Arabic translation.`,
+    `7. FOOTER BAND: Solid bottom bar in ${soft} containing volume "${vol}".`
+  ].filter(Boolean).join("\n") : [
+    `1. TOP HEADER BAND: Solid bar (${accent}) containing product title "${name}".`,
+    ing ? `2. INGREDIENTS SECTION: Heading "INGREDIENTS" followed by: ${ing}` : null,
+    `3. SUPPORTING GRAPHICS: Secondary ingredient illustration panel.`,
+    `4. USAGE & WARNINGS: Structured sections for "HOW TO USE", "WARNINGS & PRECAUTIONS", and "STORAGE".`,
+    `5. ARABIC RESERVED AREA: Clean blank rectangular space reserved for Arabic text.`,
+    `6. FOOTER BAND: Bottom bar containing "${vol}" and "For external use only".`
   ].filter(Boolean).join("\n");
 
   return [
-    `━━━ HTML LABEL FACE PROMPT — ${face === "front" ? "FRONT / الوجه الأمامي" : "BACK / الوجه الخلفي"} ━━━`,
+    `PROMPT FOR ${face.toUpperCase()} LABEL DESIGN (${style.toUpperCase()} STYLE):`,
     ``,
-    `CANVAS SIZE: ${sizeNote}`,
-    `ASPECT RATIO: 1 : ${ratio}  (العرض : الارتفاع)`,
-    `STYLE: ${style}`,
-    `COLOUR PALETTE: ${pal.join(" · ")}`,
-    `  Background → ${bg}  |  Text → ${ink}  |  Accent → ${accent}`,
+    `A high-resolution, flat 2D straight-on Graphic Design layout of a packaging label face.`,
+    `Canvas aspect ratio: 1:${ratio} (${W}mm width x ${H}mm height).`,
     ``,
-    `REFERENCE IMAGES TO UPLOAD:`,
-    logoLine,
-    artList || "  - لا توجد رسومات",
+    `VISUAL STYLE & COLORS:`,
+    `- Theme: ${style}`,
+    `- Palette: Background ${bg}, Text ${ink}, Accent ${accent}, Soft ${soft}`,
+    `- Background Treatment: ${bgLine}`,
     ``,
-    `LAYOUT — from top to bottom:`,
-    face === "front" ? frontContent : backContent,
+    `TOP-TO-BOTTOM LAYOUT & CONTENT:`,
+    layoutPrompt,
     ``,
-    `CRITICAL TEXT RULES:`,
-    `  • اكتب النصوص الإنجليزية بالضبط كما هي أعلاه — ولا تغيّر حرف.`,
-    `  • كل مساحة مكتوب عليها "مساحة محجوزة للعربي" — اتركها فارغة بيضاء.`,
-    `  • لا تكتب عربي بنفسك ولو حرف واحد.`,
-    `  • لا تضف كلمات أو رموز أو باركود أو أيقونات غير موجودة أعلاه.`,
-    `  • لا تختلق اسم براند جديد.`,
-    ``,
-    `OUTPUT: flat label artwork, straight-on view, no shadows, no 3D, no bottle — the label itself only.`,
-    `Fill canvas edge to edge. Sharp vector-clean print quality. High resolution 300 DPI.`,
+    `STRICT DESIGN & TEXT RULES:`,
+    `- Render ONLY the exact English text specified above with 100% correct spelling.`,
+    `- Keep the designated Arabic area completely blank and clear.`,
+    `- Vector-clean edges, professional packaging design, print-ready 300 DPI, flat lay artwork (no bottle, no 3D shadow, no hands).`
   ].join("\n");
 }
 
