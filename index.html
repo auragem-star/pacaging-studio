@@ -1690,39 +1690,42 @@ async function verifyGeminiKey(keyInput) {
   let validCount = 0;
   let firstModel = "";
   let last;
-  for (const k of keys) {
-    let keyOk = false;
-    for (const model of TEXT_MODELS) {
+
+  for (const k of keys.slice(0, 4)) {
+    for (const model of TEXT_MODELS.slice(0, 2)) {
       const url =
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
         encodeURIComponent(k);
-      let res;
       try {
-        res = await fetch(url, {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
           body: JSON.stringify({
-            contents: [{ parts: [{ text: "Reply with the single word: ok" }] }],
-            generationConfig: { maxOutputTokens: 5 },
+            contents: [{ parts: [{ text: "ok" }] }],
+            generationConfig: { maxOutputTokens: 2 },
           }),
         });
+        clearTimeout(tid);
+        if (res.ok) {
+          validCount++;
+          if (!firstModel) firstModel = model;
+          break;
+        }
+        let detail = "";
+        try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
+        last = new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+        if (!isRetired(last.message)) break;
       } catch (e) {
-        throw new Error("blocked: " + (e.message || "fetch failed"));
-      }
-      if (res.ok) {
-        validCount++;
-        if (!firstModel) firstModel = model;
-        keyOk = true;
+        last = new Error("timeout: " + (e.message || "fetch failed"));
         break;
       }
-      let detail = "";
-      try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
-      last = new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
-      if (!isRetired(last.message)) break;
     }
   }
-  if (validCount > 0) return `${validCount} مفتاح شغال (${firstModel})`;
-  throw last;
+  if (validCount > 0) return `${validCount} مفاتيح شغالة (${firstModel})`;
+  throw last || new Error("timeout");
 }
 
 async function askGeminiImageModel(model, promptText, images) {
