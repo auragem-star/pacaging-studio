@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>تجهيز عناصر الاستيكر — Label Prep</title>
 <style>
-  html, body { margin:0; padding:0; background:#E4E6E1; }
+  html, body { margin:0; padding:0; background:#E8EAF2; }
   #boot { font-family: system-ui, sans-serif; padding:40px; text-align:center; color:#5C6169; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -23,22 +23,39 @@ const CSS = `
 
 .lp-root, .lp-root * { box-sizing: border-box; }
 .lp-root {
-  --paper: #E4E6E1;
-  --panel: #F7F8F6;
-  --ink: #16181C;
-  --ink-soft: #5C6169;
-  --rule: #C3C7C0;
+  --paper: #E8EAF2;
+  --panel: #FFFFFF;
+  --ink: #14161C;
+  --ink-soft: #5A6070;
+  --rule: #C9CEDC;
   --cyan: #0091B3;
   --magenta: #C8005E;
   --amber: #B87400;
 
+  position: relative;
   background: var(--paper);
+  background-image:
+    radial-gradient(46% 34% at 8% 2%, rgba(0,145,179,0.22) 0%, rgba(0,145,179,0) 62%),
+    radial-gradient(38% 30% at 96% 10%, rgba(200,0,94,0.16) 0%, rgba(200,0,94,0) 64%),
+    radial-gradient(52% 38% at 88% 78%, rgba(184,116,0,0.14) 0%, rgba(184,116,0,0) 66%),
+    radial-gradient(44% 32% at 4% 92%, rgba(0,145,179,0.14) 0%, rgba(0,145,179,0) 66%),
+    linear-gradient(165deg, #F3F5FA 0%, #E8EAF2 55%, #DFE3EE 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
   min-height: 100vh;
   padding: 28px 20px 80px;
   direction: rtl;
+  overflow-x: hidden;
 }
+/* soft geometry behind the content */
+.lp-root::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    repeating-linear-gradient(58deg, rgba(20,22,28,0.035) 0 1px, transparent 1px 62px);
+}
+.lp-shell { position: relative; z-index: 1; }
 
 .lp-shell { max-width: 1180px; margin: 0 auto; width: 100%; }
 .lp-el { min-width: 0; }
@@ -93,7 +110,30 @@ const CSS = `
 .lp-eyebrow b { color: var(--magenta); font-weight: 600; }
 
 /* ---------- input ---------- */
-.lp-inputwrap { background: var(--panel); border: 1px solid var(--rule); padding: 18px; margin-bottom: 14px; }
+.lp-inputwrap { background: var(--panel); border: 1px solid var(--rule); padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(20,22,28,0.05); }
+.lp-spwrap { border-color: var(--ink); }
+.lp-ideatag {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-soft);
+  border: 1px solid var(--rule); padding: 6px 10px; white-space: nowrap;
+}
+.lp-faceblock { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 18px; }
+.lp-plabel {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft);
+}
+.lp-extract { margin-top: 12px; border: 1px solid var(--rule); background: #FAFBFD; }
+.lp-extract summary {
+  cursor: pointer; padding: 10px 12px; font-size: 12.5px; font-weight: 600;
+  list-style: none; user-select: none; display: flex; align-items: center; gap: 8px;
+}
+.lp-extract summary::-webkit-details-marker { display: none; }
+.lp-extract summary::before { content: "▸"; color: var(--ink-soft); }
+.lp-extract[open] summary::before { content: "▾"; }
+.lp-extract summary b {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
+  color: var(--paper); background: var(--ink); padding: 1px 6px;
+}
+.lp-exrow { padding: 0 12px 12px; }
 .lp-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; }
 .lp-hint { font-size: 12px; color: var(--ink-soft); margin: 0 0 10px; line-height: 1.6; }
 .lp-ta {
@@ -320,36 +360,36 @@ const CSS = `
   display: flex; flex-direction: column;
   box-sizing: border-box;
 }
-.lp-pad { padding: 13px 15px; display: flex; flex-direction: column; gap: 11px; }
+.lp-pad { padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; }
 .lp-band { flex: 0 0 auto; }
 .lp-logoslot { min-height: 38px; display: flex; align-items: center; justify-content: center; }
 .lp-hair { height: 1px; width: 100%; }
 
 .lp-sname {
   font-family: 'IBM Plex Sans Condensed', sans-serif; font-weight: 700;
-  font-size: 27px; line-height: 1.05; letter-spacing: -0.015em;
+  font-size: 26px; line-height: 1.05; letter-spacing: -0.015em;
   text-align: center; direction: ltr; overflow-wrap: anywhere;
 }
 .lp-sclaim {
   font-size: 11px; font-weight: 600; text-align: center; direction: ltr;
-  line-height: 1.45; letter-spacing: 0.05em; text-transform: uppercase;
+  line-height: 1.4; letter-spacing: 0.05em; text-transform: uppercase;
 }
 .lp-sbadge {
   align-self: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
-  letter-spacing: 0.1em; padding: 6px 14px; direction: ltr;
+  letter-spacing: 0.1em; padding: 5px 13px; direction: ltr;
   border: 1.5px solid currentColor; border-radius: 999px; text-transform: uppercase;
 }
-.lp-hero { padding: 10px 12px; }
+.lp-hero { padding: 8px 12px; }
 
-.lp-sechead { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; direction: ltr; }
+.lp-sechead { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; direction: ltr; }
 .lp-sechead span {
-  font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.16em;
+  font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; letter-spacing: 0.16em;
   text-transform: uppercase; white-space: nowrap;
 }
 .lp-sechead i { display: block; height: 1px; flex: 1; opacity: 0.35; }
 
 .lp-sblock { direction: ltr; text-align: left; }
-.lp-sbody { font-size: 10px; line-height: 1.65; opacity: 0.85; overflow-wrap: anywhere; }
+.lp-sbody { font-size: 9px; line-height: 1.5; opacity: 0.88; overflow-wrap: anywhere; }
 .lp-slines { display: flex; flex-direction: column; gap: 4px; }
 .lp-slines span { display: block; height: 3px; width: 100%; opacity: 0.15; }
 
@@ -500,55 +540,84 @@ function extractJSON(raw) {
 
 /* Google retires model IDs on a schedule, so each call walks a list
    newest-first and moves on when one returns 404. */
-const TEXT_MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-latest", "gemini-3.6-flash", "gemini-3.7-flash"];
+const TEXT_MODELS = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
 const IMAGE_MODELS = ["gemini-3.1-flash-image", "gemini-3-pro-image", "gemini-2.5-flash-image"];
 
 const isRetired = (msg) =>
   /http 404/.test(msg) || /no longer available|not found|is not supported/i.test(msg);
 
-const DEFAULT_EMBEDDED_KEYS = [
-  atob("QVEuQWI4Uk42SmgzTUpNTkJ1eWZNR3FJbmtPdl8ybEwtZjhycFA0M0tqb0FISkxFaFFTcmc="),
-  atob("QVEuQWI4Uk42TEMzZDI1Rms5bkVXWmZrOHZ2SFJqMTJNTHBEQmlfM1V6Z01qdGNjUEhLclE="),
-  atob("QVEuQWI4Uk42THFIc3pSRERuQjVaTEhvVVpUWjd5d05IOFQta0lJQ3R2X0JZdlVMMElobVE="),
-  atob("QVEuQWI4Uk42TGFzOXRLNk5uSlUySUF5SWNYNmRGQWJRUUF0c0RqaF9sc3k1ZXhfNk04Q1E="),
-  atob("QVEuQWI4Uk42Sm40RGFCVVpsdlRhUldZY3dacmRrTmR0a3QxUTFucTRDMm51Wm1lQWhxcUE="),
-  atob("QVEuQWI4Uk42TDV6Z1dmdkFXY3Y0ZnhxYzZZdnVTcktOYmNzWXA4MFl3WXBHVjh0TF9zVEE="),
-  atob("QVEuQWI4Uk42S1I3TzFIcUM0VW5CZlplYmNFUUd5V1diVDlzOWRBYUU2U2pqY1RTLTQyMkE="),
+/* OpenRouter free slots — tried in order when Gemini can't answer.
+   Model names on free tiers churn, so several are listed. */
+const OR_MODELS = [
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "qwen/qwen-2.5-72b-instruct:free",
+  "mistralai/mistral-small-3.2-24b-instruct:free",
+  "google/gemma-3-27b-it:free",
 ];
 
-let GEMINI_KEYS = [...DEFAULT_EMBEDDED_KEYS];
-const setGeminiKey = (k) => {
-  const userKeys = (k || "").split(/[\s,\n]+/).map((x) => x.trim()).filter(Boolean);
-  GEMINI_KEYS = userKeys.length ? userKeys : [...DEFAULT_EMBEDDED_KEYS];
-};
-const getGeminiKey = () => GEMINI_KEYS[0] || "";
+let OR_KEY = "";
+const setOpenRouterKey = (k) => { OR_KEY = (k || "").trim(); };
 
-async function askPollinations(system, user) {
+async function askOpenRouterModel(model, system, user) {
   let res;
   try {
-    res = await fetch("https://text.pollinations.ai/", {
+    res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OR_KEY}`,
+      },
       body: JSON.stringify({
+        model,
         messages: [
           { role: "system", content: system },
-          { role: "user", content: user }
+          { role: "user", content: user },
         ],
-        jsonMode: true
+        response_format: { type: "json_object" },
+        max_tokens: 2048,
+        temperature: 0.7,
       }),
     });
-  } catch (netErr) {
-    throw new Error("network: " + (netErr.message || "fetch failed"));
+  } catch (e) {
+    throw new Error("blocked: " + (e.message || "fetch failed"));
   }
-  if (!res.ok) throw new Error(`http ${res.status}`);
-  const text = await res.text();
-  return extractJSON(text);
+
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
+    throw new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+  }
+
+  const j = await res.json();
+  const raw = j?.choices?.[0]?.message?.content || "";
+  if (!raw.trim()) throw new Error("empty response");
+  return extractJSON(raw);
 }
 
-async function askGeminiModelWithKey(key, model, system, user) {
+async function askOpenRouter(system, user) {
+  if (!OR_KEY) throw new Error("no-or-key");
+  let last;
+  for (const m of OR_MODELS) {
+    try {
+      return await askOpenRouterModel(m, system, user);
+    } catch (e) {
+      last = e;
+      // A retired or rate-limited free slot means move to the next one.
+      if (!isRetired(e.message || "") && !(e.message || "").startsWith("http 429")) throw e;
+    }
+  }
+  throw last;
+}
+
+
+/* Provider key lives in memory only — never written into the file. */
+let GEMINI_KEY = "";
+const setGeminiKey = (k) => { GEMINI_KEY = (k || "").trim(); };
+
+async function askGeminiModel(model, system, user) {
   const url =
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
-    encodeURIComponent(key);
+    encodeURIComponent(GEMINI_KEY);
 
   let res;
   try {
@@ -587,19 +656,12 @@ async function askGeminiModelWithKey(key, model, system, user) {
 
 async function askGemini(system, user) {
   let last;
-  const keys = GEMINI_KEYS.length ? GEMINI_KEYS : [""];
-  for (const k of keys) {
-    if (!k) continue;
-    for (const m of TEXT_MODELS) {
-      try {
-        return await askGeminiModelWithKey(k, m, system, user);
-      } catch (e) {
-        last = e;
-        const msg = e.message || "";
-        // If retired, try next model with same key. If 429/403 rate limit, move to next key!
-        if (msg.startsWith("http 429") || msg.startsWith("http 403")) break;
-        if (!isRetired(msg)) throw e;
-      }
+  for (const m of TEXT_MODELS) {
+    try {
+      return await askGeminiModel(m, system, user);
+    } catch (e) {
+      last = e;
+      if (!isRetired(e.message || "")) throw e;
     }
   }
   throw last;
@@ -652,51 +714,17 @@ async function askClaude(system, user) {
   return extractJSON(whole);
 }
 
-const OPENROUTER_KEY = atob("c2stb3ItdjEtZTY2NzMxZmMxM2FjM2NmMTY5ZTFlZjdlYjUxMmE0ODMwOTM1NjU3NmI0NjA5YzQzZDk3OWU2MzdmNGNkYjY0ZA==");
-
-async function askOpenRouter(system, user) {
-  let res;
-  try {
-    res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENROUTER_KEY}`,
-        "HTTP-Referer": "https://pacaging-studio.vercel.app",
-        "X-Title": "Label Prep Tool",
-      },
-      body: JSON.stringify({
-        model: "openrouter/free",
-        messages: [
-          { role: "system", content: `${system}\n\nReturn valid JSON ONLY. No markdown.` },
-          { role: "user", content: user },
-        ],
-      }),
-    });
-  } catch (netErr) {
-    throw new Error("network: " + (netErr.message || "fetch failed"));
-  }
-  if (!res.ok) throw new Error(`http ${res.status}`);
-  const data = await res.json();
-  const raw = data?.choices?.[0]?.message?.content || "";
-  if (!raw.trim()) throw new Error("empty response");
-  return extractJSON(raw);
-}
-
 async function askModel(system, user) {
-  if (GEMINI_KEYS.length > 0) {
+  // Gemini first, then OpenRouter, then the caller falls back to local.
+  if (GEMINI_KEY) {
     try {
       return await askGemini(system, user);
     } catch (e) {
-      console.warn("Gemini keys exhausted, falling back to OpenRouter free AI...", e);
+      if (!OR_KEY) throw e;
     }
   }
-  try {
-    return await askOpenRouter(system, user);
-  } catch (e) {
-    console.warn("OpenRouter free AI failed, falling back to Claude/local...", e);
-    return await askClaude(system, user);
-  }
+  if (OR_KEY) return askOpenRouter(system, user);
+  return askClaude(system, user);
 }
 
 async function askClaudeRetry(system, user, tries = 2) {
@@ -759,6 +787,48 @@ const AR = {
 };
 
 const arOf = (s) => AR[s.trim().toLowerCase()] || "";
+
+/* Pulls the actual body copy out of the description so the mockup can
+   show real text instead of grey placeholder lines. */
+function parseSections(text) {
+  const t = (text || "").replace(/\r/g, "");
+
+  const grab = (heads, stops) => {
+    const h = heads.join("|");
+    const s = stops.join("|");
+    const re = new RegExp(
+      `(?:${h})\\s*[:：]?\\s*\\n?([\\s\\S]*?)(?=\\n\\s*(?:${s})\\s*[:：]|$)`, "i");
+    const m = t.match(re);
+    return m ? m[1].trim() : "";
+  };
+
+  const STOPS = [
+    "ingredients", "how to use", "directions", "warnings?", "precautions",
+    "warnings? ?&? ?precautions", "storage", "store", "for external use",
+    "المكونات", "طريقة الاستخدام", "تحذيرات", "التخزين",
+  ];
+
+  const clean = (s) =>
+    s.split("\n").map((l) => l.replace(/^[\s*•\-–]+/, "").trim())
+     .filter((l) => l && !/^[-—]+$/.test(l) && !/[\u0600-\u06FF]/.test(l));
+
+  const usage = clean(grab(["how to use", "directions"], STOPS));
+  const warnings = clean(grab(["warnings? ?&? ?precautions", "warnings?", "precautions"], STOPS));
+  const storage = clean(grab(["storage", "store in"], STOPS));
+
+  // The description is the first substantial English sentence block.
+  const paras = t.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const desc = paras.find((p) =>
+    p.length > 60 && !/[\u0600-\u06FF]/.test(p) &&
+    !/^(ingredients|how to use|warnings|storage)/i.test(p)) || "";
+
+  return {
+    desc,
+    usage: usage.slice(0, 4),
+    warnings: warnings.slice(0, 6),
+    storage: storage.slice(0, 3),
+  };
+}
 
 function parseBrief(text) {
   const t = (text || "").trim();
@@ -839,14 +909,19 @@ function localSplit(text) {
     ? b.ingredients.join(", ")
     : "Ingredients list";
   const ingAr = b.ingredients.map(arOf).filter(Boolean).join("، ");
+  const sec = parseSections(text);
 
   const back = [
     { t: b.name, ar: "", k: "title", n: "أعلى الضهر كعنوان" },
-    { t: "Product Description", ar: "وصف المنتج", k: "body", n: "تحت العنوان مباشرة" },
+    { t: "Product Description", ar: "وصف المنتج", k: "body",
+      body: sec.desc, n: "تحت العنوان مباشرة" },
     { t: ingLine.slice(0, 70), ar: ingAr, k: "ingredients", n: "بعد الوصف" },
-    { t: "How To Use", ar: "طريقة الاستخدام", k: "usage", n: "بعد المكونات" },
-    { t: "Warnings & Precautions", ar: "تحذيرات واحتياطات", k: "warning", n: "أكبر بلوك نص، محتاج مساحة" },
-    { t: "Storage", ar: "التخزين", k: "storage", n: "تحت التحذيرات" },
+    { t: "How To Use", ar: "طريقة الاستخدام", k: "usage",
+      body: sec.usage.join(" "), n: "بعد المكونات" },
+    { t: "Warnings & Precautions", ar: "تحذيرات واحتياطات", k: "warning",
+      body: sec.warnings.join(" • "), n: "أكبر بلوك نص، محتاج مساحة" },
+    { t: "Storage", ar: "التخزين", k: "storage",
+      body: sec.storage.join(" "), n: "تحت التحذيرات" },
     { t: "--- ml", ar: "--- مل", k: "volume", n: "ركن أسفل الضهر" },
   ];
   if (b.ingredients.length) {
@@ -1026,143 +1101,65 @@ function localDirector(text) {
   return { items: items.slice(0, 4) };
 }
 
-const PALETTES_MULTI = {
+const PALETTES = {
   "Clean & Premium": [
-    [
-      { hex: "#F4F5F3", role: "خلفية نظيفة" },
-      { hex: "#16324F", role: "اسم المنتج والنص الأساسي" },
-      { hex: "#2E8BC0", role: "لون مميّز للفايدة" },
-      { hex: "#C9CFD4", role: "فواصل ومساحات ثانوية" },
-    ],
-    [
-      { hex: "#EAF2F8", role: "خلفية سماوية هادية" },
-      { hex: "#0D2B45", role: "النص واللوجو" },
-      { hex: "#203C56", role: "الفايدة والعناوين" },
-      { hex: "#547A9E", role: "تفاصيل ثانوية" },
-    ],
-    [
-      { hex: "#F7F9FB", role: "خلفية نقية" },
-      { hex: "#1E293B", role: "النص الداكن" },
-      { hex: "#0EA5E9", role: "لون التميز الفيروزي" },
-      { hex: "#94A3B8", role: "خطوط وفواصل" },
-    ],
+    { hex: "#F4F5F3", role: "خلفية نظيفة" },
+    { hex: "#16324F", role: "اسم المنتج والنص الأساسي" },
+    { hex: "#2E8BC0", role: "لون مميّز للفايدة" },
+    { hex: "#C9CFD4", role: "فواصل ومساحات ثانوية" },
   ],
   "Modern & Bold": [
-    [
-      { hex: "#101014", role: "خلفية غامقة" },
-      { hex: "#F5F5F0", role: "النص الأساسي" },
-      { hex: "#FF4D2E", role: "لون صادم للفايدة" },
-      { hex: "#5B5B66", role: "تفاصيل ثانوية" },
-    ],
-    [
-      { hex: "#0F172A", role: "خلفية كحلي داكن" },
-      { hex: "#F8FAFC", role: "النص الأبيض" },
-      { hex: "#F59E0B", role: "برتقالي جريء" },
-      { hex: "#475569", role: "فواصل وعناصر ثانوية" },
-    ],
-    [
-      { hex: "#18181B", role: "خلفية فحمية" },
-      { hex: "#FAFAFA", role: "النص الناصع" },
-      { hex: "#10B981", role: "أخضر كهربائي نيون" },
-      { hex: "#52525B", role: "ظلال وتقسيمات" },
-    ],
+    { hex: "#101014", role: "خلفية غامقة" },
+    { hex: "#F5F5F0", role: "النص الأساسي" },
+    { hex: "#FF4D2E", role: "لون صادم للفايدة" },
+    { hex: "#5B5B66", role: "تفاصيل ثانوية" },
   ],
   "Natural & Organic": [
-    [
-      { hex: "#EFEAD9", role: "خلفية ورقية" },
-      { hex: "#2F4A32", role: "النص الأساسي" },
-      { hex: "#7A9A5B", role: "المكونات الطبيعية" },
-      { hex: "#C4A265", role: "لمسة دافية" },
-    ],
-    [
-      { hex: "#F4EBD9", role: "خلفية قمحية" },
-      { hex: "#3B2F2F", role: "النص الأساسي الخشبي" },
-      { hex: "#8A6D3B", role: "لون الأعشاب الجافة" },
-      { hex: "#D4B886", role: "تفاصيل بصرية" },
-    ],
-    [
-      { hex: "#E8F0E6", role: "خلفية زيتونية فاتحة" },
-      { hex: "#1C3B2B", role: "نص زيتوني داكن" },
-      { hex: "#4D7C5D", role: "لون الأوراق الخضراء" },
-      { hex: "#B8C9B1", role: "فواصل ناعمة" },
-    ],
+    { hex: "#EFEAD9", role: "خلفية ورقية" },
+    { hex: "#2F4A32", role: "النص الأساسي" },
+    { hex: "#7A9A5B", role: "المكونات الطبيعية" },
+    { hex: "#C4A265", role: "لمسة دافية" },
   ],
   "Medical & Professional": [
-    [
-      { hex: "#FFFFFF", role: "خلفية بيضاء صافية" },
-      { hex: "#0B3C5D", role: "اسم المنتج" },
-      { hex: "#00A0B0", role: "لون الفايدة العلاجية" },
-      { hex: "#D64545", role: "تنبيهات ومناطق الألم" },
-    ],
-    [
-      { hex: "#F8FAFC", role: "خلفية بيضاء عيادية" },
-      { hex: "#1E3A8A", role: "ازرق كحلي طبي" },
-      { hex: "#0284C7", role: "سماوي علاج وسريع" },
-      { hex: "#CBD5E1", role: "رمادي معقم" },
-    ],
-    [
-      { hex: "#F0FDFA", role: "خلفية تعقيم ناصعة" },
-      { hex: "#065F46", role: "أخضر صيدلاني" },
-      { hex: "#0D9488", role: "فيروزي طبي" },
-      { hex: "#99F6E4", role: "لمسات ثانوية" },
-    ],
+    { hex: "#FFFFFF", role: "خلفية بيضاء صافية" },
+    { hex: "#0B3C5D", role: "اسم المنتج" },
+    { hex: "#00A0B0", role: "لون الفايدة العلاجية" },
+    { hex: "#D64545", role: "تنبيهات ومناطق الألم" },
   ],
   Luxury: [
-    [
-      { hex: "#141210", role: "خلفية عميقة" },
-      { hex: "#EDE6D6", role: "النص الأساسي" },
-      { hex: "#B9975B", role: "لمسة ذهبية" },
-      { hex: "#4A4238", role: "ظلال وتفاصيل" },
-    ],
-    [
-      { hex: "#0A0A0A", role: "أسود فاخر" },
-      { hex: "#F3E5AB", role: "ذهبي شامبين" },
-      { hex: "#D4AF37", role: "ذهب براق" },
-      { hex: "#333333", role: "تفاصيل فاخرة" },
-    ],
-    [
-      { hex: "#1A0F1A", role: "خلفية بنفسجية عميقة" },
-      { hex: "#F5E6CC", role: "نص عاجي" },
-      { hex: "#C5A059", role: "إطار ذهبي" },
-      { hex: "#4A324A", role: "ظلال ناعمة" },
-    ],
+    { hex: "#141210", role: "خلفية عميقة" },
+    { hex: "#EDE6D6", role: "النص الأساسي" },
+    { hex: "#B9975B", role: "لمسة ذهبية" },
+    { hex: "#4A4238", role: "ظلال وتفاصيل" },
   ],
   Minimal: [
-    [
-      { hex: "#FAFAF8", role: "خلفية شبه بيضاء" },
-      { hex: "#1A1A1A", role: "كل النصوص" },
-      { hex: "#8C8C8C", role: "معلومات ثانوية" },
-      { hex: "#E2E2DE", role: "فواصل خفيفة" },
-    ],
-    [
-      { hex: "#F5F5F5", role: "رمادي ناصع" },
-      { hex: "#000000", role: "أسود قاطع" },
-      { hex: "#666666", role: "نصوص ثانوية" },
-      { hex: "#CCCCCC", role: "خطوط رفيعة" },
-    ],
+    { hex: "#FAFAF8", role: "خلفية شبه بيضاء" },
+    { hex: "#1A1A1A", role: "كل النصوص" },
+    { hex: "#8C8C8C", role: "معلومات ثانوية" },
+    { hex: "#E2E2DE", role: "فواصل خفيفة" },
   ],
   "Playful & Colorful": [
-    [
-      { hex: "#FFF4E0", role: "خلفية دافية" },
-      { hex: "#22313F", role: "النص الأساسي" },
-      { hex: "#FF6B6B", role: "لون رئيسي مرح" },
-      { hex: "#4ECDC4", role: "لون مساعد" },
-    ],
-    [
-      { hex: "#FEF08A", role: "خلفية صفراء مبهجة" },
-      { hex: "#1E1B4B", role: "نص داكن" },
-      { hex: "#EC4899", role: "وردي حيوي" },
-      { hex: "#06B6D4", role: "أزرق حاد" },
-    ],
+    { hex: "#FFF4E0", role: "خلفية دافية" },
+    { hex: "#22313F", role: "النص الأساسي" },
+    { hex: "#FF6B6B", role: "لون رئيسي مرح" },
+    { hex: "#4ECDC4", role: "لون مساعد" },
   ],
 };
 
-function localConcept(text, style, scope, brand, seed = 0) {
+const TYPE_BY_STYLE = {
+  "Clean & Premium": { display: "Geometric sans, medium weight, wide tracking", body: "Neutral humanist sans" },
+  "Modern & Bold": { display: "Heavy condensed grotesque, tight tracking", body: "Clean grotesque, regular" },
+  "Natural & Organic": { display: "Soft humanist serif", body: "Rounded humanist sans" },
+  "Medical & Professional": { display: "Clinical grotesque, semibold", body: "Highly legible sans, generous leading" },
+  Luxury: { display: "High-contrast didone serif, letterspaced", body: "Light classic serif" },
+  Minimal: { display: "Light grotesque, generous tracking", body: "Same family, regular weight" },
+  "Playful & Colorful": { display: "Rounded bold sans", body: "Friendly rounded sans" },
+};
+
+function localConcept(text, style, scope, brand) {
   const b = parseBrief(text);
   const T = b.traits;
-  const options = PALETTES_MULTI[style] || PALETTES_MULTI["Clean & Premium"];
-  const palette = options[Math.abs(seed) % options.length];
-
+  const palette = PALETTES[style] || PALETTES["Clean & Premium"];
   const type = {
     ...(TYPE_BY_STYLE[style] || TYPE_BY_STYLE["Clean & Premium"]),
     note: "خلي اسم المنتج أكبر عنصر، والمعلومات الثانوية بحجم واحد ثابت",
@@ -1265,235 +1262,7 @@ function sanitizeSVG(markup) {
     .replace(/javascript:/gi, "");
 }
 
-function analyzeSVG(text) {
-  const clean = sanitizeSVG(text);
-  const doc = new DOMParser().parseFromString(clean, "image/svg+xml");
-  const svg = doc.querySelector("svg");
-  if (!svg) throw new Error("مش ملف SVG صالح");
-
-  const vb = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
-  const hasVB = vb.length === 4 && vb.every((n) => !isNaN(n));
-  const wAttr = parseLen(svg.getAttribute("width"));
-  const hAttr = parseLen(svg.getAttribute("height"));
-
-  // Mount offscreen so getBBox() returns real rendered geometry.
-  const host = document.createElement("div");
-  host.setAttribute("style", "position:absolute;left:-99999px;top:0;width:0;height:0;overflow:hidden");
-  document.body.appendChild(host);
-  host.innerHTML = clean;
-  const live = host.querySelector("svg");
-
-  let shapes = [];
-  try {
-    const nodes = live.querySelectorAll("path, rect, circle, ellipse, polygon, polyline, line");
-    nodes.forEach((el, i) => {
-      let bb;
-      try { bb = el.getBBox(); } catch { return; }
-      if (!bb || bb.width < 0.01 || bb.height < 0.01) return;
-      shapes.push({
-        i,
-        tag: el.tagName.toLowerCase(),
-        id: el.getAttribute("id") || "",
-        x: bb.x, y: bb.y, w: bb.width, h: bb.height,
-        area: bb.width * bb.height,
-      });
-    });
-  } finally {
-    document.body.removeChild(host);
-  }
-
-  // User units per viewBox unit -> millimetres.
-  let mmPerUnit = null;
-  let confidence = "low";
-  if (hasVB && wAttr && wAttr.u !== "px") {
-    mmPerUnit = toMM(wAttr.n, wAttr.u) / vb[2];
-    confidence = "high";
-  } else if (!hasVB && wAttr && wAttr.u !== "px") {
-    mmPerUnit = toMM(wAttr.n, wAttr.u) / wAttr.n;
-    confidence = "high";
-  } else if (hasVB && wAttr && wAttr.u === "px") {
-    mmPerUnit = toMM(wAttr.n, "px") / vb[2];
-    confidence = "assumed";
-  }
-
-  const artW = hasVB ? vb[2] : wAttr ? wAttr.n : null;
-  const artH = hasVB ? vb[3] : hAttr ? hAttr.n : null;
-
-  shapes.sort((a, b) => b.area - a.area);
-  shapes = shapes.slice(0, 12);
-
-  return {
-    kind: "svg",
-    markup: clean,
-    artboard: { w: artW, h: artH },
-    viewBox: hasVB ? vb : null,
-    mmPerUnit,
-    confidence,
-    shapes,
-    declared: wAttr && hAttr ? { w: wAttr.n, h: hAttr.n, u: wAttr.u } : null,
-  };
-}
-
-function analyzePDF(buf) {
-  // Page boxes live as plain tokens in the PDF structure, so they can be
-  // read directly. Individual cut paths sit inside compressed content
-  // streams and are NOT extracted here.
-  const bytes = new Uint8Array(buf);
-  let s = "";
-  const CH = 8192;
-  for (let i = 0; i < bytes.length; i += CH) {
-    s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
-  }
-
-  const grab = (name) => {
-    const re = new RegExp("\\/" + name + "\\s*\\[\\s*(-?[\\d.]+)\\s+(-?[\\d.]+)\\s+(-?[\\d.]+)\\s+(-?[\\d.]+)\\s*\\]");
-    const m = s.match(re);
-    if (!m) return null;
-    const [x0, y0, x1, y1] = m.slice(1).map(Number);
-    return { w: Math.abs(x1 - x0), h: Math.abs(y1 - y0) };
-  };
-
-  const trim = grab("TrimBox");
-  const media = grab("MediaBox");
-  const box = trim || media;
-  if (!box) throw new Error("مقدرتش أقرا مقاس الصفحة من الـ PDF");
-
-  return {
-    kind: "pdf",
-    markup: null,
-    // PDF user space is points.
-    boxMM: { w: toMM(box.w, "pt"), h: toMM(box.h, "pt") },
-    usedBox: trim ? "TrimBox" : "MediaBox",
-    hasTrim: !!trim,
-    confidence: "high",
-    shapes: [],
-  };
-}
-
-function analyzeRaster(file) {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve({
-        kind: "raster",
-        markup: null,
-        px: { w: img.naturalWidth, h: img.naturalHeight },
-        confidence: "none",
-        shapes: [],
-      });
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("مقدرتش أفتح الصورة")); };
-    img.src = url;
-  });
-}
-
-async function analyzeDieFile(file) {
-  const name = (file.name || "").toLowerCase();
-  if (name.endsWith(".svg")) {
-    return analyzeSVG(await file.text());
-  }
-  if (name.endsWith(".pdf") || name.endsWith(".ai")) {
-    // Modern .ai files carry a PDF-compatible structure, so the same read applies.
-    return analyzePDF(await file.arrayBuffer());
-  }
-  if (/\.(png|jpe?g|webp|gif)$/.test(name)) {
-    return analyzeRaster(file);
-  }
-  throw new Error("صيغة مش مدعومة. استخدم SVG أو PDF أو AI.");
-}
-
 /* ============================================================ */
-
-function Dieline({ items, face }) {
-  const W = 300;
-  const H = 640;
-  const M = 26;
-  const inner = { x: M, y: M, w: W - M * 2, h: H - M * 2 };
-  const kColor = {
-    logo: "#C8005E", name: "#C8005E", art: "#0091B3",
-    badge: "#B87400", volume: "#5C6169",
-  };
-  const list = items && items.length ? items : [];
-  const gap = 7;
-  const avail = inner.h - gap * (list.length - 1 || 0);
-  const weight = (k) =>
-    k === "logo" ? 2.1 : k === "name" ? 1.5 : k === "art" ? 2.4 :
-    k === "body" || k === "warning" ? 1.9 : k === "volume" ? 0.7 : 1;
-  const total = list.reduce((s, e) => s + weight(e.k), 0) || 1;
-
-  let cursor = inner.y;
-  const boxes = list.map((e) => {
-    const h = (weight(e.k) / total) * avail;
-    const b = { ...e, y: cursor, h };
-    cursor += h + gap;
-    return b;
-  });
-
-  const crop = (x, y, dx, dy) => (
-    <g stroke="#16181C" strokeWidth="1">
-      <line x1={x} y1={y} x2={x + dx * 13} y2={y} />
-      <line x1={x} y1={y} x2={x} y2={y + dy * 13} />
-    </g>
-  );
-
-  return (
-    <svg className="lp-dl" viewBox={`0 0 ${W} ${H}`} role="img"
-         aria-label={face === "front" ? "معاينة وش العبوة" : "معاينة ضهر العبوة"}>
-      {crop(6, 6, 1, 1)}
-      {crop(W - 6, 6, -1, 1)}
-      {crop(6, H - 6, 1, -1)}
-      {crop(W - 6, H - 6, -1, -1)}
-
-      <rect x={14} y={14} width={W - 28} height={H - 28}
-            fill="none" stroke="#C3C7C0" strokeWidth="1" strokeDasharray="4 4" />
-      <rect x={inner.x} y={inner.y} width={inner.w} height={inner.h}
-            fill="#F7F8F6" stroke="#16181C" strokeWidth="1.5" />
-
-      {boxes.map((b, i) => {
-        const c = kColor[b.k] || "#5C6169";
-        const isArt = b.k === "art";
-        return (
-          <g key={i}>
-            <rect x={inner.x + 9} y={b.y + 3} width={inner.w - 18} height={Math.max(b.h - 6, 10)}
-                  fill={isArt ? "#0091B3" : "none"} fillOpacity={isArt ? 0.07 : 0}
-                  stroke={c} strokeWidth="1" strokeDasharray={isArt ? "0" : "3 3"} />
-            <text x={W / 2} y={b.y + Math.max(b.h, 12) / 2 + 3.5}
-                  textAnchor="middle" fill={c}
-                  style={{ font: "500 8.5px 'IBM Plex Mono', monospace" }}>
-              {(b.t || "").slice(0, 30)}
-            </text>
-          </g>
-        );
-      })}
-
-      <text x={W / 2} y={H - 3} textAnchor="middle" fill="#5C6169"
-            style={{ font: "500 8px 'IBM Plex Mono', monospace", letterSpacing: "0.12em" }}>
-        {face === "front" ? "TRIM + BLEED" : "TRIM + BLEED"}
-      </text>
-    </svg>
-  );
-}
-
-/* A concept with no artwork slot leaves the user nowhere to upload,
-   so make sure one always exists. */
-function ensureArtZone(c) {
-  if (!c || !Array.isArray(c.zones) || !c.zones.length) return c;
-  if (c.zones.some((z) => z.role === "art")) return c;
-  const zones = c.zones.slice();
-  // Place it after the headline block rather than at the very top.
-  const at = Math.min(3, zones.length);
-  zones.splice(at, 0, {
-    label: "Hero Visual",
-    role: "art",
-    w: 0.85,
-    h: 2.2,
-    align: "center",
-    tone: "light",
-  });
-  return { ...c, zones };
-}
 
 /* ============================================================
    FINAL MOCKUP
@@ -1502,486 +1271,314 @@ function ensureArtZone(c) {
    needs the brand's own font and is set in Illustrator.
    ============================================================ */
 
-/* Rasterises a DOM node to a high-resolution PNG. The library is fetched
-   on first use, so this needs a connection; everything else works offline. */
-let H2C = null;
-async function loadH2C() {
-  if (H2C) return H2C;
-  if (window.html2canvas) { H2C = window.html2canvas; return H2C; }
-  await new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-    s.onload = resolve;
-    s.onerror = () => reject(new Error("مقدرتش أحمّل مكتبة الحفظ — اتأكد من النت"));
-    document.head.appendChild(s);
-  });
-  if (!window.html2canvas) throw new Error("مكتبة الحفظ محمّلتش");
-  H2C = window.html2canvas;
-  return H2C;
-}
-
-async function nodeToPNG(node, scale = 3) {
-  const h2c = await loadH2C();
-  const canvas = await h2c(node, {
-    scale,
-    backgroundColor: null,
-    useCORS: true,
-    logging: false,
-  });
-  return canvas.toDataURL("image/png");
-}
-
-function Slot({ img, label, hint, minH, onPick, onClear, id }) {
-  return (
-    <div className="lp-slot" style={{ minHeight: minH || 90 }}>
-      {img ? (
-        <>
-          <img src={img.dataUrl} alt={label} className="lp-slotimg" />
-          <button className="lp-slotx" onClick={onClear} aria-label={`شيل ${label}`}>×</button>
-        </>
-      ) : (
-        <label className="lp-slotempty" htmlFor={id}>
-          <b>{label}</b>
-          {hint ? <span>{hint}</span> : null}
-        </label>
-      )}
-      <input id={id} type="file" style={{ display: "none" }}
-             accept="image/png,image/webp,image/jpeg"
-             onChange={(e) => onPick(e.target.files?.[0])} />
-    </div>
-  );
-}
-
-function ArabicSpace({ note, items }) {
-  const arItems = (items || []).filter((e) => e && e.ar && e.ar.trim());
-  return (
-    <div className="lp-arspace">
-      <span>مساحة محجوزة للنص العربي</span>
-      {arItems.length ? (
-        <div style={{ marginTop: 6, textAlign: "center", fontSize: "11.5px", lineHeight: 1.65, color: "var(--ink)" }}>
-          {arItems.map((e, i) => (
-            <div key={i} style={{ marginBottom: 3 }}>
-              <b>{e.ar}</b>
-            </div>
-          ))}
-        </div>
-      ) : note ? (
-        <em>{note}</em>
-      ) : null}
-    </div>
-  );
-}
-
 /* Background treatments per style. Each one is a real gradient recipe,
    plus the steps a designer follows to rebuild it in Illustrator. */
 /* Composes a prompt for image tools that accept reference uploads
    (Nano Banana, GPT Image, Flux Kontext). Every asset is numbered so
    the tool places what the user supplies instead of inventing its own. */
-/* When the sticker has been exported as an image, the tool stops
-   describing the design and hands over the artwork itself. */
-function buildWrapPrompt({ face, concept, style, die, container }) {
-  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
-  const bgSpec = backgroundFor(style, pal);
-
-  const size = die && die.confirmed && die.w > 0 && die.h > 0
-    ? `The label measures ${round1(die.w)} x ${round1(die.h)} ${die.unit}, proportion ${ratioText(die.wMM, die.hMM)}. Keep this proportion exactly — do not stretch or squash it.`
-    : `Keep the label's original proportion exactly — do not stretch or squash it.`;
-
-  return [
-    `IMAGE 1 is a photograph of a real ${container}.`,
-    `IMAGE 2 is the finished label artwork.`,
-    ``,
-    `Apply IMAGE 2 onto the ${container} in IMAGE 1 as a printed wrap-around label.`,
-    ``,
-    `ARTWORK — keep the design, fix the craft:`,
-    `  Keep every element that is in IMAGE 2: the same logo, the same photograph,`,
-    `  the same wording, the same colours, and the same top-to-bottom order.`,
-    `  Do NOT add any text, logo, barcode, seal, icon or graphic that is not in IMAGE 2.`,
-    `  Do NOT remove any element. Do NOT change any wording or spelling.`,
-    `  Do NOT introduce colours outside ${pal.join(", ")}.`,
-    ``,
-    `  You MAY refine the execution so it looks professionally typeset:`,
-    `  balance the element sizes so the product name reads as the clear headline`,
-    `  and the main image sits as the dominant visual;`,
-    `  even out the margins and the vertical spacing between blocks;`,
-    `  clean up any ragged or hard-cut edges on the supplied images and blend them`,
-    `  smoothly into the label background;`,
-    `  align everything to a single consistent centre axis.`,
-    ``,
-    `  Any area that is blank in IMAGE 2 must stay blank — do not fill it,`,
-    `  do not put placeholder words in it, do not draw a box around it.`,
-    ``,
-    `PLACEMENT:`,
-    `  ${size}`,
-    `  Wrap it around the curved surface with correct cylindrical perspective, so the`,
-    `  artwork compresses gradually toward the left and right edges of the container.`,
-    `  Centre it horizontally on the face shown, with even margins above and below.`,
-    `  Follow the container's existing contours — the label bends with the surface, it does not float flat on top.`,
-    ``,
-    `LIGHTING AND MATERIAL:`,
-    `  Match the photograph's own lighting direction, intensity and colour temperature.`,
-    `  The label reads as matte printed vinyl with a faint sheen where the light falls,`,
-    `  slightly darker where the surface curves away.`,
-    `  Add a very subtle edge shadow where the label meets the container so it sits on the surface.`,
-    `  Keep the artwork's colours faithful: the design is built on ${pal.join(", ")}`,
-    `  over ${bgSpec.name === undefined ? "its own background" : "a background treated as " + bgLineFor(style)}.`,
-    `  Do not shift the hue, saturation or brightness of the artwork.`,
-    ``,
-    `PHOTOGRAPH — critical:`,
-    `  Keep IMAGE 1 completely unchanged: same container shape, same angle, same cap,`,
-    `  same background, same surface, same shadows, same depth of field.`,
-    `  Do not move the container, do not recolour it, do not replace the scene.`,
-    ``,
-    `Photorealistic product photography, sharp label print, natural result.`,
-  ].join("\n");
+/* One prompt per face: it describes the rendered design in full — data,
+   artwork, colours, layout — and asks for it to be fitted onto the
+   uploaded container photo. */
+/* Builds the label prompt for one face, plus a set of extraction prompts
+   that pull each element back out of the generated image as a clean asset. */
+function bgRecipe(styleName, c2) {
+  return {
+    "Clean & Premium": "a smooth vertical gradient, lighter at the top, with a soft glow above the centre",
+    "Modern & Bold": "a hard-edged diagonal two-tone split, no blur on the dividing edge",
+    "Natural & Organic": "soft blurred organic colour blooms at the bottom and top-left over a flat base",
+    "Medical & Professional": `a solid ${c2} block across the top third ending in a shallow downward arc`,
+    Luxury: "a deep diagonal gradient with a thin inner border line",
+    Minimal: "a completely flat single colour, no gradient",
+    "Playful & Colorful": "a diagonal gradient with two large blurred colour circles cropped by the edges",
+  }[styleName];
 }
 
-function bgLineFor(style) {
-  return style === "Modern & Bold" ? "a hard-edged diagonal two-tone split"
-    : style === "Minimal" ? "a flat single colour"
-    : style === "Medical & Professional" ? "a colour block across the top ending in a shallow arc"
-    : style === "Luxury" ? "a deep diagonal gradient with a thin inner border"
-    : style === "Natural & Organic" ? "soft blurred organic colour blooms"
-    : style === "Playful & Colorful" ? "a diagonal gradient with blurred colour circles"
-    : "a smooth vertical gradient";
-}
+function buildStickerPrompt({ face, data, styleName, palette, productName, slots }) {
+  const pal = palette.map((p) => p.hex);
+  const [c0, c1, c2, c3] = [pal[0], pal[1], pal[2], pal[3] || pal[2]];
 
-function buildFacePrompt({ face, data, concept, style, die, slots, hasLogo }) {
-  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
-  const bgSpec = backgroundFor(style, pal);
-  const items = (face === "front" ? data.front : data.back) || [];
-  const get = (k) => items.find((e) => e.k === k);
-  const name = get("name")?.t || get("title")?.t || data.product?.en || "PRODUCT";
-  const claim = get("claim")?.t || "";
-  const badge = get("badge")?.t || "";
-  const vol = get("volume")?.t || "--- ml";
-  const ing = get("ingredients")?.t || "";
+  const items = (face === "front" ? data?.front : data?.back) || [];
+  const g = (k) => items.find((e) => e.k === k);
+  const claim = g("claim")?.t || "";
+  const badge = g("badge")?.t || "";
+  const vol = g("volume")?.t || "--- ml";
+  const ing = g("ingredients")?.t || "";
+  const desc = g("body")?.body || "";
+  const usage = g("usage")?.body || "";
+  const warn = g("warning")?.body || "";
+  const store = g("storage")?.body || "";
 
-  const ratio = die && die.confirmed && die.w > 0 && die.h > 0
-    ? `${round1(die.w)} x ${round1(die.h)} ${die.unit} (aspect ${ratioText(die.wMM, die.hMM)})`
-    : "tall portrait wrap-around label, roughly 1:1.9";
+  const bg = bgRecipe(styleName, c2);
 
-  const assets = [];
-  let n = 1;
-  if (hasLogo) assets.push(`IMAGE ${n++} — BRAND LOGO. Place centered inside the top colour band. Keep it small, do not enlarge, do not redraw, do not recolour.`);
-  slots.forEach((s, i) => {
-    // Placement hints are Arabic in the UI; the prompt stays fully English.
-    const where = i === 0
-      ? "This is the main visual — place it in the large artwork panel, spanning the full width."
-      : "Place it in the smaller supporting row beneath the main artwork.";
-    assets.push(`IMAGE ${n++} — ${String(s.title).toUpperCase()}. ${where} Use exactly as supplied. Do not redraw, restyle or replace it.`);
-  });
-  if (!assets.length) assets.push("No reference images supplied — leave the artwork area empty as a plain panel.");
+  const artLines = slots.map((s, i) =>
+    `  IMAGE ${i + 2} — artwork "${s.title}". ${
+      i === 0
+        ? "This is the dominant visual: give it the largest single area, full width, directly under the headline block."
+        : "A supporting visual: place it smaller, centred, below the main image."
+    } Use it as supplied. Blend its edges into the background with no cut-out outline or white fringe.`
+  );
 
-  const bgLine =
-    style === "Modern & Bold" ? "a hard-edged diagonal two-tone split, no blur on the dividing edge"
-    : style === "Minimal" ? "a completely flat single colour, no gradient at all"
-    : style === "Medical & Professional" ? "a solid colour block across the top third ending in a shallow downward arc"
-    : style === "Luxury" ? "a deep diagonal gradient with a thin inner border line"
-    : style === "Natural & Organic" ? "soft organic blurred colour blooms at the bottom and top-left over a flat base"
-    : style === "Playful & Colorful" ? "a diagonal gradient with two large blurred colour circles cropped by the edges"
-    : "a smooth vertical gradient from light at the top to slightly deeper at the bottom, with a soft glow above the centre";
+  const body = [];
+  body.push(`A colour band in ${c2} across the very top, holding the brand logo (IMAGE 1). Keep it at a modest size with clear space around it. Do not redraw or recolour it.`);
+  body.push(`The product name "${productName}" in ${c1}, large, bold, condensed sans-serif, centred, tight letter spacing. This is the headline and the most readable text on the label.`);
+  if (face === "front" && claim)
+    body.push(`Beneath it the claim "${claim}" in ${c2}, small, uppercase, wide letter spacing, centred.`);
+  body.push(`A thin hairline rule in ${c1} at low opacity spanning the width, closing the headline block.`);
+  body.push(`The main artwork area, filling the full width.`);
+  if (face === "front" && badge)
+    body.push(`A pill-shaped outline badge reading "${badge}" in ${c2}, centred, rounded 1.5pt border, no fill.`);
+  if (face === "back" && desc) body.push(`A short paragraph in ${c1}: "${desc}"`);
+  if (face === "back" && ing)
+    body.push(`A small uppercase heading "INGREDIENTS" in ${c2} with a thin rule beside it, then: "${ing}"`);
+  if (face === "back" && usage)
+    body.push(`A small uppercase heading "HOW TO USE" in ${c2} with a thin rule beside it, then: "${usage}"`);
+  if (face === "back" && warn)
+    body.push(`A small uppercase heading "WARNINGS & PRECAUTIONS" in ${c2} with a thin rule beside it, then: "${warn}"`);
+  if (face === "back" && store)
+    body.push(`A small uppercase heading "STORAGE" in ${c2} with a thin rule beside it, then: "${store}"`);
+  body.push(`An EMPTY rectangular area reserved for Arabic text. Leave it completely blank — no words, no placeholder characters, no outline.`);
+  body.push(`A footer band in ${c3} across the bottom containing "${vol}"${face === "back" ? ` and "For external use only"` : ""}.`);
 
-  const layout = [
-    `Colour band across the very top${hasLogo ? " holding the logo" : ""}.`,
-    `Product name "${name}" — large, bold, condensed sans-serif, centered, tight letter spacing.`,
-    face === "front" && claim
-      ? `Claim line "${claim}" — small uppercase, wide letter spacing, centered, in the accent colour.` : null,
-    `Main artwork panel — the largest visual element, spanning the full width.`,
-    face === "front" && badge
-      ? `Badge "${badge}" — small pill outline with a rounded border, centered, accent colour.` : null,
-    face === "back" && ing
-      ? `A small uppercase "INGREDIENTS" heading with a thin rule beside it, followed by: ${ing}` : null,
-    face === "back"
-      ? `Small uppercase headings "HOW TO USE", "WARNINGS & PRECAUTIONS" and "STORAGE", each with a thin rule beside it and a few short lines of small body text underneath.` : null,
-    `An EMPTY rectangular area reserved for Arabic text. Leave it completely blank. Do not write Arabic. Do not write any placeholder characters in it.`,
-    face === "back"
-      ? `Footer band across the bottom containing "${vol}" on one side and "For external use only" on the other.`
-      : `Footer band across the bottom containing only "${vol}" on the left.`,
-  ].filter(Boolean).map((s, i) => `  ${i + 1}. ${s}`);
-
-  return [
-    `Product label design, ${face === "front" ? "front" : "back"} face only. Flat straight-on view of the label artwork itself — not a bottle, not a mockup, not a 3D render, no shadows, no background scene, no hands, no packaging photography.`,
+  const text = [
+    `${face === "front" ? "Front" : "Back"} product label design. Flat straight-on view of the label artwork itself — not a bottle, not a 3D mockup, no shadows, no background scene, no hands.`,
     ``,
-    `CANVAS: ${ratio}. Fill the entire canvas edge to edge.`,
+    `CANVAS: tall portrait wrap-around label. Fill the entire canvas edge to edge.`,
     ``,
-    `STYLE: ${style}. Clean modern pharmaceutical and cosmetic packaging design.`,
+    `STYLE: ${styleName}. Clean modern pharmaceutical and cosmetic packaging design.`,
     ``,
     `COLOUR PALETTE — use these exact colours and no others:`,
-    ...(concept.palette || []).map((c) => `  ${c.hex}`),
+    ...palette.map((c) => `  ${c.hex}`),
     ``,
-    `BACKGROUND: ${bgLine}. This background must be clearly visible — never a flat empty field unless the style calls for it.`,
+    `BACKGROUND: ${bg}. It must be clearly visible, never an empty flat field unless the style calls for it.`,
     ``,
-    `SUPPLIED IMAGES — I am uploading these. Place them, do not generate substitutes:`,
-    ...assets.map((a) => "  " + a),
+    `SUPPLIED IMAGES — place them, do not generate substitutes:`,
+    `  IMAGE 1 — the brand logo. Do not invent a brand mark.`,
+    ...artLines,
     ``,
-    `LAYOUT, top to bottom:`,
-    ...layout,
+    `LABEL CONTENT, top to bottom:`,
+    ...body.map((b, i) => `  ${i + 1}. ${b}`),
+    ``,
+    `TYPOGRAPHY AND SPACING:`,
+    `  Clear hierarchy — product name largest, section headings small and uppercase, body text small but legible.`,
+    `  Even left and right margins, consistent vertical rhythm, everything aligned to one centre axis.`,
+    `  Nothing touches or crowds the label edges.`,
     ``,
     `TEXT RULES — critical:`,
     `  Render ONLY the exact English strings quoted above, spelled exactly as written.`,
-    `  Do NOT add any other words, taglines, ${face === "back" ? "extra ingredients, " : "ingredient lists, "}barcodes, icons, symbols, seals, certification marks or decorative text.`,
-    `  Do NOT invent a brand name. Do NOT add Arabic or any non-Latin script.`,
+    `  Do NOT add any other words, taglines, barcodes, icons, symbols, seals or certification marks.`,
+    `  Do NOT invent a brand name. Do NOT write Arabic or any non-Latin script anywhere.`,
     ``,
-    `Sharp vector-clean edges, print-quality, high resolution, evenly lit, no photographic texture.`,
-  ].filter(Boolean).join("\n");
+    `Sharp vector-clean edges, print quality, evenly lit, high resolution, 300 DPI.`,
+  ].join("\n");
+
+  return { text, bg };
 }
 
-function buildHtmlFacePrompt({ face, data, concept, style, die, slots, hasLogo }) {
-  const pal = (concept?.palette || []).map((p) => p?.hex).filter(Boolean);
-  const bg = pal[0] || "#F4F5F3";
-  const ink = pal[1] || "#16181C";
-  const accent = pal[2] || ink;
-  const soft = pal[3] || accent;
-  const items = (face === "front" ? data?.front : data?.back) || [];
-  const get = (k) => items.find((e) => e?.k === k);
-  const name = get("name")?.t || get("title")?.t || data?.product?.en || "PRODUCT";
-  const claim = get("claim")?.t || "";
-  const badge = get("badge")?.t || "";
-  const vol = get("volume")?.t || "--- ml";
-  const ing = get("ingredients")?.t || "";
+/* Prompts that isolate one element from the finished label image, so the
+   designer receives layered assets instead of one flattened picture. */
+function buildExtractPrompts({ face, data, styleName, palette, productName, slots }) {
+  const pal = palette.map((p) => p.hex);
+  const [c0, c1, c2, c3] = [pal[0], pal[1], pal[2], pal[3] || pal[2]];
+  const TAIL = [
+    ``,
+    `OUTPUT RULES:`,
+    `  Return ONLY that element, alone, centred, on a fully transparent background.`,
+    `  No other element from the label may appear, not even partially.`,
+    `  Do not add a drop shadow, glow, frame, border, watermark or caption.`,
+    `  Preserve the original colours exactly — no hue, saturation or brightness shift.`,
+    `  Clean anti-aliased edges with no white fringe or leftover background pixels.`,
+    `  Maximum sharpness and resolution, suitable for print at 300 DPI.`,
+    `  PNG with a real alpha channel.`,
+  ].join("\n");
 
-  const W = die && die.confirmed && die.w > 0 ? Math.round(die.wMM || die.w * 10) : 80;
-  const H = die && die.confirmed && die.h > 0 ? Math.round(die.hMM || die.h * 10) : 152;
-  const ratio = (H / W).toFixed(2);
+  const out = [];
 
-  const bgLine =
-    style === "Modern & Bold" ? `two-tone diagonal split background combining ${bg} and ${accent}`
-    : style === "Minimal" ? `clean minimal flat solid background in ${bg}`
-    : style === "Medical & Professional" ? `medical professional packaging layout with a top color block in ${accent} ending in a curved arc over ${bg}`
-    : style === "Luxury" ? `luxury deep gradient background in ${bg} with a subtle gold accent line`
-    : style === "Natural & Organic" ? `organic botanical background with soft blurred color gradients of ${accent} over ${bg}`
-    : style === "Playful & Colorful" ? `vibrant colorful background with diagonal gradients of ${accent} and ${soft}`
-    : `smooth vertical gradient from ${bg} down to a soft accent tone of ${accent}`;
-
-  const imageReferencesList = [];
-  imageReferencesList.push(`- REFERENCE IMAGE 1 (LAYOUT TEMPLATE): Uploaded ${face.toUpperCase()} TEMPLATE PNG. Follow its exact composition, visual zones, text spacing, and 1:${ratio} aspect ratio.`);
-  if (hasLogo) {
-    imageReferencesList.push(`- REFERENCE IMAGE 2 (BRAND LOGO): Uploaded PNG logo. Place centered inside the top header band (${accent}). Keep crisp and proportional.`);
-  }
-  (slots || []).forEach((s, idx) => {
-    const num = hasLogo ? idx + 3 : idx + 2;
-    const pos = idx === 0
-      ? `Place strictly inside the main central artwork panel (center 38% height) on the template. Scale perfectly to fit within the designated graphic frame.`
-      : `Place strictly inside the secondary supporting artwork panel on the template.`;
-    imageReferencesList.push(`- REFERENCE IMAGE ${num} (${s.title.toUpperCase()} ARTWORK): Generated artwork PNG. ${pos}`);
+  out.push({
+    title: "الخلفية لوحدها",
+    text:
+      `The supplied image is a finished product label.\n\n` +
+      `Extract ONLY the background treatment: ${bgRecipe(styleName, c2)}, built from ${pal.join(", ")}.\n` +
+      `Remove every piece of text, every photograph or illustration, the logo, the badge,\n` +
+      `the hairline rules and the footer content. Rebuild the background so it is complete\n` +
+      `and continuous across the whole canvas, filling in wherever content used to sit.\n` +
+      `Keep the exact canvas proportion of the supplied image.` + TAIL,
   });
 
-  const layoutPrompt = face === "front" ? [
-    `1. HEADER BAND (top 12% height): Solid accent band (${accent}) containing the brand logo centered.`,
-    `2. PRODUCT NAME (next 15% height): Bold typography displaying "${name}" in clean ${ink} color. Dominant heading size, centered.`,
-    claim ? `3. CLAIM LINE (next 8% height): Tagline text "${claim}" centered in ${accent} color.` : null,
-    `4. MAIN ARTWORK PANEL (center 38% height): Place Reference Image for main artwork strictly inside this bounded panel on the template. Perfectly centered, not overflowing.`,
-    badge ? `5. BADGE (next 7% height): Neatly proportioned pill-shaped badge displaying "${badge}".` : null,
-    `6. ARABIC RESERVED AREA (next 12% height): Clean, completely empty rectangular space reserved for Arabic translation. LEAVE 100% BLANK AND UNTOUCHED.`,
-    `7. FOOTER BAND (bottom 8% height): Solid bottom bar (${soft}) containing volume "${vol}".`
-  ].filter(Boolean).join("\n") : [
-    `1. HEADER BAND (top 12% height): Solid bar (${accent}) with product title "${name}".`,
-    ing ? `2. INGREDIENTS SECTION (next 20% height): Section title "INGREDIENTS" followed by: ${ing}` : null,
-    `3. SUPPORTING GRAPHICS (next 25% height): Insert supporting artwork reference image strictly inside this bounded panel on the template.`,
-    `4. USAGE & WARNINGS (next 20% height): Structured text blocks for "HOW TO USE", "WARNINGS & PRECAUTIONS", and "STORAGE".`,
-    `5. ARABIC RESERVED AREA (next 15% height): Clean, completely empty rectangular space reserved for Arabic text. LEAVE 100% BLANK AND UNTOUCHED.`,
-    `6. FOOTER BAND (bottom 8% height): Bottom bar containing "${vol}" and "For external use only".`
-  ].filter(Boolean).join("\n");
+  slots.forEach((s, i) => {
+    out.push({
+      title: `رسمة: ${s.title}`,
+      text:
+        `The supplied image is a finished product label.\n\n` +
+        `Extract ONLY the ${i === 0 ? "main, largest" : "smaller supporting"} artwork on it` +
+        ` — the one showing "${s.title}".\n` +
+        `Cut it away from the label background completely. Do not include the coloured\n` +
+        `panel behind it, any text near it, or any rule or edge from the layout.\n` +
+        `Reconstruct any part of the subject that the layout was covering, so the\n` +
+        `element is whole.` + TAIL,
+    });
+  });
 
+  out.push({
+    title: "شريط اللوجو العلوي (فاضي)",
+    text:
+      `The supplied image is a finished product label.\n\n` +
+      `Extract ONLY the top colour band in ${c2} as an empty graphic shape.\n` +
+      `Remove the logo and any text that sits inside it, and rebuild the band so its\n` +
+      `colour and any gradient run cleanly and continuously across its full width.\n` +
+      `Keep its exact width and height. Do not include the product name or anything below it.` + TAIL,
+  });
+
+  out.push({
+    title: "الشريط السفلي (فاضي)",
+    text:
+      `The supplied image is a finished product label.\n\n` +
+      `Extract ONLY the bottom footer band in ${c3} as an empty graphic shape.\n` +
+      `Remove every piece of text inside it and rebuild the band so its colour runs\n` +
+      `cleanly across its full width.\n` +
+      `Keep its exact width and height. Do not include anything above it.` + TAIL,
+  });
+
+  out.push({
+    title: "الخط الفاصل",
+    text:
+      `The supplied image is a finished product label.\n\n` +
+      `Extract ONLY the thin horizontal hairline rule in ${c1} that separates the\n` +
+      `headline block from the section below it.\n` +
+      `Keep its exact length, thickness and opacity. Include nothing else.` + TAIL,
+  });
+
+  return out;
+}
+
+/* Sends a design image to Gemini and asks for a structured critique. */
+const SYS_REVIEW = `You are a senior packaging designer reviewing a product label design.
+
+Return ONLY valid JSON. No markdown, no backticks, no preamble.
+
+{
+ "verdict":"one sentence overall judgement, Egyptian Arabic",
+ "strengths":["what genuinely works, Egyptian Arabic, max 18 words each"],
+ "suggestions":[{"what":"a concrete change, Egyptian Arabic","why":"why it would help, Egyptian Arabic, max 20 words"}],
+ "issues":[{"what":"something actually wrong, Egyptian Arabic","why":"why it matters, Egyptian Arabic, max 20 words"}]
+}
+
+Judge only what you can actually see: hierarchy, legibility, contrast, spacing, alignment, colour balance, how the artwork sits with the text, and whether it would read on a shelf.
+
+Be honest. If the design is good, say so and keep suggestions short. If something is broken — text unreadable, elements colliding, uneven margins, leftover interface artefacts, misspelled words — put it in "issues", not "suggestions".
+
+Rules: 2-5 strengths, 2-5 suggestions, 0-4 issues. Never invent problems to fill the list. Be compact.`;
+
+async function askGeminiVision(system, imageDataUrl) {
+  if (!GEMINI_KEY) throw new Error("no-key");
+  const m = /^data:([^;]+);base64,(.*)$/.exec(imageDataUrl || "");
+  if (!m) throw new Error("bad-image");
+
+  let last;
+  for (const model of TEXT_MODELS) {
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
+      encodeURIComponent(GEMINI_KEY);
+    let res;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: m[1], data: m[2] } },
+              { text: system },
+            ],
+          }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            maxOutputTokens: 2048,
+            temperature: 0.4,
+          },
+        }),
+      });
+    } catch (e) {
+      throw new Error("blocked: " + (e.message || "fetch failed"));
+    }
+
+    if (res.ok) {
+      const j = await res.json();
+      const raw = (j?.candidates?.[0]?.content?.parts || [])
+        .map((p) => p.text || "").join("");
+      if (!raw.trim()) throw new Error("empty response");
+      return extractJSON(raw);
+    }
+
+    let detail = "";
+    try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
+    last = new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+    if (!isRetired(last.message)) throw last;
+  }
+  throw last;
+}
+
+function whyFor(styleName, palette) {
+  const [c0, c1, c2] = palette.map((p) => p.hex);
   return [
-    `PROMPT FOR MULTI-IMAGE COMPOSITING — ${face.toUpperCase()} PACKAGING LABEL DESIGN:`,
-    ``,
-    `I am uploading a LAYOUT TEMPLATE PNG along with INDIVIDUAL ARTWORK PNGs. Construct a clean 2D flat packaging label by compositing the uploaded artwork images onto the provided template.`,
-    `Aspect ratio: 1:${ratio} (${W}mm width x ${H}mm height).`,
-    ``,
-    `UPLOADED REFERENCE IMAGES MAPPING:`,
-    ...imageReferencesList,
-    ``,
-    `TOP-TO-BOTTOM COMPOSITION ON TEMPLATE:`,
-    layoutPrompt,
-    ``,
-    `STRICT COMPOSITING RULES:`,
-    `- Do NOT swap or displace the uploaded images. Place each artwork image strictly into its designated panel on the template.`,
-    `- Keep all designated Arabic & translation data areas 100% blank and empty as reserved layout space.`,
-    `- Exact Palette: Background ${bg}, Text ${ink}, Accent ${accent}, Soft ${soft}. Background treatment: ${bgLine}.`,
-    `- Render ONLY the exact English text specified above with 100% correct spelling.`,
-    `- Output a flat 2D vector-clean print artwork, 300 DPI (no 3D bottle distortion, no shadows, no hands).`
-  ].join("\n");
+    { q: "ليه الاتجاه ده؟", a: `الاتجاه المقترح ${styleName}، وكل قرار تحت متبني عليه — لو غيّرت الفكرة، الألوان والمساحات بتتغير معاها.` },
+    { q: `ليه ${c0} خلفية؟`, a: `${palette[0].role}. بيشيل باقي العناصر من غير ما ينافسها، وبيدي تباين كافي للنص عشان يفضل مقروء من مسافة.` },
+    { q: `ليه اسم المنتج بلون ${c1}؟`, a: `${palette[1].role}. أعلى تباين مع الخلفية، فالاسم بيبقى أول حاجة العين تمسكها.` },
+    { q: `ليه ${c2} للفايدة والعناوين بس؟`, a: `${palette[2].role}. لون مميز واحد بيوجّه العين لمكان واحد؛ لو اتوزع على كذا عنصر بيفقد وظيفته.` },
+    { q: "ليه فيه مساحة فاضية للعربي؟", a: "النص العربي محتاج خط البراند وضبط مسافات، وده بيتعمل في الإليستريتور. المساحة محجوزة بحجمها عشان الترتيب يفضل مضبوط بعد ما يتكتب." },
+    { q: "ليه برومبتات الاستخراج؟", a: "الصورة اللي بتطلع من أداة الصور مسطّحة، كل حاجة ملزوقة في بعض. برومبتات الاستخراج بتفصل الرسومات والخلفية والأشكال لوحدها بخلفية شفافة. النصوص مش بتتستخرج عمدًا — المصمم بيكتبها في الإليستريتور بخطوط البراند، وده أنضف من صورة نص." },
+  ];
 }
 
 /* Image generation runs on Gemini's image model, which accepts reference
    images alongside the instruction. Returns a data URL. */
 /* Cheap round-trip to confirm the key actually works before the user
    discovers it silently fell back to the local engine. */
-async function verifyGeminiKey(keyInput) {
-  const keys = (keyInput || "").split(/[\s,\n]+/).map((x) => x.trim()).filter(Boolean);
-  if (!keys.length) throw new Error("no-keys");
-  let validCount = 0;
-  let firstModel = "";
-  let last;
-
-  for (const k of keys.slice(0, 4)) {
-    for (const model of TEXT_MODELS.slice(0, 2)) {
-      const url =
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
-        encodeURIComponent(k);
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 10000);
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: controller.signal,
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "ok" }] }],
-            generationConfig: { maxOutputTokens: 2 },
-          }),
-        });
-        clearTimeout(tid);
-        if (res.ok) {
-          validCount++;
-          if (!firstModel) firstModel = model;
-          break;
-        }
-        let detail = "";
-        try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
-        last = new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
-        if (!isRetired(last.message)) break;
-      } catch (e) {
-        last = new Error("timeout: " + (e.message || "fetch failed"));
-        break;
-      }
-    }
-  }
-  if (validCount > 0) return `${validCount} مفاتيح شغالة (${firstModel})`;
-  throw last || new Error("timeout");
-}
-
-async function askGeminiImageModel(model, promptText, images) {
-  const parts = [];
-  images.forEach((im) => {
-    const m = /^data:([^;]+);base64,(.*)$/.exec(im.dataUrl || "");
-    if (!m) return;
-    parts.push({ inline_data: { mime_type: m[1], data: m[2] } });
-  });
-  parts.push({ text: promptText });
-
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
-    encodeURIComponent(getGeminiKey());
-
+async function verifyOpenRouterKey(key) {
   let res;
   try {
-    res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts }] }),
+    res = await fetch("https://openrouter.ai/api/v1/key", {
+      headers: { Authorization: `Bearer ${key}` },
     });
   } catch (e) {
     throw new Error("blocked: " + (e.message || "fetch failed"));
   }
-
   if (!res.ok) {
     let detail = "";
     try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
     throw new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
   }
-
-  const j = await res.json();
-  const out = (j?.candidates?.[0]?.content?.parts || [])
-    .find((p) => p.inline_data || p.inlineData);
-  const blob = out?.inline_data || out?.inlineData;
-  if (!blob?.data) {
-    const txt = (j?.candidates?.[0]?.content?.parts || []).map((p) => p.text).filter(Boolean).join(" ");
-    throw new Error(txt ? "no-image: " + txt.slice(0, 120) : "no-image");
-  }
-  return `data:${blob.mime_type || blob.mimeType || "image/png"};base64,${blob.data}`;
+  return true;
 }
 
-async function askGeminiImage(promptText, images, onWait) {
-  if (!getGeminiKey()) throw new Error("no-key");
+async function verifyGeminiKey(key) {
   let last;
-  for (const m of IMAGE_MODELS) {
-    // Image quotas are tight, so a 429 is worth waiting out rather than failing.
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        return await askGeminiImageModel(m, promptText, images);
-      } catch (e) {
-        last = e;
-        const msg = e.message || "";
-        if (isRetired(msg)) break;                 // try the next model
-        if (!msg.startsWith("http 429")) throw e;  // not a quota problem
-        if (attempt === 2) break;
-        const secs = 12 * (attempt + 1);
-        if (onWait) onWait(secs);
-        await new Promise((r) => setTimeout(r, secs * 1000));
-      }
+  for (const model of TEXT_MODELS) {
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
+      encodeURIComponent(key);
+    let res;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: "Reply with the single word: ok" }] }],
+          generationConfig: { maxOutputTokens: 5 },
+        }),
+      });
+    } catch (e) {
+      // The request never left the page — almost always a sandbox that only
+      // permits its own host, not a problem with the key.
+      throw new Error("blocked: " + (e.message || "fetch failed"));
     }
+    if (res.ok) return model;
+
+    let detail = "";
+    try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
+    last = new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+    if (!isRetired(last.message)) throw last;
   }
   throw last;
-}
-
-/* Instruction for placing the label onto a real product photo. */
-function buildApplyPrompt({ face, data, concept, style, die, slots, hasLogo, nRefs }) {
-  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
-  const items = (face === "front" ? data.front : data.back) || [];
-  const get = (k) => items.find((e) => e.k === k);
-  const name = get("name")?.t || get("title")?.t || data.product?.en || "PRODUCT";
-  const claim = get("claim")?.t || "";
-  const badge = get("badge")?.t || "";
-  const vol = get("volume")?.t || "--- ml";
-  const ing = get("ingredients")?.t || "";
-
-  const bgLine =
-    style === "Modern & Bold" ? "a hard-edged diagonal two-tone split"
-    : style === "Minimal" ? "a completely flat single colour"
-    : style === "Medical & Professional" ? "a solid colour block across the top third ending in a shallow downward arc"
-    : style === "Luxury" ? "a deep diagonal gradient with a thin inner border line"
-    : style === "Natural & Organic" ? "soft blurred organic colour blooms over a flat base"
-    : style === "Playful & Colorful" ? "a diagonal gradient with large blurred colour circles"
-    : "a smooth vertical gradient, lighter at the top";
-
-  const refs = [];
-  let n = 2; // image 1 is always the product photo
-  if (hasLogo) refs.push(`  IMAGE ${n++} — the brand logo. Place it in the top colour band of the label.`);
-  slots.forEach((s, i) => {
-    refs.push(`  IMAGE ${n++} — artwork "${s.title}". ${i === 0 ? "This is the main visual, place it as the largest element on the label." : "Place it smaller, below the main visual."} Use it as supplied, do not redraw it.`);
-  });
-
-  const content = [
-    `Colour band at the top${hasLogo ? " holding the logo" : ""}.`,
-    `Product name "${name}" — large, bold, condensed sans-serif, centered.`,
-    face === "front" && claim ? `Claim "${claim}" — small uppercase, wide letter spacing, centered.` : null,
-    `Main artwork area — the largest visual element.`,
-    face === "front" && badge ? `Badge "${badge}" — small rounded outline pill, centered.` : null,
-    face === "back" && ing ? `A small "INGREDIENTS" heading followed by: ${ing}` : null,
-    face === "back" ? `Small section headings "HOW TO USE", "WARNINGS & PRECAUTIONS", "STORAGE", each followed by a few short lines of small body text.` : null,
-    `A blank rectangular area reserved for Arabic text — leave it completely empty, write nothing in it.`,
-    `Footer band containing "${vol}".`,
-  ].filter(Boolean).map((s, i) => `  ${i + 1}. ${s}`);
-
-  return [
-    `IMAGE 1 is a photograph of a real product container. Keep this photograph exactly as it is — same container shape, same angle, same lighting, same background, same shadows. Do not replace the container, do not move it, do not change the scene.`,
-    ``,
-    `Your only task: design a product label and apply it onto the container in IMAGE 1, wrapping naturally around its surface with correct perspective, curvature and lighting so it looks physically printed on.`,
-    ``,
-    `LABEL DESIGN — ${face === "front" ? "front face" : "back face"}, style: ${style}.`,
-    `Background of the label: ${bgLine}.`,
-    `Use only these colours: ${pal.join(", ")}.`,
-    die && die.confirmed
-      ? `The label is a tall wrap-around shape, proportion ${ratioText(die.wMM, die.hMM)}.`
-      : `The label is a tall wrap-around shape.`,
-    ``,
-    refs.length ? `REFERENCE IMAGES — I am supplying these, place them, do not invent substitutes:` : `No reference artwork supplied.`,
-    ...refs,
-    ``,
-    `LABEL CONTENT, top to bottom:`,
-    ...content,
-    ``,
-    `TEXT RULES — critical:`,
-    `  Render ONLY the exact English strings quoted above, spelled exactly as written.`,
-    `  Do NOT add extra words, taglines, barcodes, seals, certification marks or decorative text.`,
-    `  Do NOT write Arabic or any non-Latin script anywhere.`,
-    `  Do NOT change the product photograph itself.`,
-    ``,
-    `Photorealistic result, sharp label print, consistent with the original photo's lighting and depth of field.`,
-  ].filter(Boolean).join("\n");
 }
 
 function backgroundFor(style, pal) {
@@ -2093,239 +1690,6 @@ function hexA(hex, a) {
   return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`;
 }
 
-function Band({ children, bg, fg, tall }) {
-  return (
-    <div className="lp-band" style={{ background: bg, color: fg, padding: tall ? "14px 15px" : "9px 15px" }}>
-      {children}
-    </div>
-  );
-}
-
-function SectionHead({ text, color }) {
-  return (
-    <div className="lp-sechead" style={{ color }}>
-      <span>{text}</span>
-      <i style={{ background: color }} />
-    </div>
-  );
-}
-
-function FaceRender({ face, items, slots, concept, die, art, logo, extras,
-                     onPick, onClear, tag, style, onNode }) {
-  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
-  const bg = pal[0] || "#F4F5F3";
-  const ink = pal[1] || "#16181C";
-  const accent = pal[2] || ink;
-  const soft = pal[3] || accent;
-  const bgSpec = backgroundFor(style, pal);
-
-  const ratio = die && die.confirmed && die.w > 0 && die.h > 0 ? die.h / die.w : 1.9;
-
-  const boxRef = useRef(null);
-  const innerRef = useRef(null);
-  const [scale, setScale] = useState(1);
-
-  useLayoutEffect(() => {
-    const fit = () => {
-      const box = boxRef.current, inner = innerRef.current;
-      if (!box || !inner) return;
-      const availH = box.clientHeight, needH = inner.scrollHeight;
-      if (!availH || !needH) return;
-      setScale(needH > availH ? Math.max(availH / needH, 0.4) : 1);
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    if (boxRef.current) ro.observe(boxRef.current);
-    if (innerRef.current) ro.observe(innerRef.current);
-    return () => ro.disconnect();
-  });
-
-  const get = (k) => items.find((e) => e.k === k);
-  const name = get("name") || get("title");
-  const claim = get("claim");
-  const badge = get("badge");
-  const vol = get("volume");
-  const ing = get("ingredients");
-
-  const hero = slots[0];
-  const rest = slots.slice(1);
-
-  const artSlot = (s, i, base) => (
-    <Slot key={s.key} id={`slot-${face}-${i}`} img={art[artKey(s.key)]}
-          label={s.title} hint={s.hint} minH={base}
-          onPick={(f2) => onPick(s.key, f2)} onClear={() => onClear(s.key)} />
-  );
-
-  return (
-    <div className="lp-facewrap">
-      <div className="lp-facecap">{tag}</div>
-      <div ref={(el) => { boxRef.current = el; if (onNode) onNode(face, el); }}
-           className="lp-sticker"
-           style={{
-             backgroundColor: bg,
-             backgroundImage: bgSpec.css,
-             color: ink,
-             aspectRatio: `1 / ${round1(ratio)}`,
-           }}>
-        <div ref={innerRef} className="lp-stickerin" style={{ transform: `scale(${scale})`, width: `${100 / scale}%` }}>
-
-          <Band bg={accent} fg={readable(accent)} tall>
-            <div className="lp-logoslot" >
-              <Slot id={`slot-logo-${face}`} img={logo} label="ارفع اللوجو"
-                    hint="PNG شفاف" minH={38}
-                    onPick={(fl) => onPick("logo", fl)} onClear={() => onClear("logo")} />
-            </div>
-          </Band>
-
-          <div className="lp-pad">
-            {name ? (
-              <div className="lp-sname">{name.t}</div>
-            ) : null}
-            {face === "front" && claim ? (
-              <div className="lp-sclaim" style={{ color: accent }}>{claim.t}</div>
-            ) : null}
-            <div className="lp-hair" style={{ background: hexA(ink, 0.22) }} />
-          </div>
-
-          {hero ? (
-            <div className="lp-hero" style={{ background: hexA(accent, 0.07) }}>
-              {artSlot(hero, 0, face === "front" ? 150 : 96)}
-            </div>
-          ) : null}
-
-          <div className="lp-pad">
-            {face === "front" && badge ? (
-              <div className="lp-sbadge"
-                   style={{ borderColor: accent, color: accent }}>{badge.t}</div>
-            ) : null}
-
-            {face === "back" && ing ? (
-              <div className="lp-sblock">
-                <SectionHead text="Ingredients" color={accent} />
-                <div className="lp-sbody">{ing.t}</div>
-              </div>
-            ) : null}
-
-            {rest.length ? (
-              <div className="lp-strip" style={{ gridTemplateColumns: `repeat(${Math.min(rest.length, 3)}, 1fr)` }}>
-                {rest.map((s, i) => artSlot(s, i + 1, 74))}
-              </div>
-            ) : null}
-
-            {face === "back"
-              ? ["usage", "warning", "storage"].map((k) => {
-                  const e = get(k);
-                  if (!e) return null;
-                  const head = k === "usage" ? "How To Use" : k === "warning" ? "Warnings & Precautions" : "Storage";
-                  return (
-                    <div className="lp-sblock" key={k}>
-                      <SectionHead text={head} color={accent} />
-                      <div className="lp-slines">
-                        <span style={{ background: ink }} />
-                        <span style={{ background: ink }} />
-                        <span style={{ background: ink, width: "68%" }} />
-                      </div>
-                    </div>
-                  );
-                })
-              : null}
-
-            <ArabicSpace items={items} note={face === "front" ? "اسم المنتج والادعاء بالعربي" : "الوصف والمكونات والتحذيرات بالعربي"} />
-
-            {face === "front" ? (
-              <div className="lp-strip" style={{ gridTemplateColumns: "1fr 1fr" }}>
-                {[0, 1].map((n) => (
-                  <Slot key={n} id={`slot-extra-${face}-${n}`} img={extras[`${face}-${n}`]}
-                        label="عنصر إضافي" hint="اختياري" minH={62}
-                        onPick={(fl) => onPick(`extra:${face}-${n}`, fl)}
-                        onClear={() => onClear(`extra:${face}-${n}`)} />
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          <Band bg={hexA(soft, 0.9)} fg={readable(soft)}>
-            <div className="lp-foot">
-              <span>{vol ? vol.t : "--- ml"}</span>
-              <span>{face === "front" ? "" : "For external use only"}</span>
-            </div>
-          </Band>
-
-        </div>
-      </div>
-
-    </div>
-  );
-}
-
-function buildRationale(concept, style, die, brief) {
-  const pal = concept?.palette || [];
-  const hex = (i) => pal[i]?.hex || "";
-  const out = [];
-
-  out.push({
-    q: "ليه الاتجاه ده تحديدًا؟",
-    a: `الستايل المختار ${style}. كل قرار تحت — الألوان، أحجام الخط، توزيع المساحات — ` +
-       `متبني عليه، فلو الاتجاه اتغير الشكل كله بيتغير معاه.`,
-  });
-
-  if (pal[0]) {
-    out.push({
-      q: `ليه لون الخلفية ${hex(0)}؟`,
-      a: `${pal[0].role || "لون الخلفية"}. بيشيل باقي العناصر من غير ما ينافسها، ` +
-         `وبيدي تباين كافي للنصوص عشان تفضل مقروءة على الرف.`,
-    });
-  }
-  if (pal[1]) {
-    out.push({
-      q: `ليه اسم المنتج بلون ${hex(1)}؟`,
-      a: `${pal[1].role || "لون النص الأساسي"}. أعلى تباين مع الخلفية، عشان الاسم ` +
-         `يبقى أول حاجة تتقري من مسافة.`,
-    });
-  }
-  if (pal[2]) {
-    out.push({
-      q: `ليه لون واحد بس (${hex(2)}) للفايدة والعناوين؟`,
-      a: `${pal[2].role || "اللون المميز"}. لون مميز واحد بيوجّه العين لمكان واحد. ` +
-         `لو اتوزع على كذا عنصر بيفقد وظيفته وبيبقى زحمة.`,
-    });
-  }
-
-  out.push({
-    q: "ليه فيه مساحات مكتوب عليها «مساحة محجوزة للنص العربي»؟",
-    a: "النص العربي محتاج خط البراند وضبط تشكيل ومسافات، وده بيتعمل في الإليستريتور. " +
-       "المساحة محجوزة بحجمها الحقيقي عشان الترتيب يفضل مضبوط بعد ما يتكتب.",
-  });
-
-  out.push({
-    q: "ليه الرسومات في الأماكن دي؟",
-    a: "الرسمة الأساسية في وسط الوش لأنها اللي بتوصل وظيفة المنتج من غير قراية. " +
-       "رسومات المكونات على الضهر لأنها بتدعم الثقة بعد ما العميل يكون اتشد أصلاً.",
-  });
-
-  if (die && die.confirmed) {
-    out.push({
-      q: "المقاس ده جه منين؟",
-      a: `من ملف السكينة اللي اترفع: ${round1(die.w)} × ${round1(die.h)} ${die.unit}، ` +
-         `نسبة ${ratioText(die.wMM, die.hMM)}. المعاينة اتبنت على النسبة دي مش على نسبة افتراضية.`,
-    });
-  } else {
-    out.push({
-      q: "المقاس ده نهائي؟",
-      a: "لأ. مفيش ملف سكينة اتأكد، فالنسبة دي افتراضية. ارفع ملف السكينة في تاب Die-Cut " +
-         "عشان المعاينة تطلع بنسبة العبوة الحقيقية.",
-    });
-  }
-
-  out.push({
-    q: "إيه اللي المصمم محتاج يعمله بعد كده؟",
-    a: "يرصّ نفس الداتا في الإليستريتور على ملف السكينة، بخطوط البراند، ويضيف النص العربي " +
-       "في مساحاته، ويظبط الرسومات على دقة الطباعة.",
-  });
-
-  return out;
-}
-
 function readable(hex) {
   const h = (hex || "#888888").replace("#", "");
   if (h.length !== 6) return "#16181C";
@@ -2374,433 +1738,146 @@ function readArtImage(file) {
 
 const artKey = (label) => String(label || "").trim().toLowerCase();
 
-function DiePreview({ raw, shapeIdx }) {
-  const sh = raw.shapes[shapeIdx];
-  const vb = raw.viewBox;
-  const w = vb ? vb[2] : raw.artboard.w || 100;
-  const h = vb ? vb[3] : raw.artboard.h || 100;
-  const x = vb ? vb[0] : 0;
-  const y = vb ? vb[1] : 0;
-
-  // The file's own artwork is shown as-is; the selected shape is outlined.
-  return (
-    <svg viewBox={`${x} ${y} ${w} ${h}`} style={{ width: "100%", height: "auto" }}
-         role="img" aria-label="شكل السكينة المكتشف">
-      <g dangerouslySetInnerHTML={{ __html: raw.markup.replace(/<\/?svg[^>]*>/gi, "") }} />
-      {sh ? (
-        <rect x={sh.x} y={sh.y} width={sh.w} height={sh.h}
-              fill="none" stroke="#C8005E" strokeWidth={Math.max(w, h) / 220}
-              strokeDasharray={`${Math.max(w, h) / 70} ${Math.max(w, h) / 110}`} />
-      ) : null}
-    </svg>
-  );
-}
-
-function BoxPreview({ w, h }) {
-  const maxSide = 200;
-  const scale = maxSide / Math.max(w, h);
-  const bw = Math.max(w * scale, 6);
-  const bh = Math.max(h * scale, 6);
-  return (
-    <svg viewBox={`0 0 ${maxSide} ${maxSide}`} style={{ width: "100%", height: "auto" }}
-         role="img" aria-label="نسبة أبعاد الملف">
-      <rect x={(maxSide - bw) / 2} y={(maxSide - bh) / 2} width={bw} height={bh}
-            fill="#F7F8F6" stroke="#16181C" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function ConceptMock({ concept, scope, die, art }) {
-  const W = 330;
-  // A confirmed die-cut drives the proportion; otherwise fall back to defaults.
-  let H = scope === "full" ? 560 : 620;
-  if (die && die.confirmed && die.w > 0 && die.h > 0) {
-    H = Math.round(Math.min(Math.max((W * die.h) / die.w, 130), 900));
-  }
-  const pad = 20;
-  const pal = (concept.palette || []).map((p) => p.hex).filter(Boolean);
-  const bg = pal[0] || "#F2F2F0";
-  const accent = pal[1] || "#16181C";
-  const accent2 = pal[2] || accent;
-  const zones = concept.zones || [];
-
-  const gap = 8;
-  const avail = H - pad * 2 - gap * (zones.length - 1 || 0);
-  const total = zones.reduce((s, z) => s + (Number(z.h) || 1), 0) || 1;
-
-  let y = pad;
-  const boxes = zones.map((z) => {
-    const h = ((Number(z.h) || 1) / total) * avail;
-    const w = Math.min(Math.max(Number(z.w) || 0.8, 0.25), 1) * (W - pad * 2);
-    const x =
-      z.align === "start" ? pad :
-      z.align === "end" ? W - pad - w :
-      pad + (W - pad * 2 - w) / 2;
-    const b = { ...z, x, y, w, h };
-    y += h + gap;
-    return b;
-  });
-
-  const fillFor = (t) =>
-    t === "accent" ? accent : t === "dark" ? accent2 : "#FFFFFF";
-  const opacityFor = (t) => (t === "light" ? 0.55 : 0.92);
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: 340, border: "1px solid #C3C7C0" }}
-         role="img" aria-label="تصور بصري مبدئي للملصق">
-      <rect x="0" y="0" width={W} height={H} fill={bg} />
-      {boxes.map((b, i) => {
-        const isArt = b.role === "art";
-        const shot = isArt && art ? art[artKey(b.label)] : null;
-        const f = fillFor(b.tone);
-        const txt = readable(b.tone === "light" ? bg : f);
-
-        if (shot) {
-          // Contain, never crop or stretch — this is a reference, not a crop tool.
-          return (
-            <g key={i}>
-              <image href={shot.dataUrl} x={b.x} y={b.y}
-                     width={b.w} height={Math.max(b.h, 9)}
-                     preserveAspectRatio="xMidYMid meet" />
-            </g>
-          );
-        }
-
-        return (
-          <g key={i}>
-            <rect x={b.x} y={b.y} width={b.w} height={Math.max(b.h, 9)}
-                  fill={f} fillOpacity={opacityFor(b.tone)}
-                  stroke={isArt ? accent : "none"} strokeWidth={isArt ? 1 : 0}
-                  strokeDasharray={isArt ? "4 3" : "0"} />
-            <text x={b.x + b.w / 2} y={b.y + Math.max(b.h, 12) / 2 + 3.5}
-                  textAnchor="middle" fill={txt}
-                  style={{
-                    font: `${b.role === "name" || b.role === "brand" ? 700 : 500} ${
-                      b.role === "name" ? 12 : b.role === "brand" ? 10.5 : 8.5
-                    }px 'IBM Plex Sans Condensed', sans-serif`,
-                    letterSpacing: b.role === "brand" ? "0.1em" : "0",
-                  }}>
-              {(b.label || "").slice(0, 26)}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
 function LabelPrepTool() {
   const [desc, setDesc] = useState("");
   const [data, setData] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [stage, setStage] = useState("");
-  // Die-cut step
-  const [dieFile, setDieFile] = useState(null);
-  const [dieRaw, setDieRaw] = useState(null);     // analysis result
-  const [dieShape, setDieShape] = useState(0);    // chosen shape index
-  const [dieErr, setDieErr] = useState("");
-  const [dieBusy, setDieBusy] = useState(false);
-  const [dieW, setDieW] = useState("");
-  const [dieH, setDieH] = useState("");
-  const [dieUnit, setDieUnit] = useState("mm");
-  const [die, setDie] = useState(null);           // confirmed reference
+  const [orKey, setOrKey] = useState("");
+  const [orState, setOrState] = useState("");
+  const [orMsg, setOrMsg] = useState("");
+  const orTimer = useRef(null);
 
-  const resetDie = () => {
-    setDieFile(null); setDieRaw(null); setDieShape(0);
-    setDieErr(""); setDieW(""); setDieH(""); setDieUnit("mm"); setDie(null);
-  };
-
-  // Fill the editable fields from whatever the file actually yielded.
-  const applyMeasured = (res, shapeIdx) => {
-    if (res.kind === "svg") {
-      const sh = res.shapes[shapeIdx];
-      if (sh && res.mmPerUnit) {
-        setDieUnit("mm");
-        setDieW(String(round1(sh.w * res.mmPerUnit)));
-        setDieH(String(round1(sh.h * res.mmPerUnit)));
-      } else if (sh) {
-        setDieUnit("px");
-        setDieW(String(round1(sh.w)));
-        setDieH(String(round1(sh.h)));
+  const onOrKeyChange = (v) => {
+    setOrKey(v);
+    setOpenRouterKey(v);
+    setOrState(""); setOrMsg("");
+    if (orTimer.current) clearTimeout(orTimer.current);
+    const k = v.trim();
+    if (!k) return;
+    orTimer.current = setTimeout(async () => {
+      setOrState("checking");
+      try {
+        await verifyOpenRouterKey(k);
+        setOrState("ok");
+      } catch (e) {
+        const m = e.message || "";
+        setOrState("bad");
+        setOrMsg(
+          m.startsWith("blocked") ? "النداء اتحجب من الصفحة دي."
+          : m.startsWith("http 401") || m.startsWith("http 403") ? "المفتاح مرفوض"
+          : "مقدرتش أتأكد: " + m
+        );
       }
-    } else if (res.kind === "pdf") {
-      setDieUnit("mm");
-      setDieW(String(round1(res.boxMM.w)));
-      setDieH(String(round1(res.boxMM.h)));
-    } else if (res.kind === "raster") {
-      setDieUnit("px");
-      setDieW(String(res.px.w));
-      setDieH(String(res.px.h));
-    }
+    }, 700);
   };
 
-  const onDieFile = async (file) => {
-    if (!file) return;
-    setDieBusy(true); setDieErr(""); setDie(null); setDieRaw(null);
-    try {
-      const res = await analyzeDieFile(file);
-      setDieFile({ name: file.name, size: file.size });
-      setDieRaw(res);
-      setDieShape(0);
-      applyMeasured(res, 0);
-    } catch (e) {
-      setDieErr(e.message || "مقدرتش أحلل الملف");
-      setDieFile({ name: file.name, size: file.size });
-    } finally {
-      setDieBusy(false);
-    }
-  };
+  const [pname, setPname] = useState("");
 
-  const pickShape = (idx) => {
-    setDieShape(idx);
-    if (dieRaw) applyMeasured(dieRaw, idx);
-  };
+  // Standalone sticker prompts, generated from the analysed data.
+  const [spPrompt, setSpPrompt] = useState(null);
+  const [spIdea, setSpIdea] = useState(0);
 
-  const confirmDie = () => {
-    const w = parseFloat(dieW);
-    const h = parseFloat(dieH);
-    if (!(w > 0) || !(h > 0)) { setDieErr("اكتب عرض وارتفاع صالحين"); return; }
-    setDieErr("");
-    setDie({
-      confirmed: true,
-      w, h, unit: dieUnit,
-      wMM: toMM(w, dieUnit),
-      hMM: toMM(h, dieUnit),
-      source: dieRaw?.kind || "manual",
-      file: dieFile?.name || "",
+  const makeStickerPrompt = (ideaIndex) => {
+    const i = ((ideaIndex % STYLES.length) + STYLES.length) % STYLES.length;
+    const st = STYLES[i];
+    const pal = PALETTES[st] || PALETTES["Clean & Premium"];
+    const nm = pname.trim() || data?.product?.en || "PRODUCT";
+
+    const faces = ["front", "back"].map((face) => {
+      const slots = (data?.prompts || [])
+        .filter((p) => (p.face || "front") === face)
+        .map((p) => ({ key: p.title, title: p.title }));
+      const args = { face, data, styleName: st, palette: pal, productName: nm, slots };
+      return {
+        face,
+        label: face === "front" ? "الاستيكر الأمامي" : "الاستيكر الخلفي",
+        slots,
+        sticker: buildStickerPrompt(args),
+        extracts: buildExtractPrompts(args),
+      };
     });
+
+    setSpPrompt({ faces, style: st, palette: pal, idea: i, why: whyFor(st, pal) });
+    setSpIdea(i);
   };
 
-  // Uploaded artwork, keyed by zone label. Session only.
-  const [art, setArt] = useState({});
-  const [artErr, setArtErr] = useState("");
+  // Design review
+  const [revImg, setRevImg] = useState(null);
+  const [review, setReview] = useState(null);
+  const [revBusy, setRevBusy] = useState(false);
+  const [revErr, setRevErr] = useState("");
 
-  const onArtFile = async (label, file) => {
+  const pickReview = async (file) => {
     if (!file) return;
-    setArtErr("");
+    setRevErr(""); setReview(null);
     try {
-      const img = await readArtImage(file);
-      setArt((prev) => ({ ...prev, [artKey(label)]: img }));
+      setRevImg(await readArtImage(file));
     } catch (e) {
-      setArtErr(e.message || "مقدرتش أحمّل الصورة");
+      setRevErr(e.message || "مقدرتش أحمّل الصورة");
     }
   };
 
-  const clearArt = (label) => {
-    setArt((prev) => {
-      const next = { ...prev };
-      delete next[artKey(label)];
-      return next;
-    });
-  };
-
-  const [logo, setLogo] = useState(null);
-  const [extras, setExtras] = useState({});
-
-  // One entry point for every slot on the final mockup.
-  const pickSlot = async (which, file) => {
-    if (!file) return;
-    setArtErr("");
+  const runReview = async () => {
+    if (!revImg) return;
+    setRevBusy(true); setRevErr("");
     try {
-      const img = await readArtImage(file);
-      if (which === "logo") setLogo(img);
-      else if (which.startsWith("extra:")) {
-        const k = which.slice(6);
-        setExtras((p) => ({ ...p, [k]: img }));
-      } else {
-        setArt((p) => ({ ...p, [artKey(which)]: img }));
-      }
-    } catch (e) {
-      setArtErr(e.message || "مقدرتش أحمّل الصورة");
-    }
-  };
-
-  const clearSlot = (which) => {
-    if (which === "logo") setLogo(null);
-    else if (which.startsWith("extra:")) {
-      const k = which.slice(6);
-      setExtras((p) => { const n = { ...p }; delete n[k]; return n; });
-    } else clearArt(which);
-  };
-
-  // Every generated prompt gets its own slot, so two back prompts
-  // produce two upload spots rather than one.
-  const slotsFor = (face) => {
-    const fromPrompts = (data?.prompts || [])
-      .filter((p) => (p.face || "front") === face)
-      .map((p) => ({ key: p.title, title: p.title, hint: p.place || "" }));
-    if (fromPrompts.length) return fromPrompts;
-    // Fall back to any artwork element in the split.
-    return (face === "front" ? data?.front : data?.back || [])
-      .filter((e) => e.k === "art")
-      .map((e) => ({ key: e.t, title: e.t, hint: e.n || "" }));
-  };
-
-  // Real product photos + the composited results.
-  const [shotFront, setShotFront] = useState(null);
-  const [shotBack, setShotBack] = useState(null);
-  const [applied, setApplied] = useState({});
-  const [applyBusy, setApplyBusy] = useState("");
-  const [applyErr, setApplyErr] = useState("");
-
-  const pickShot = async (face, file) => {
-    if (!file) return;
-    setApplyErr("");
-    try {
-      const img = await readArtImage(file);
-      (face === "front" ? setShotFront : setShotBack)(img);
-    } catch (e) {
-      setApplyErr(e.message || "مقدرتش أحمّل الصورة");
-    }
-  };
-
-  const applyToProduct = async (face) => {
-    const shot = face === "front" ? shotFront : shotBack;
-    if (!shot) return;
-    setApplyBusy(face); setApplyErr("");
-    try {
-      const s = slotsFor(face);
-      const refs = [shot];
-      let prompt;
-
-      if (sticker[face]) {
-        // The finished artwork exists as an image, so hand that over directly.
-        refs.push({ dataUrl: sticker[face] });
-        prompt = buildWrapPrompt({ face, concept, style, die, container: "spray bottle" });
-      } else {
-        if (logo) refs.push(logo);
-        s.forEach((x) => { const a = art[artKey(x.key)]; if (a) refs.push(a); });
-        prompt = buildApplyPrompt({
-          face, data, concept, style, die, slots: s,
-          hasLogo: !!logo, nRefs: refs.length,
-        });
-      }
-      const url = await askGeminiImage(prompt, refs, (secs) =>
-        setApplyBusy(`wait:${secs}`)
-      );
-      setApplied((p) => ({ ...p, [face]: url }));
+      const r = await askGeminiVision(SYS_REVIEW, revImg.dataUrl);
+      setReview(r);
     } catch (e) {
       const m = e.message || "";
-      setApplyErr(
-        m === "no-key" ? "محتاج مفتاح Gemini في أول الصفحة عشان الخطوة دي تشتغل."
-        : m.startsWith("no-image") ? "جيميني رجّع نص مش صورة. جرّب تاني أو غيّر صورة المنتج."
-        : m.startsWith("http 429") ? "خلصت حصة توليد الصور. الحصة المجانية صغيرة جدًا — استنى شوية وجرّب، أو فعّل الفوترة في Google Cloud. في الوقت ده انسخ برومبت الوجه فوق واستخدمه في أي أداة صور تانية."
-        : m.startsWith("http 403") ? "جوجل رفضت الطلب: " + m.replace(/^http 403:?\s*/, "")
-        : m.startsWith("blocked") ? "النداء اتحجب من الصفحة دي. شغّل الملف على جهازك."
+      setRevErr(
+        m === "no-key" ? "محتاج مفتاح Gemini في أول الصفحة عشان التحليل يشتغل."
+        : m.startsWith("blocked") ? "النداء اتحجب من الصفحة دي. شغّل الملف على جهازك أو على استضافة."
+        : m.startsWith("http 429") ? "الطلبات كتير دلوقتي. استنى شوية وجرّب تاني."
+        : m.startsWith("http 4") ? "الطلب اترفض: " + m
+        : m.includes("no-json") ? "الرد رجع بشكل مش متوقع. جرّب تاني."
         : "حصلت مشكلة: " + m
       );
     } finally {
-      setApplyBusy("");
-    }
-  };
-
-  // Exported sticker PNGs, keyed by face.
-  const faceNodes = useRef({});
-  const [sticker, setSticker] = useState({});
-  const [saveBusy, setSaveBusy] = useState("");
-  const [saveErr, setSaveErr] = useState("");
-
-  const registerNode = (face, el) => { faceNodes.current[face] = el; };
-
-  const saveSticker = async (face) => {
-    const node = faceNodes.current[face];
-    if (!node) return;
-    setSaveBusy(face); setSaveErr("");
-    node.classList.add("lp-export");
-    try {
-      // Let the browser paint the export styles before capturing.
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      const url = await nodeToPNG(node, 3);
-      setSticker((p) => ({ ...p, [face]: url }));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `sticker-${face}.png`;
-      a.click();
-    } catch (e) {
-      setSaveErr(e.message || "مقدرتش أحفظ الصورة");
-    } finally {
-      node.classList.remove("lp-export");
-      setSaveBusy("");
+      setRevBusy(false);
     }
   };
 
   const [localMode, setLocalMode] = useState(false);
-  const [keyState, setKeyState] = useState("checking");   // checking | ok | fallback
+  const [apiKey, setApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [keyState, setKeyState] = useState("");   // "" | checking | ok | bad
   const [keyMsg, setKeyMsg] = useState("");
+  const keyTimer = useRef(null);
 
-  const checkAiConnection = async () => {
-    setKeyState("checking");
-    try {
-      const model = await verifyGeminiKey(DEFAULT_EMBEDDED_KEYS.join(","));
-      setKeyState("ok");
-      setKeyMsg(model);
-    } catch (e) {
+  const onKeyChange = (v) => {
+    setApiKey(v);
+    setGeminiKey(v);
+    setKeyState(""); setKeyMsg("");
+    if (keyTimer.current) clearTimeout(keyTimer.current);
+    const k = v.trim();
+    if (!k) return;
+    // Wait for typing to settle before spending a call.
+    keyTimer.current = setTimeout(async () => {
+      setKeyState("checking");
       try {
-        await askOpenRouter("system test", "ping");
-        setKeyState("ok");
-        setKeyMsg("OpenRouter Free AI (openrouter/free)");
-      } catch {
-        setKeyState("fallback");
-        setKeyMsg("شغال بالمحرك المحلّي");
+        const model = await verifyGeminiKey(k);
+        setKeyState("ok"); setKeyMsg(model);
+      } catch (e) {
+        const m = e.message || "";
+        setKeyState("bad");
+        setKeyMsg(
+          m.startsWith("blocked") ? "النداء اتحجب من الصفحة دي — المفتاح غالبًا سليم. نزّل ملف الـ HTML وشغّله على جهازك."
+          : isRetired(m) ? "أسماء الموديلات اتغيرت عند جوجل. قولي وهحدّثها."
+          : m.startsWith("http 400") ? "المفتاح مش مقبول — " + m.replace(/^http 400:?\s*/, "")
+          : m.startsWith("http 403") ? "جوجل رفضت المفتاح. الرسالة منها: " + m.replace(/^http 403:?\s*/, "")
+          : m.startsWith("http 429") ? "المفتاح شغال بس الطلبات كتير دلوقتي"
+          : m.startsWith("http 5") ? "السيرفر مش راد — جرّب تاني"
+          : "مقدرتش أوصل للسيرفر: " + m
+        );
       }
-    }
+    }, 700);
   };
-
-  useLayoutEffect(() => {
-    checkAiConnection();
-  }, []);
-  const [tab, setTab] = useState("split");
   const [copied, setCopied] = useState("");
 
-  // Feature 1 — Visual AI Director
-  const [director, setDirector] = useState(null);
-  const [dirBusy, setDirBusy] = useState(false);
-  const [dirErr, setDirErr] = useState("");
-  const [oneBusy, setOneBusy] = useState(-1);
-
-  // Feature 2 — Label Concept Generator
-  const [brand, setBrand] = useState("");
   const [style, setStyle] = useState(STYLES[0]);
-  const [scope, setScope] = useState("front");
-  const [concept, setConcept] = useState(null);
-  const [conBusy, setConBusy] = useState(false);
-  const [conErr, setConErr] = useState("");
-
-  const [newIdeaText, setNewIdeaText] = useState("");
-  const [promptsBusy, setPromptsBusy] = useState(false);
-  const [promptsErr, setPromptsErr] = useState("");
-
-  const regenPrompts = async () => {
-    if (!data) return;
-    setPromptsBusy(true); setPromptsErr("");
-    try {
-      const r = await askClaudeRetry(SYS_PROMPTS, desc.trim());
-      if ((r.prompts || []).length) {
-        setData((d) => ({ ...d, prompts: r.prompts }));
-      } else throw new Error("empty");
-    } catch {
-      setPromptsErr("مقدرتش أعيد التوليد. جرّب تاني.");
-    } finally {
-      setPromptsBusy(false);
-    }
-  };
-
-  const runNewIdea = async () => {
-    if (!data || !newIdeaText.trim()) return;
-    setPromptsBusy(true); setPromptsErr("");
-    try {
-      const SYS_NEW_IDEA = SYS_PROMPTS + `\n\nThe user wants a NEW creative direction: "${newIdeaText.trim()}". Generate 4 fully new, coherent prompts matching this direction.`;
-      const r = await askClaudeRetry(SYS_NEW_IDEA, desc.trim());
-      if ((r.prompts || []).length) {
-        setData((d) => ({ ...d, prompts: r.prompts }));
-      } else throw new Error("empty");
-    } catch {
-      setPromptsErr("مقدرتش أولّد الفكرة الجديدة. جرّب تاني.");
-    } finally {
-      setPromptsBusy(false);
-    }
-  };
 
   const run = async () => {
     const input = desc.trim();
@@ -2832,9 +1909,8 @@ function LabelPrepTool() {
 
     setData({ ...split, prompts });
     setLocalMode(usedLocal);
-    setDirector(null); setDirErr("");
-    setConcept(null); setConErr("");
-    setTab("split");
+    setSpPrompt(null);
+    setReview(null); setRevErr("");
     setBusy(false);
     setStage("");
   };
@@ -2848,79 +1924,6 @@ function LabelPrepTool() {
   };
 
   // --- Feature 1 handlers ---
-  const productBrief = () => {
-    const p = data?.product?.en ? `Product: ${data.product.en}\n` : "";
-    return `${p}${desc.trim()}`;
-  };
-
-  const runDirector = async () => {
-    setDirBusy(true); setDirErr("");
-    try {
-      const r = await askClaudeRetry(SYS_DIRECTOR, productBrief());
-      const items = r.items || [];
-      setDirector(items.length ? items : localDirector(desc).items);
-      if (!items.length) setLocalMode(true);
-    } catch {
-      setDirector(localDirector(desc).items);
-      setLocalMode(true);
-    } finally {
-      setDirBusy(false);
-    }
-  };
-
-  const regenOne = async (i) => {
-    const cur = director[i];
-    setOneBusy(i);
-    try {
-      const r = await askClaudeRetry(
-        SYS_DIRECTOR_ONE,
-        `${productBrief()}\n\nCurrent proposal to replace:\n${JSON.stringify(cur)}`
-      );
-      if (r.item) {
-        const next = director.slice();
-        next[i] = r.item;
-        setDirector(next);
-      }
-    } catch { /* keep the existing item */ }
-    finally { setOneBusy(-1); }
-  };
-
-  const [conceptSeed, setConceptSeed] = useState(0);
-
-  // --- Feature 2 handlers ---
-  const runConcept = async () => {
-    setConBusy(true); setConErr("");
-    const nextSeed = conceptSeed + 1;
-    setConceptSeed(nextSeed);
-    const scopeLabel = SCOPES.find((s) => s.id === scope)?.label || "Front Label Concept";
-    const ing = (data?.back || [])
-      .filter((e) => e.k === "ingredients")
-      .map((e) => e.t).join(", ");
-    const assets = (director || []).map((d) => d.name).join(", ");
-    const brief = [
-      productBrief(),
-      brand ? `Brand name: ${brand}` : "",
-      ing ? `Key ingredients: ${ing}` : "",
-      assets ? `Proposed visual assets: ${assets}` : "",
-      `Design style: ${style}`,
-      `Scope: ${scopeLabel}`,
-      `Variation Seed: ${nextSeed}`,
-      die && die.confirmed
-        ? `Label proportion: ${round1(die.w)} x ${round1(die.h)} ${die.unit} (aspect ${ratioText(die.wMM, die.hMM)}). Lay the hierarchy out to suit this proportion.`
-        : "",
-      "Give a FRESH, DISTINCT visual concept direction with a unique color palette, different zone weights, and new rationale.",
-    ].filter(Boolean).join("\n");
-    try {
-      const r = await askClaudeRetry(SYS_CONCEPT, brief);
-      if (!r || !(r.zones || []).length) throw new Error("empty");
-      setConcept(ensureArtZone(r));
-    } catch {
-      setConcept(ensureArtZone(localConcept(desc, style, scope, brand, nextSeed)));
-      setLocalMode(true);
-    } finally {
-      setConBusy(false);
-    }
-  };
 
   const sample = `Melano Massage Spray — topical massage spray with soothing oils and Menthol. Cooling and warming dual action, for joints and muscles pain. Ingredients: Eucalyptus Oil, Turpentine Oil, Methyl Salicylate, Menthol Crystals.`;
 
@@ -2960,34 +1963,82 @@ function LabelPrepTool() {
           <div className="lp-stamp">LABEL PREP / v1</div>
         </header>
 
-        <div className="lp-inputwrap" style={{ padding: "14px 18px", marginBottom: 14 }}>
-          {keyState === "checking" ? (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13.5 }}>
-              <span className="lp-keychk">جاري فحص اتصال الـ AI بالمفاتيح المدمجة…</span>
-            </div>
-          ) : keyState === "ok" ? (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, fontSize: 13.5 }}>
-              <span style={{ color: "var(--cyan)", fontWeight: 600 }}>
-                ✨ أنت شغال بالـ AI <span style={{ fontFamily: "monospace", fontSize: 11.5, opacity: 0.85, marginInlineStart: 6 }}>({keyMsg})</span>
+        <div className="lp-inputwrap">
+          <label className="lp-label" htmlFor="apikey">
+            مفتاح Gemini (اختياري)
+          </label>
+          <p className="lp-hint">
+            من غير مفتاح الأداة شغالة بالمحرّك المحلي. مع المفتاح الصياغة بتبقى أذكى.
+            المفتاح بيفضل في المتصفح بتاعك بس ومش بيتحفظ في الملف — كل واحد يحط مفتاحه.
+            <br />
+            <b>مهم:</b> المفتاح بيشتغل في ملف الـ HTML لما تفتحه على جهازك.
+            جوه Claude النداء لجوجل بيتحجب، فالأداة بتكمل بالمحرّك المحلي.
+          </p>
+          <div className="lp-row" style={{ marginTop: 0 }}>
+            <input
+              id="apikey"
+              className="lp-ta"
+              type={showKey ? "text" : "password"}
+              style={{ minHeight: 0, height: 42, flex: "1 1 240px", direction: "ltr", textAlign: "left" }}
+              value={apiKey}
+              onChange={(e) => onKeyChange(e.target.value)}
+              placeholder="AIza…"
+              autoComplete="off"
+              spellCheck="false"
+            />
+            <button className="lp-btn lp-btn-ghost" onClick={() => setShowKey((v) => !v)}>
+              {showKey ? "إخفاء" : "إظهار"}
+            </button>
+            {keyState === "checking" ? <span className="lp-keychk">بيتأكد…</span> : null}
+            {keyState === "ok" ? (
+              <span className="lp-keyok">
+                اشتغل يا حوده ✓
+                {keyMsg ? <em className="lp-keymodel">{keyMsg}</em> : null}
               </span>
-              <button className="lp-btn lp-btn-ghost" style={{ padding: "4px 12px", fontSize: 12 }} onClick={checkAiConnection}>
-                إعادة فحص الاتصال
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, fontSize: 13.5 }}>
-              <span style={{ color: "var(--amber)", fontWeight: 600 }}>
-                ⚡ أنت شغال بالمحرك المحلي / AI المجاني السريع
-              </span>
-              <button className="lp-btn lp-btn-ghost" style={{ padding: "4px 12px", fontSize: 12 }} onClick={checkAiConnection}>
-                إعادة فحص الـ AI
-              </button>
-            </div>
-          )}
+            ) : null}
+            {keyState === "bad" ? <span className="lp-keybad">{keyMsg}</span> : null}
+          </div>
+
+          <label className="lp-label" htmlFor="orkey" style={{ marginTop: 18 }}>
+            مفتاح OpenRouter (احتياطي)
+          </label>
+          <p className="lp-hint">
+            لو مفتاح جيميني فشل أو خلصت حصته، الأداة بتكمّل على ده تلقائيًا من غير ما توقف.
+            مجاني بحد يومي، وبيتاخد من openrouter.ai.
+          </p>
+          <div className="lp-row" style={{ marginTop: 0 }}>
+            <input
+              id="orkey"
+              className="lp-ta"
+              type={showKey ? "text" : "password"}
+              style={{ minHeight: 0, height: 42, flex: "1 1 240px", direction: "ltr", textAlign: "left" }}
+              value={orKey}
+              onChange={(e) => onOrKeyChange(e.target.value)}
+              placeholder="sk-or-…"
+              autoComplete="off"
+              spellCheck="false"
+            />
+            {orState === "checking" ? <span className="lp-keychk">بيتأكد…</span> : null}
+            {orState === "ok" ? <span className="lp-keyok">جاهز كاحتياطي ✓</span> : null}
+            {orState === "bad" ? <span className="lp-keybad">{orMsg}</span> : null}
+          </div>
         </div>
 
         <div className="lp-inputwrap">
-          <label className="lp-label" htmlFor="desc">وصف المنتج</label>
+          <label className="lp-label" htmlFor="pname">اسم المنتج</label>
+          <p className="lp-hint">
+            الاسم اللي هيتكتب على العبوة. لو سبته فاضي هياخده من الوصف.
+          </p>
+          <input
+            id="pname"
+            className="lp-ta"
+            style={{ minHeight: 0, height: 44 }}
+            value={pname}
+            onChange={(e) => setPname(e.target.value)}
+            placeholder="مثال: Melano Massage Spray"
+          />
+
+          <label className="lp-label" htmlFor="desc" style={{ marginTop: 18 }}>وصف المنتج</label>
           <p className="lp-hint">
             اكتب الاسم، الاستخدام، المكونات، وأي ادعاءات على العبوة. عربي أو إنجليزي أو الاتنين.
           </p>
@@ -3009,6 +2060,105 @@ function LabelPrepTool() {
           {err ? <div className="lp-err">{err}</div> : null}
         </div>
 
+        {data ? (
+          <div className="lp-inputwrap lp-spwrap">
+            <p className="lp-eyebrow" style={{ marginBottom: 8 }}>برومبت الاستيكر</p>
+            <p className="lp-hint">
+              برومبت واحد جاهز، مبني على بيانات المنتج اللي اتحللت.
+            </p>
+            <div className="lp-row">
+              <button className="lp-btn" onClick={() => makeStickerPrompt(spIdea)}>
+                {spPrompt ? "ولّد تاني" : "توليد برومبت استيكر بالبيانات"}
+              </button>
+              <button className="lp-btn lp-btn-ghost"
+                      onClick={() => makeStickerPrompt(spIdea + 1)}
+                      disabled={!spPrompt}>
+                توليد فكرة تانية
+              </button>
+              {spPrompt ? (
+                <span className="lp-ideatag">
+                  فكرة {spPrompt.idea + 1} من {STYLES.length} — {spPrompt.style}
+                </span>
+              ) : null}
+            </div>
+
+            {spPrompt ? (
+              <>
+                <div className="lp-banner" style={{ marginTop: 16 }}>
+                  <strong>ارفع لوجو الشركة مع البرومبت.</strong>{" "}
+                  البرومبت بيقول لأداة الصور تستخدم اللوجو المرفوع ومتخترعش واحد من عندها —
+                  فمن غيره هتلاقي علامة تجارية وهمية على الاستيكر.
+                </div>
+
+                {spPrompt.faces.map((f) => (
+                  <div key={f.face} className="lp-faceblock">
+                    <p className="lp-eyebrow" style={{ marginTop: 4 }}>{f.label}</p>
+
+                    <div className="lp-order">
+                      <span><b>1</b> اللوجو</span>
+                      {f.slots.map((x, i) => (
+                        <span key={i}><b>{i + 2}</b> {x.title}</span>
+                      ))}
+                    </div>
+
+                    <div className="lp-phead" style={{ marginTop: 12 }}>
+                      <span className="lp-plabel">Sticker prompt</span>
+                      <button className="lp-btn lp-btn-ghost"
+                              onClick={() => copy(f.sticker.text, "sp-" + f.face)}>
+                        {copied === "sp-" + f.face ? "اتنسخ" : "Copy Prompt"}
+                      </button>
+                    </div>
+                    <div className="lp-ptext">{f.sticker.text}</div>
+
+                    <details className="lp-extract">
+                      <summary>
+                        برومبتات استخراج العناصر
+                        <b>{f.extracts.length}</b>
+                      </summary>
+                      <p className="lp-hint" style={{ padding: "0 12px 6px" }}>
+                        بعد ما تطلّع صورة الاستيكر، ارفعها مع كل برومبت من دول عشان
+                        تطلّع العنصر ده لوحده بخلفية شفافة.
+                      </p>
+                      {f.extracts.map((x, i) => (
+                        <div key={i} className="lp-exrow">
+                          <div className="lp-phead">
+                            <span className="lp-plabel">{x.title}</span>
+                            <button className="lp-btn lp-btn-ghost"
+                                    onClick={() => copy(x.text, `ex-${f.face}-${i}`)}>
+                              {copied === `ex-${f.face}-${i}` ? "اتنسخ" : "Copy"}
+                            </button>
+                          </div>
+                          <div className="lp-ptext">{x.text}</div>
+                        </div>
+                      ))}
+                    </details>
+                  </div>
+                ))}
+
+                <div className="lp-swatches" style={{ marginTop: 18 }}>
+                  {spPrompt.palette.map((c, i) => (
+                    <div className="lp-swatch" key={i}>
+                      <div className="lp-swbox" style={{ background: c.hex }} />
+                      <div className="lp-swhex">{c.hex}</div>
+                      <div className="lp-swrole">{c.role}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="lp-dir" style={{ marginTop: 6 }}>
+                  <p className="lp-eyebrow">ليه الاختيارات دي؟</p>
+                  {spPrompt.why.map((d, i) => (
+                    <div key={i}>
+                      <p className="lp-dirq">{d.q}</p>
+                      <p className="lp-dira">{d.a}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : null}
+          </div>
+        ) : null}
+
         {data && localMode ? (
           <p className="lp-eyebrow" style={{ marginTop: -2, marginBottom: 18 }}>
             اتولّد محليًا — <b>من غير AI</b>
@@ -3018,789 +2168,99 @@ function LabelPrepTool() {
         {data ? (
           <>
             <div className="lp-tabs" role="tablist">
-              <button className="lp-tab" data-on={tab === "split" ? 1 : 0}
-                      onClick={() => setTab("split")} role="tab" aria-selected={tab === "split"}>
-                تقسيم العناصر
-                <span>{(data.front?.length || 0) + (data.back?.length || 0)}</span>
-              </button>
-              <button className="lp-tab" data-on={tab === "prompts" ? 1 : 0}
-                      onClick={() => setTab("prompts")} role="tab" aria-selected={tab === "prompts"}>
-                برومبتات الرسومات
-                <span>{data.prompts?.length || 0}</span>
-              </button>
-              <button className="lp-tab" data-on={tab === "dieline" ? 1 : 0}
-                      onClick={() => setTab("dieline")} role="tab" aria-selected={tab === "dieline"}>
-                معاينة الملصق
-              </button>
-              <button className="lp-tab" data-on={tab === "director" ? 1 : 0}
-                      onClick={() => setTab("director")} role="tab" aria-selected={tab === "director"}>
-                Visual AI Director
-                {director ? <span>{director.length}</span> : null}
-              </button>
-              <button className="lp-tab" data-on={tab === "diecut" ? 1 : 0}
-                      onClick={() => setTab("diecut")} role="tab" aria-selected={tab === "diecut"}>
-                Die-Cut
-                {die ? <span>✓</span> : null}
-              </button>
-              <button className="lp-tab" data-on={tab === "concept" ? 1 : 0}
-                      onClick={() => setTab("concept")} role="tab" aria-selected={tab === "concept"}>
-                Label Concept
-              </button>
-              <button className="lp-tab" data-on={tab === "final" ? 1 : 0}
-                      onClick={() => setTab("final")} role="tab" aria-selected={tab === "final"}>
-                التصميم النهائي
+              <button className="lp-tab" data-on={1} role="tab" aria-selected={true}>
+                تحليل
               </button>
             </div>
 
-            {tab === "split" ? (
-              <>
-                <p className="lp-eyebrow">
-                  المنتج <b>{data.product?.en || "—"}</b>
-                </p>
-                <div className="lp-facegrid">
-                  <Face title="FRONT / الوش" items={data.front || []} />
-                  <Face title="BACK / الضهر" items={data.back || []} />
-                </div>
-                <p className="lp-note">
-                  كل سطر هنا عنصر مستقل. المصمم بيحوّل كل واحد لملف TIFF بخلفية شفافة
-                  على 300 DPI، وبيرصّهم في الإليستريتور حسب المعاينة.
-                </p>
-              </>
-            ) : null}
+            <p className="lp-eyebrow">
+              ارفع تصميم الاستيكر — <b>مراجعة واقتراحات</b>
+            </p>
 
-            {tab === "prompts" ? (
-              <>
-                <p className="lp-eyebrow">
-                  برومبتات الاستيكر ومكوناته — <b>اختيار الستايل والتوليد الإبداعي</b>
-                </p>
+            <div className="lp-ctrl">
+              <p className="lp-hint" style={{ marginBottom: 12 }}>
+                ارفع صورة التصميم (استيكر، عبوة، أو أي مرحلة من الشغل) وهيترد عليك
+                بمراجعة: إيه الكويس فيه، وإيه اللي ينفع يتضاف أو يتظبط وليه.
+              </p>
 
-                {/* ── 1. Style Selection Chips ───────────────────────────── */}
-                <div className="lp-inputwrap" style={{ marginBottom: 18 }}>
-                  <label className="lp-label">اختر ستايل وطابع الاستيكر (Design Style)</label>
-                  <p className="lp-hint">
-                    اضغط على الستايل المناسب لمنتجك، وسيتم فورًا تحديث برومبت الاستيكر الكامل ومكوناته وتحليل الألوان.
-                  </p>
-                  <div className="lp-chips" style={{ marginTop: 8 }}>
-                    {STYLES.map((s) => (
-                      <button
-                        key={s}
-                        className="lp-chip"
-                        data-on={style === s ? 1 : 0}
-                        onClick={() => setStyle(s)}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* ── 2. Full Sticker Master Prompt ─────────────────────── */}
-                <div className="lp-inputwrap" style={{ marginBottom: 20, borderColor: "var(--cyan)" }}>
-                  <div className="lp-phead">
-                    <h3 className="lp-ptitle" style={{ color: "var(--cyan)" }}>
-                      ✨ برومبت الاستيكر الكامل للوجه (Full Sticker Prompt — DATA Reserved)
-                    </h3>
-                    <button
-                      className="lp-btn"
-                      onClick={() =>
-                        copy(
-                          buildHtmlFacePrompt({ face: "front", data, concept: concept || localConcept(desc, style, "front", brand), style, die, slots: slotsFor("front"), hasLogo: !!logo }),
-                          "master-front"
-                        )
-                      }
-                    >
-                      {copied === "master-front" ? "اتنسخ البرومبت الكامل" : "نسخ برومبت الاستيكر الكامل"}
-                    </button>
-                  </div>
-                  <p className="lp-hint" style={{ marginTop: 6 }}>
-                    برومبت شامل لوجه الاستيكر بالكامل يضم النسب، الألوان، وأماكن مخصصة محجوزة ومكتوب عليها كلمة <b>"DATA"</b> لتركها فارغة للنصوص والداتا المطبوعة!
-                  </p>
-                  <div className="lp-ptext" style={{ marginTop: 10 }}>
-                    {buildHtmlFacePrompt({ face: "front", data, concept: concept || localConcept(desc, style, "front", brand), style, die, slots: slotsFor("front"), hasLogo: !!logo })}
-                  </div>
-                </div>
-
-                {/* ── 3. Individual Component Prompts (300 DPI) ─────────── */}
-                <p className="lp-eyebrow" style={{ marginTop: 22 }}>
-                  مكونات وعناصر الاستيكر المنفصلة — <b>(300 DPI Transparent Assets)</b>
-                </p>
-                <p className="lp-hint" style={{ marginBottom: 14 }}>
-                  خذ برومبت كل مكون بشكل مستقل وارفعه لمولد الصور للحصول على عنصر نقي وعالي الجودة لخلفية شفافة لتجميعه في التصميم!
-                </p>
-
-                {(data.prompts || []).map((p, i) => (
-                  <div className="lp-prompt" key={i}>
-                    <div className="lp-phead">
-                      <h3 className="lp-ptitle">🧩 مكون {i + 1}: {p.title}</h3>
-                      <button className="lp-btn lp-btn-ghost" onClick={() => copy(p.p, "pr" + i)}>
-                        {copied === "pr" + i ? "اتنسخ" : "نسخ برومبت المكون"}
-                      </button>
-                    </div>
-                    <p className="lp-pplace">
-                      <strong>{p.face === "front" ? "الوجه الأمامي" : "الوجه الخلفي"}</strong> — الموضع: {p.place}
-                    </p>
-                    <div className="lp-ptext">{p.p}</div>
-                  </div>
-                ))}
-
-                {/* ── 4. Design Decisions & Rationale Analysis ──────────── */}
-                <div className="lp-dir" style={{ marginTop: 26 }}>
-                  <p className="lp-eyebrow">تحليل قرارات التصميم والتميز التنافسي</p>
-                  <p className="lp-hint">
-                    لماذا تم اختيار هذه الألوان والتركيب البصري لهذا المنتج خصيصًا؟ مرجع شامل للعرض والموافقات:
-                  </p>
-                  {buildRationale(concept || localConcept(desc, style, "front", brand), style, die, desc).map((d, i) => (
-                    <div key={i} style={{ marginBottom: 10 }}>
-                      <p className="lp-dirq">📌 {d.q}</p>
-                      <p className="lp-dira">{d.a}</p>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : null}
-
-            {tab === "dieline" ? (
-              <>
-                <p className="lp-eyebrow">
-                  ملصق لف حول العبوة — <b>مرجع ترتيب فقط</b>
-                </p>
-                <div className="lp-dlwrap">
-                  <div className="lp-dlcol">
-                    <div className="lp-dlcap">Front / الوش</div>
-                    <Dieline items={data.front || []} face="front" />
-                  </div>
-                  <div className="lp-dlcol">
-                    <div className="lp-dlcap">Back / الضهر</div>
-                    <Dieline items={data.back || []} face="back" />
-                  </div>
-                </div>
-                <div className="lp-legend">
-                  <span className="lp-lgi">
-                    <span className="lp-sw" style={{ borderColor: "#C8005E", borderStyle: "dashed" }} />
-                    نصوص أساسية
-                  </span>
-                  <span className="lp-lgi">
-                    <span className="lp-sw" style={{ borderColor: "#0091B3", background: "rgba(0,145,179,0.07)" }} />
-                    رسومات من الـ AI
-                  </span>
-                  <span className="lp-lgi">
-                    <span className="lp-sw" style={{ borderColor: "#B87400", borderStyle: "dashed" }} />
-                    بادچ / ادعاء
-                  </span>
-                </div>
-                <p className="lp-note">
-                  الأبعاد هنا نسبية مش نهائية — المصمم بيظبطها على محيط وطول العبوة الحقيقي.
-                  الخط المنقّط الخارجي هو حد الـ bleed، والخط الصريح هو خط القص.
-                </p>
-              </>
-            ) : null}
-
-            {tab === "director" ? (
-              <>
-                <p className="lp-eyebrow">
-                  العناصر البصرية اللي المنتج ده <b>محتاجها فعلًا</b>
-                </p>
-
-                {!director ? (
-                  <div className="lp-ctrl">
-                    <p className="lp-hint" style={{ marginBottom: 12 }}>
-                      هيتحلل نوع المنتج ومكوناته وجمهوره، ويترشّح العناصر البصرية المناسبة له —
-                      كل عنصر بسبب اقتراحه ووظيفته ومكانه وبرومبت مستقل.
-                    </p>
-                    <button className="lp-btn" onClick={runDirector} disabled={dirBusy}>
-                      {dirBusy ? "بيحلل المنتج…" : "اقترح العناصر البصرية"}
-                    </button>
-                  </div>
-                ) : null}
-
-                {director ? (
-                  <>
-                    {director.map((it, i) => (
-                      <div className="lp-vd" key={i}>
-                        <div className="lp-vdhead">
-                          <div style={{ minWidth: 0 }}>
-                            <span className="lp-vdkind">{it.kind}</span>
-                            <h3 className="lp-vdname">{it.name}</h3>
-                          </div>
-                          <button className="lp-btn lp-btn-ghost"
-                                  onClick={() => regenOne(i)} disabled={oneBusy === i}>
-                            {oneBusy === i ? "بيولّد…" : "اقتراح تاني"}
-                          </button>
-                        </div>
-
-                        <dl className="lp-vdmeta">
-                          <div className="lp-vdcell">
-                            <dt>ليه المنتج ده</dt>
-                            <dd>{it.why}</dd>
-                          </div>
-                          <div className="lp-vdcell">
-                            <dt>وظيفته في التصميم</dt>
-                            <dd>{it.role}</dd>
-                          </div>
-                          <div className="lp-vdcell">
-                            <dt>مكانه المقترح</dt>
-                            <dd>{it.place}</dd>
-                          </div>
-                        </dl>
-
-                        <div className="lp-vdfoot">
-                          <div className="lp-phead">
-                            <span style={{
-                              fontFamily: "'IBM Plex Mono', monospace", fontSize: 9.5,
-                              letterSpacing: "0.12em", textTransform: "uppercase", color: "#5C6169",
-                            }}>Prompt</span>
-                            <button className="lp-btn lp-btn-ghost"
-                                    onClick={() => copy(it.p, "vd" + i)}>
-                              {copied === "vd" + i ? "اتنسخ" : "Copy Prompt"}
-                            </button>
-                          </div>
-                          <div className="lp-ptext">{it.p}</div>
-                        </div>
-                      </div>
-                    ))}
-
-                    <div className="lp-row">
-                      <button className="lp-btn lp-btn-ghost" onClick={runDirector} disabled={dirBusy}>
-                        {dirBusy ? "بيحلل…" : "اقترح مجموعة جديدة"}
-                      </button>
-                    </div>
-
-                    <p className="lp-note">
-                      «اقتراح تاني» بيغيّر العنصر ده لوحده ويسيب الباقي زي ما هو.
-                      البرومبتات مكتوبة من غير أي كتابة أو شعارات جوه الصورة عشان تنفع تتحط في التصميم.
-                    </p>
-                  </>
-                ) : null}
-              </>
-            ) : null}
-
-            {tab === "diecut" ? (
-              <>
-                <p className="lp-eyebrow">
-                  ملف السكينة — <b>مرجع أبعاد للتصور</b>
-                </p>
-
-                {!dieRaw && !dieErr ? (
-                  <div className="lp-ctrl">
-                    <label className="lp-drop" htmlFor="diefile">
-                      <b>{dieBusy ? "بيحلل الملف…" : "ارفع ملف الـ Die-Cut"}</b>
-                      <span>
-                        SVG بيدي أدق نتيجة (شكل ومقاس).<br />
-                        PDF و AI بيدّوا مقاس الصفحة.<br />
-                        PNG و JPG مرجع بصري بس، من غير مقاسات.
-                      </span>
-                    </label>
-                    <input
-                      id="diefile" type="file" style={{ display: "none" }}
-                      accept=".svg,.pdf,.ai,.png,.jpg,.jpeg,.webp"
-                      onChange={(e) => onDieFile(e.target.files?.[0])}
-                    />
-                    <p className="lp-note" style={{ marginTop: 16 }}>
-                      المقاسات بتتقاس من هندسة الملف نفسه، مش بتتخمّن. الخطوة دي
-                      بتاخد الشكل والنسبة كمرجع للتصور البصري بس — مفيش تعديل على
-                      ملفك، ومفيش إضافة خطوط طباعة.
-                    </p>
-                  </div>
-                ) : null}
-
-                {dieErr ? (
-                  <div className="lp-ctrl">
-                    <div className="lp-err">{dieErr}</div>
-                    <div className="lp-row">
-                      <label className="lp-btn lp-btn-ghost" htmlFor="diefile2" style={{ cursor: "pointer" }}>
-                        جرّب ملف تاني
-                      </label>
-                      <input
-                        id="diefile2" type="file" style={{ display: "none" }}
-                        accept=".svg,.pdf,.ai,.png,.jpg,.jpeg,.webp"
-                        onChange={(e) => onDieFile(e.target.files?.[0])}
-                      />
-                      <button className="lp-btn lp-btn-ghost" onClick={resetDie}>ابدأ من الأول</button>
-                    </div>
-                  </div>
-                ) : null}
-
-                {dieRaw ? (
-                  <>
-                    <p className="lp-eyebrow" style={{ marginTop: 4 }}>
-                      Detected Die-Cut Dimensions
-                    </p>
-
-                    <div className="lp-dcgrid">
-                      <div>
-                        <div className="lp-dcprev">
-                          {dieRaw.kind === "svg" ? (
-                            <DiePreview raw={dieRaw} shapeIdx={dieShape} />
-                          ) : dieRaw.kind === "pdf" ? (
-                            <BoxPreview w={dieRaw.boxMM.w} h={dieRaw.boxMM.h} />
-                          ) : (
-                            <BoxPreview w={dieRaw.px.w} h={dieRaw.px.h} />
-                          )}
-                        </div>
-                        <p style={{ marginTop: 8, fontSize: 11, color: "#5C6169", overflowWrap: "anywhere" }}>
-                          {dieFile?.name}
-                        </p>
-                      </div>
-
-                      <div>
-                        <div className="lp-readout">
-                          <div className="lp-ro">
-                            <div className="lp-rok">Width</div>
-                            <div className="lp-rov">{dieW || "—"} {dieUnit}</div>
-                          </div>
-                          <div className="lp-ro">
-                            <div className="lp-rok">Height</div>
-                            <div className="lp-rov">{dieH || "—"} {dieUnit}</div>
-                          </div>
-                          <div className="lp-ro">
-                            <div className="lp-rok">Aspect Ratio</div>
-                            <div className="lp-rov">{ratioText(parseFloat(dieW), parseFloat(dieH))}</div>
-                          </div>
-                        </div>
-
-                        {dieRaw.kind === "svg" && dieRaw.shapes.length > 1 ? (
-                          <>
-                            <label className="lp-label">
-                              اتلاقى {dieRaw.shapes.length} أشكال — اختار شكل السكينة
-                            </label>
-                            <div className="lp-shapes">
-                              {dieRaw.shapes.map((sh, i) => (
-                                <button key={i} className="lp-shape" data-on={dieShape === i ? 1 : 0}
-                                        onClick={() => pickShape(i)}>
-                                  {sh.id || sh.tag} · {round1(sh.w)}×{round1(sh.h)}
-                                </button>
-                              ))}
-                            </div>
-                          </>
-                        ) : null}
-
-                        {dieRaw.kind === "svg" && dieRaw.confidence !== "high" ? (
-                          <div className="lp-banner" style={{ marginBottom: 14 }}>
-                            <strong>الملف مفيهوش وحدة قياس صريحة.</strong>{" "}
-                            الأرقام دي بوحدات الملف. اكتب المقاس الحقيقي تحت قبل ما تأكد.
-                          </div>
-                        ) : null}
-
-                        {dieRaw.kind === "pdf" ? (
-                          <div className="lp-banner" style={{ marginBottom: 14 }}>
-                            <strong>{dieRaw.usedBox}.</strong>{" "}
-                            ده مقاس الصفحة مش مسار السكينة نفسه. لو السكينة أصغر من
-                            الصفحة، اكتب مقاسها تحت. لأدق نتيجة صدّر الملف SVG.
-                          </div>
-                        ) : null}
-
-                        {dieRaw.kind === "raster" ? (
-                          <div className="lp-banner" style={{ marginBottom: 14 }}>
-                            <strong>صورة، مش vector.</strong>{" "}
-                            الأرقام دي بيكسلات ومش مقاس حقيقي. اكتب المقاس بالملي تحت.
-                          </div>
-                        ) : null}
-
-                        <label className="lp-label">تعديل يدوي</label>
-                        <div className="lp-fields">
-                          <div className="lp-field">
-                            <label htmlFor="dw">Width</label>
-                            <input id="dw" className="lp-num" type="number" min="0" step="0.1"
-                                   value={dieW} onChange={(e) => setDieW(e.target.value)} />
-                          </div>
-                          <div className="lp-field">
-                            <label htmlFor="dh">Height</label>
-                            <input id="dh" className="lp-num" type="number" min="0" step="0.1"
-                                   value={dieH} onChange={(e) => setDieH(e.target.value)} />
-                          </div>
-                          <div className="lp-field">
-                            <label htmlFor="du">Unit</label>
-                            <select id="du" className="lp-sel" value={dieUnit}
-                                    onChange={(e) => setDieUnit(e.target.value)}>
-                              {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="lp-row">
-                          <button className="lp-btn" onClick={confirmDie}>
-                            {die ? "أكّد المقاس تاني" : "Confirm Die-Cut"}
-                          </button>
-                          <label className="lp-btn lp-btn-ghost" htmlFor="diefile3" style={{ cursor: "pointer" }}>
-                            Replace Die-Cut File
-                          </label>
-                          <input
-                            id="diefile3" type="file" style={{ display: "none" }}
-                            accept=".svg,.pdf,.ai,.png,.jpg,.jpeg,.webp"
-                            onChange={(e) => onDieFile(e.target.files?.[0])}
-                          />
-                        </div>
-
-                        {die ? (
-                          <div className="lp-ok" style={{ marginTop: 14 }}>
-                            اتأكد: {round1(die.w)} × {round1(die.h)} {die.unit} — نسبة{" "}
-                            {ratioText(die.wMM, die.hMM)}. التصور البصري هيتبني على النسبة دي.
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    <p className="lp-note">
-                      المقاس ده بيتستخدم كنسبة ومرجع للتصور البصري بس. مفيش Bleed ولا
-                      Safe Area اتضافوا، ومفيش ملف طباعة بيتولّد — التنفيذ الحقيقي
-                      بيحصل في الإليستريتور على ملف السكينة الأصلي.
-                    </p>
-                  </>
-                ) : null}
-              </>
-            ) : null}
-
-            {tab === "concept" ? (
-              <>
-                <p className="lp-eyebrow">
-                  تصور بصري مبدئي — <b>مرجع إبداعي فقط</b>
-                </p>
-
-                <div className="lp-banner">
-                  <strong>AI Visual Concept / Design Reference Only.</strong>{" "}
-                  ده اتجاه فني يبدأ منه المصمم في الإليستريتور أو الفوتوشوب.
-                  مش ملف طباعة، ومفيهوش مقاسات نهائية ولا إعدادات طباعة.
-                </div>
-
-                <div className="lp-ctrl">
-                  <label className="lp-label" htmlFor="brandname">اسم البراند (اختياري)</label>
-                  <input
-                    id="brandname"
-                    className="lp-ta"
-                    style={{ minHeight: 0, height: 42 }}
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                    placeholder="مثال: Melano"
-                  />
-
-                  <label className="lp-label" style={{ marginTop: 16 }}>Design Style</label>
-                  <div className="lp-chips" role="group" aria-label="Design Style">
-                    {STYLES.map((s) => (
-                      <button key={s} className="lp-chip" data-on={style === s ? 1 : 0}
-                              onClick={() => setStyle(s)} aria-pressed={style === s}>
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-
-                  <label className="lp-label">نطاق التصور</label>
-                  <div className="lp-chips" role="group" aria-label="نطاق التصور">
-                    {SCOPES.map((s) => (
-                      <button key={s.id} className="lp-chip" data-on={scope === s.id ? 1 : 0}
-                              onClick={() => setScope(s.id)} aria-pressed={scope === s.id}>
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="lp-row">
-                    <button className="lp-btn" onClick={runConcept} disabled={conBusy}>
-                      {conBusy ? "بيرسم التصور…" : concept ? "Generate New Concept" : "أنشئ التصور"}
-                    </button>
-                  </div>
-                  {conErr ? null : null}
-                </div>
-
-                {concept ? (
-                  <div className="lp-cgrid">
-                    <div>
-                      <div className="lp-dlcap">{style} — {SCOPES.find((s) => s.id === scope)?.label}</div>
-                      <ConceptMock concept={concept} scope={scope} die={die} art={art} />
-
-                    </div>
-
-                    <div>
-                      <p className="lp-eyebrow">اقتراح الألوان</p>
-                      <div className="lp-swatches">
-                        {(concept.palette || []).map((c, i) => (
-                          <div className="lp-swatch" key={i}>
-                            <div className="lp-swbox" style={{ background: c.hex }} />
-                            <div className="lp-swhex">{c.hex}</div>
-                            <div className="lp-swrole">{c.role}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {concept.type ? (
-                        <>
-                          <p className="lp-eyebrow">Typography</p>
-                          <dl className="lp-vdmeta" style={{ padding: 0 }}>
-                            <div className="lp-vdcell">
-                              <dt>Display</dt>
-                              <dd>{concept.type.display}</dd>
-                            </div>
-                            <div className="lp-vdcell">
-                              <dt>Body</dt>
-                              <dd>{concept.type.body}</dd>
-                            </div>
-                          </dl>
-                          {concept.type.note ? (
-                            <p className="lp-dira" style={{ marginTop: 2 }}>{concept.type.note}</p>
-                          ) : null}
-                        </>
-                      ) : null}
-
-                      <p className="lp-eyebrow" style={{ marginTop: 18 }}>ارفع الرسومات</p>
-                      {(concept.zones || []).filter((z) => z.role === "art").map((z, i) => {
-                        const shot = art[artKey(z.label)];
-                        return (
-                          <div className="lp-artrow" key={i}>
-                            <div className="lp-artname">
-                              {z.label}
-                              {shot ? (
-                                <span className="lp-artmeta">
-                                  {shot.w}×{shot.h}{shot.hasAlpha ? "" : " · خلفية مصمتة"}
-                                </span>
-                              ) : null}
-                            </div>
-                            {shot ? (
-                              <button className="lp-btn lp-btn-ghost" onClick={() => clearArt(z.label)}>
-                                شيلها
-                              </button>
-                            ) : null}
-                            <label className="lp-btn lp-btn-ghost" htmlFor={`art-${i}`} style={{ cursor: "pointer" }}>
-                              {shot ? "غيّرها" : "ارفع"}
-                            </label>
-                            <input
-                              id={`art-${i}`} type="file" style={{ display: "none" }}
-                              accept="image/png,image/webp,image/jpeg"
-                              onChange={(e) => onArtFile(z.label, e.target.files?.[0])}
-                            />
-                          </div>
-                        );
-                      })}
-
-                      {Object.values(art).some((a) => !a.hasAlpha) ? (
-                        <div className="lp-banner" style={{ marginTop: 12 }}>
-                          <strong>في صورة من غير خلفية شفافة.</strong>{" "}
-                          هتبان بمربع حواليها. أعد توليدها وتأكد إن أداة الصور مصدّرة PNG بشفافية.
-                        </div>
-                      ) : null}
-
-                      {artErr ? <div className="lp-err">{artErr}</div> : null}
-                      <div className="lp-dir">
-                        <p className="lp-eyebrow" style={{ marginTop: 8 }}>Design Direction</p>
-                        {(concept.direction || []).map((d, i) => (
-                          <div key={i}>
-                            <p className="lp-dirq">{d.q}</p>
-                            <p className="lp-dira">{d.a}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                {concept ? (
-                  <p className="lp-note">
-                    كل ضغطة على «Generate New Concept» بتديك اتجاه بصري مختلف بنفس بيانات المنتج.
-                    غيّر الـ Style أو النطاق الأول لو عايز تجرّب مزاج تاني.
-                  </p>
-                ) : null}
-              </>
-            ) : null}
-
-            {tab === "final" ? (
-              <>
-                <p className="lp-eyebrow">
-                  معاينة الشكل النهائي — <b>مرجع للعرض والموافقة</b>
-                </p>
-
-                {!concept ? (
-                  <div className="lp-ctrl">
-                    <p className="lp-hint" style={{ marginBottom: 12 }}>
-                      محتاج تنشئ التصور الأول عشان الألوان والاتجاه يتحددوا.
-                    </p>
-                    <button className="lp-btn" onClick={() => setTab("concept")}>
-                      روح لـ Label Concept
-                    </button>
-                  </div>
+              <div className="lp-mockshot" style={{ maxWidth: 320 }}>
+                {revImg ? (
+                  <img src={revImg.dataUrl} alt="التصميم المرفوع" />
                 ) : (
-                  <>
-                    <div className="lp-banner" style={{ marginTop: 14 }}>
-                      <strong>طريقة عمل التيمبلت والتوليد النهائي:</strong>
-                      <ol className="lp-steps" style={{ margin: "6px 0 0", paddingInlineStart: 18 }}>
-                        <li>حمّل تيمبلت الوش أو الضهر (Template PNG) بالضغط على الأزرار بالأسفل.</li>
-                        <li>انسخ البرومبت المخصص للوجه المرفق بأسفل الصفحة.</li>
-                        <li>ارفع صورة التيمبلت وصور الرسومات المرفوعة لمولد الصور (Midjourney / Flux) ليقوم بتجميع وتوليد الاستيكر النهائي في مكان كل رسمة، مع ترك المساحات المحجوزة فارغة للداتا!</li>
-                      </ol>
-                    </div>
-
-                    <div className="lp-row" style={{ marginTop: 14, gap: 12 }}>
-                      <button className="lp-btn" onClick={() => saveSticker("front")} disabled={!!saveBusy}>
-                        {saveBusy === "front" ? "جاري تحضير التيمبلت…" : "📥 تحميل تيمبلت الوش (Front Template PNG)"}
-                      </button>
-                      <button className="lp-btn" onClick={() => saveSticker("back")} disabled={!!saveBusy}>
-                        {saveBusy === "back" ? "جاري تحضير التيمبلت…" : "📥 تحميل تيمبلت الضهر (Back Template PNG)"}
-                      </button>
-                    </div>
-
-                    <div className="lp-faces">
-                      <FaceRender
-                        face="front" tag="الوش"
-                        items={data.front || []} slots={slotsFor("front")}
-                        concept={concept} die={die} style={style}
-                        art={art} logo={logo} extras={extras}
-                        onPick={pickSlot} onClear={clearSlot} onNode={registerNode}
-                      />
-                      <FaceRender
-                        face="back" tag="الضهر"
-                        items={data.back || []} slots={slotsFor("back")}
-                        concept={concept} die={die} style={style}
-                        art={art} logo={logo} extras={extras}
-                        onPick={pickSlot} onClear={clearSlot} onNode={registerNode}
-                      />
-                    </div>
-
-
-
-                    {artErr ? <div className="lp-err" style={{ marginTop: 14 }}>{artErr}</div> : null}
-
-                    {Object.values(art).concat(logo ? [logo] : [], Object.values(extras))
-                      .some((a) => a && !a.hasAlpha) ? (
-                      <div className="lp-banner" style={{ marginTop: 14 }}>
-                        <strong>في صورة من غير خلفية شفافة.</strong>{" "}
-                        هتبان بمربع حواليها. أعد توليدها بـ PNG بشفافية.
-                      </div>
-                    ) : null}
-
-                    <div className="lp-dir" style={{ marginTop: 26 }}>
-                      <p className="lp-eyebrow">برومبتات التصميم</p>
-                      <p className="lp-hint">
-                        وصف HTML كامل للوجه بالبيانات الحقيقية والرسومات مضبوط على أبعاد العبوة.
-                        انسخ البرومبت وارفعه على أداة توليد الصور مع الرسومات المرجعية.
-                      </p>
-
-                      {[
-                        { face: "front", label: "الوجه الأمامي" },
-                        { face: "back", label: "الوجه الخلفي" },
-                      ].map(({ face, label }) => {
-                        const s = slotsFor(face);
-                        const text = buildHtmlFacePrompt({ face, data, concept, style, die, slots: s, hasLogo: !!logo });
-                        return (
-                          <div key={face} style={{ marginTop: 18 }}>
-                            <div className="lp-phead" style={{ marginTop: 12 }}>
-                              <span style={{
-                                fontFamily: "'IBM Plex Mono', monospace", fontSize: 9.5,
-                                letterSpacing: "0.12em", textTransform: "uppercase", color: "#5C6169",
-                              }}>{label}</span>
-                              <button className="lp-btn lp-btn-ghost"
-                                      onClick={() => copy(text, "prompt-" + face)}>
-                                {copied === "prompt-" + face ? "اتنسخ" : "Copy Prompt"}
-                              </button>
-                            </div>
-                            <div className="lp-ptext">{text}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="lp-dir" style={{ marginTop: 22 }}>
-                      <p className="lp-eyebrow">
-                        الخلفية — <b>{backgroundFor(style, (concept.palette || []).map((p) => p.hex)).name}</b>
-                      </p>
-                      <p className="lp-hint">
-                        دي مش خلفية سادة. المصمم بيبنيها في الإليستريتور بالخطوات دي:
-                      </p>
-                      <ol className="lp-steps">
-                        {backgroundFor(style, (concept.palette || []).map((p) => p.hex)).howto
-                          .map((s, i) => <li key={i}>{s}</li>)}
-                      </ol>
-                    </div>
-
-                    <div className="lp-dir" style={{ marginTop: 26 }}>
-                      <p className="lp-eyebrow">
-                        الاستيكر على المنتج — <b>محاكاة</b>
-                      </p>
-                      <p className="lp-hint">
-                        ارفع صورة العبوة الحقيقية (وش وضهر)، وجيميني هيرسم الاستيكر على العبوة.
-                        النتيجة تقريبية مش نسخة من المعاينة اللي فوق — راجع الكتابة قبل ما تعرضها.
-                      </p>
-
-                      <div className="lp-mockgrid">
-                        {[
-                          { face: "front", label: "وش العبوة", shot: shotFront },
-                          { face: "back", label: "ضهر العبوة", shot: shotBack },
-                        ].map(({ face, label, shot }) => (
-                          <div className="lp-mockcol" key={face}>
-                            <div className="lp-facecap">{label}</div>
-
-                            <div className="lp-mockshot">
-                              {shot ? (
-                                <img src={shot.dataUrl} alt={label} />
-                              ) : (
-                                <label className="lp-slotempty" htmlFor={`shot-${face}`}
-                                       style={{ minHeight: 120 }}>
-                                  <b>ارفع صورة العبوة</b>
-                                  <span>خلفية بسيطة وإضاءة واضحة</span>
-                                </label>
-                              )}
-                              <input id={`shot-${face}`} type="file" style={{ display: "none" }}
-                                     accept="image/png,image/webp,image/jpeg"
-                                     onChange={(e) => pickShot(face, e.target.files?.[0])} />
-                            </div>
-
-                            <div className="lp-row">
-                              <button className="lp-btn" onClick={() => applyToProduct(face)}
-                                      disabled={!shot || applyBusy === face || applyBusy.startsWith("wait:")}>
-                                {applyBusy.startsWith("wait:")
-                                  ? `الحصة خلصت — بيستنى ${applyBusy.slice(5)} ثانية…`
-                                  : applyBusy === face ? "بيركّب…" : "ركّب الاستيكر"}
-                              </button>
-                              {shot ? (
-                                <label className="lp-btn lp-btn-ghost" htmlFor={`shot-${face}`}
-                                       style={{ cursor: "pointer" }}>غيّر الصورة</label>
-                              ) : null}
-                            </div>
-
-                            {applied[face] ? (
-                              <div className="lp-mockout">
-                                <img src={applied[face]} alt={`النتيجة — ${label}`} />
-                                <a className="lp-btn lp-btn-ghost" href={applied[face]}
-                                   download={`mockup-${face}.png`}>نزّل الصورة</a>
-                              </div>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-
-                      {applyErr ? <div className="lp-err" style={{ marginTop: 12 }}>{applyErr}</div> : null}
-
-                      {!getGeminiKey() ? (
-                        <div className="lp-banner" style={{ marginTop: 12 }}>
-                          <strong>الخطوة دي محتاجة مفتاح Gemini.</strong>{" "}
-                          حطه في الخانة أول الصفحة. من غيره باقي الأداة شغالة عادي.
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className="lp-dir" style={{ marginTop: 26 }}>
-                      <p className="lp-eyebrow">تحليل القرارات البصرية</p>
-                      {buildRationale(concept, style, die, desc).map((d, i) => (
-                        <div key={i}>
-                          <p className="lp-dirq">{d.q}</p>
-                          <p className="lp-dira">{d.a}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {(concept.direction || []).length ? (
-                      <div className="lp-dir" style={{ marginTop: 18 }}>
-                        <p className="lp-eyebrow">ترتيب المعلومات</p>
-                        {(concept.direction || []).map((d, i) => (
-                          <div key={i}>
-                            <p className="lp-dirq">{d.q}</p>
-                            <p className="lp-dira">{d.a}</p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
-
-                    <p className="lp-note">
-                      الصور بتفضل في الجلسة دي بس. لو قفلت الصفحة هتحتاج ترفعها تاني.
-                    </p>
-                  </>
+                  <label className="lp-slotempty" htmlFor="revfile" style={{ minHeight: 140 }}>
+                    <b>ارفع صورة التصميم</b>
+                    <span>PNG أو JPG</span>
+                  </label>
                 )}
+                <input id="revfile" type="file" style={{ display: "none" }}
+                       accept="image/png,image/webp,image/jpeg"
+                       onChange={(e) => pickReview(e.target.files?.[0])} />
+              </div>
+
+              <div className="lp-row">
+                <button className="lp-btn" onClick={runReview}
+                        disabled={!revImg || revBusy}>
+                  {revBusy ? "بيحلل…" : review ? "حلّل تاني" : "حلّل التصميم"}
+                </button>
+                {revImg ? (
+                  <label className="lp-btn lp-btn-ghost" htmlFor="revfile"
+                         style={{ cursor: "pointer" }}>غيّر الصورة</label>
+                ) : null}
+              </div>
+
+              {revErr ? <div className="lp-err">{revErr}</div> : null}
+
+              {!GEMINI_KEY ? (
+                <div className="lp-banner" style={{ marginTop: 12 }}>
+                  <strong>الخطوة دي محتاجة مفتاح Gemini.</strong>{" "}
+                  التحليل بيحتاج الأداة تشوف الصورة، وده مش بيشتغل بالمحرّك المحلي.
+                </div>
+              ) : null}
+            </div>
+
+            {review ? (
+              <>
+                {review.verdict ? (
+                  <div className="lp-ok" style={{ marginBottom: 16 }}>{review.verdict}</div>
+                ) : null}
+
+                {(review.strengths || []).length ? (
+                  <div className="lp-dir">
+                    <p className="lp-eyebrow">المميزات</p>
+                    <ul className="lp-steps">
+                      {review.strengths.map((s, i) => <li key={i}>{s}</li>)}
+                    </ul>
+                  </div>
+                ) : null}
+
+                {(review.suggestions || []).length ? (
+                  <div className="lp-dir" style={{ marginTop: 18 }}>
+                    <p className="lp-eyebrow">اقتراحات</p>
+                    {review.suggestions.map((s, i) => (
+                      <div key={i}>
+                        <p className="lp-dirq">{s.what}</p>
+                        <p className="lp-dira">{s.why}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                {(review.issues || []).length ? (
+                  <div className="lp-dir" style={{ marginTop: 18 }}>
+                    <p className="lp-eyebrow">محتاج انتباه</p>
+                    {review.issues.map((s, i) => (
+                      <div key={i}>
+                        <p className="lp-dirq">{s.what}</p>
+                        <p className="lp-dira">{s.why}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                <p className="lp-note">
+                  ده رأي آلي على الشكل البصري، مش مراجعة تنظيمية ولا قانونية.
+                  البيانات الإلزامية على العبوة مسؤولية الجهة المختصة عندكم.
+                </p>
               </>
             ) : null}
           </>
