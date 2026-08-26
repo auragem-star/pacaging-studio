@@ -116,6 +116,13 @@ const CSS = `
   font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-soft);
   border: 1px solid var(--rule); padding: 6px 10px; white-space: nowrap;
 }
+.lp-chip { display: inline-flex; align-items: center; gap: 8px; }
+.lp-chipdots { display: inline-flex; gap: 2px; flex-shrink: 0; }
+.lp-chipdots i {
+  display: block; width: 9px; height: 14px;
+  border: 1px solid rgba(20,22,28,0.18);
+}
+.lp-chip[data-on="1"] .lp-chipdots i { border-color: rgba(255,255,255,0.35); }
 .lp-faceblock { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 18px; }
 .lp-plabel {
   font-family: 'IBM Plex Mono', monospace; font-size: 9.5px;
@@ -1517,6 +1524,72 @@ async function askGeminiVision(system, imageDataUrl) {
   throw last;
 }
 
+/* Vision-capable free slots on OpenRouter, used when Gemini can't look. */
+const OR_VISION_MODELS = [
+  "meta-llama/llama-4-scout:free",
+  "qwen/qwen2.5-vl-72b-instruct:free",
+  "google/gemma-3-27b-it:free",
+];
+
+async function askOpenRouterVision(system, imageDataUrl) {
+  if (!OR_KEY) throw new Error("no-or-key");
+  let last;
+  for (const model of OR_VISION_MODELS) {
+    let res;
+    try {
+      res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OR_KEY}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "image_url", image_url: { url: imageDataUrl } },
+              { type: "text", text: system },
+            ],
+          }],
+          response_format: { type: "json_object" },
+          max_tokens: 2048,
+          temperature: 0.4,
+        }),
+      });
+    } catch (e) {
+      throw new Error("blocked: " + (e.message || "fetch failed"));
+    }
+
+    if (res.ok) {
+      const j = await res.json();
+      const raw = j?.choices?.[0]?.message?.content || "";
+      if (!raw.trim()) throw new Error("empty response");
+      return extractJSON(raw);
+    }
+
+    let detail = "";
+    try { detail = (await res.json())?.error?.message || ""; } catch { /* not json */ }
+    last = new Error(`http ${res.status}${detail ? ": " + detail : ""}`);
+    // A retired or busy free slot means move on; anything else is real.
+    if (!isRetired(last.message) && !last.message.startsWith("http 429")) throw last;
+  }
+  throw last;
+}
+
+/* Gemini first, then OpenRouter — same order the text calls use. */
+async function askVision(system, imageDataUrl) {
+  if (GEMINI_KEY) {
+    try {
+      return await askGeminiVision(system, imageDataUrl);
+    } catch (e) {
+      if (!OR_KEY) throw e;
+    }
+  }
+  if (OR_KEY) return askOpenRouterVision(system, imageDataUrl);
+  throw new Error("no-key");
+}
+
 function whyFor(styleName, palette) {
   const [c0, c1, c2] = palette.map((p) => p.hex);
   return [
@@ -1823,14 +1896,15 @@ function LabelPrepTool() {
     if (!revImg) return;
     setRevBusy(true); setRevErr("");
     try {
-      const r = await askGeminiVision(SYS_REVIEW, revImg.dataUrl);
+      const r = await askVision(SYS_REVIEW, revImg.dataUrl);
       setReview(r);
     } catch (e) {
       const m = e.message || "";
       setRevErr(
-        m === "no-key" ? "محتاج مفتاح Gemini في أول الصفحة عشان التحليل يشتغل."
+        m === "no-key" || m === "no-or-key"
+          ? "محتاج مفتاح Gemini أو OpenRouter في أول الصفحة عشان التحليل يشتغل."
         : m.startsWith("blocked") ? "النداء اتحجب من الصفحة دي. شغّل الملف على جهازك أو على استضافة."
-        : m.startsWith("http 429") ? "الطلبات كتير دلوقتي. استنى شوية وجرّب تاني."
+        : m.startsWith("http 429") ? "الطلبات كتير على المزوّدين دلوقتي. استنى شوية وجرّب تاني."
         : m.startsWith("http 4") ? "الطلب اترفض: " + m
         : m.includes("no-json") ? "الرد رجع بشكل مش متوقع. جرّب تاني."
         : "حصلت مشكلة: " + m
@@ -2064,22 +2138,33 @@ function LabelPrepTool() {
           <div className="lp-inputwrap lp-spwrap">
             <p className="lp-eyebrow" style={{ marginBottom: 8 }}>برومبت الاستيكر</p>
             <p className="lp-hint">
-              برومبت واحد جاهز، مبني على بيانات المنتج اللي اتحللت.
+              اختار الاتجاه البصري الأول، وبعدين ولّد البرومبت. كل اتجاه ليه ألوان
+              وخلفية مختلفة.
             </p>
+
+            <div className="lp-chips" role="group" aria-label="الاتجاه البصري">
+              {STYLES.map((s, i) => (
+                <button key={s} className="lp-chip" data-on={spIdea === i ? 1 : 0}
+                        onClick={() => { setSpIdea(i); if (spPrompt) makeStickerPrompt(i); }}
+                        aria-pressed={spIdea === i}>
+                  <span className="lp-chipdots">
+                    {(PALETTES[s] || []).slice(0, 4).map((c, n) => (
+                      <i key={n} style={{ background: c.hex }} />
+                    ))}
+                  </span>
+                  {s}
+                </button>
+              ))}
+            </div>
+
             <div className="lp-row">
               <button className="lp-btn" onClick={() => makeStickerPrompt(spIdea)}>
                 {spPrompt ? "ولّد تاني" : "توليد برومبت استيكر بالبيانات"}
               </button>
               <button className="lp-btn lp-btn-ghost"
-                      onClick={() => makeStickerPrompt(spIdea + 1)}
-                      disabled={!spPrompt}>
-                توليد فكرة تانية
+                      onClick={() => makeStickerPrompt(spIdea + 1)}>
+                جرّب الاتجاه اللي بعده
               </button>
-              {spPrompt ? (
-                <span className="lp-ideatag">
-                  فكرة {spPrompt.idea + 1} من {STYLES.length} — {spPrompt.style}
-                </span>
-              ) : null}
             </div>
 
             {spPrompt ? (
@@ -2210,10 +2295,11 @@ function LabelPrepTool() {
 
               {revErr ? <div className="lp-err">{revErr}</div> : null}
 
-              {!GEMINI_KEY ? (
+              {!GEMINI_KEY && !OR_KEY ? (
                 <div className="lp-banner" style={{ marginTop: 12 }}>
-                  <strong>الخطوة دي محتاجة مفتاح Gemini.</strong>{" "}
+                  <strong>الخطوة دي محتاجة مفتاح.</strong>{" "}
                   التحليل بيحتاج الأداة تشوف الصورة، وده مش بيشتغل بالمحرّك المحلي.
+                  حط مفتاح Gemini أو OpenRouter في أول الصفحة.
                 </div>
               ) : null}
             </div>
