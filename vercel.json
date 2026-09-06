@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "outputDirectory": ".",
+  "buildCommand": null,
+  "routes": [
+    { "src": "/studio", "dest": "/studio.html" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
