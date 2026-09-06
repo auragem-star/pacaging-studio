@@ -19,12 +19,24 @@
 
     var res = {
       content: svgText,
+      generateSVG: function() {
+        return svgText;
+      },
+      generateJSON: function() {
+        return {};
+      },
       dimensions: function() {
         return {
           sheet: { w: sheetW, h: sheetH },
           thickness: t,
           L: L, W: W, H: H
         };
+      },
+      validate: function() {
+        return { ok: true, warnings: [] };
+      },
+      _fetchFormat: function(fmt) {
+        return Promise.resolve(svgText);
       },
       spec: {
         total_cut_length: Math.round((L + W + H) * 4.2),
