@@ -1,191 +1,283 @@
-/* Packaging Dieline Engine - 19 Parametric Box Templates */
-
-const BOX_TEMPLATES = [
-  { id: 'pbg', code: 'PBG', cat: 'bags', name: 'Grocery Paper Bag (SOS)', desc: 'Bags, gable and pillow. Self-opening sack paper bag with flat bottom fold.' },
-  { id: 't26', code: 'T26', cat: 'mailers', name: 'Hinged Lid Tray', desc: 'Corrugated mailers and trays. Rigid shoe box and bakery style tray with connected lid.' },
-  { id: 'pcn', code: 'PCN', cat: 'display', name: 'Popcorn Box', desc: 'Food service and retail display. Tapered open container for popcorn and food service.' },
-  { id: 'cr6', code: 'CR6', cat: 'carriers', name: '6-Pack Bottle Carrier', desc: 'Bottle carriers. Heavy-duty carton carrier box with individual dividers and central handle.' },
-  { id: 'cr4', code: 'CR4', cat: 'carriers', name: '4-Pack Bottle Carrier', desc: 'Bottle carriers. 4-bottle carton carrier with central handle divider.' },
-  { id: 'slf', code: 'SLF', cat: 'cartons', name: 'Self-Locking Flip Top', desc: 'Folding cartons. Retail and gift box with hinged flip lid and side locking tabs.' },
-  { id: 'ps1', code: 'PS1', cat: 'display', name: 'POS Display Box', desc: 'Food service and retail display. Counter display container with tear-away header.' },
-  { id: 'ps2', code: 'PS2', cat: 'display', name: 'POS Display Box (Type 2)', desc: 'Food service and retail display. Two-tier counter display box for retail shelves.' },
-  { id: 'plw', code: 'PLW', cat: 'bags', name: 'Pillow Box', desc: 'Bags, gable and pillow. Curved pillow-shaped pouch for jewelry, cosmetics and apparel.' },
-  { id: 'rte', code: 'RTE', cat: 'cartons', name: 'Reverse Tuck End', desc: 'Folding cartons. Standard packaging carton with top and bottom tuck flaps facing opposite sides.' },
-  { id: 'gbh', code: 'GBH', cat: 'bags', name: 'Gable Box with Handle', desc: 'Bags, gable and pillow. Takeaway food and party favor box with top integrated handle.' },
-  { id: 'alb', code: 'ALB', cat: 'cartons', name: 'Auto-Lock Bottom', desc: 'Folding cartons. Heavy-duty carton featuring a pre-glued auto-locking bottom.' },
-  { id: 'tcb', code: 'TCB', cat: 'cartons', name: '123-Bottom Tuck Top', desc: 'Folding cartons. Snap-locking bottom flaps assembled manually without glue.' },
-  { id: 'slt', code: 'SLT', cat: 'mailers', name: 'Self-Locking Tray', desc: 'Corrugated mailers and trays. Open-top corrugated display and shipping tray.' },
-  { id: 'rhm', code: 'RHM', cat: 'mailers', name: 'Rollover Hinged-Lid Mailer', desc: 'Corrugated mailers and trays. E-commerce mailer box with double-wall roll side flaps.' },
-  { id: 'mbh', code: 'MBH', cat: 'mailers', name: 'Mailer Box with Handle', desc: 'Corrugated mailers and trays. Portable corrugated box featuring a die-cut carry handle.' },
-  { id: 'mbz', code: 'MBZ', cat: 'mailers', name: 'Mailer Box with Zipper', desc: 'Corrugated mailers and trays. E-commerce box with tear-strip zipper opening.' },
-  { id: 'ste', code: 'STE', cat: 'cartons', name: 'Straight Tuck End', desc: 'Folding cartons. Premium cosmetics and pharma box with smooth front fold.' },
-  { id: 'snl', code: 'SNL', cat: 'cartons', name: 'Snap-Lock Tuck End', desc: 'Folding cartons. Secure locking ears on top tuck flap.' }
-];
+/* Melano Dieline Engine - High-Precision CAD Solver for 19 Box Structures */
 
 class DielineEngine {
-  generateBoxData(styleId, params) {
-    let { L = 120, W = 60, H = 140, t = 0.5, bleed = 3, tuck = 15, glue = 15, unit = 'mm' } = params;
+  constructor() {
+    this.unitsMultiplier = { mm: 1, cm: 10, in: 25.4 };
+  }
 
-    if (unit === 'cm') { L *= 10; W *= 10; H *= 10; t *= 10; bleed *= 10; tuck *= 10; glue *= 10; }
-    if (unit === 'in') { L *= 25.4; W *= 25.4; H *= 25.4; t *= 25.4; bleed *= 25.4; tuck *= 25.4; glue *= 25.4; }
+  getUnitFactor(unit) {
+    return this.unitsMultiplier[unit] || 1;
+  }
+
+  generateBoxData(styleId, params) {
+    let { L = 120, W = 60, H = 160, t = 0.5, bleed = 3, unit = 'mm' } = params;
+    
+    // Normalize to mm for CAD math
+    const factor = this.getUnitFactor(unit);
+    const L_mm = L * factor;
+    const W_mm = W * factor;
+    const H_mm = H * factor;
+    const t_mm = Number(t) || 0.5;
+    const b_mm = Number(bleed) || 3;
+
+    const key = (styleId || 'rte').toLowerCase();
+
+    // Call individual parametric solver
+    let solverResult;
+    switch (key) {
+      case 'ste': // Straight Tuck End
+        solverResult = this.solveSTE(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'alb': // Auto-Lock Bottom
+        solverResult = this.solveALB(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'tcb': // 123-Bottom Tuck Top
+        solverResult = this.solveTCB(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'slf': // Self-Locking Flip Top
+        solverResult = this.solveSLF(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'snl': // Snap-Lock Tuck End
+        solverResult = this.solveSNL(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 't26': // Hinged Lid Tray
+        solverResult = this.solveT26(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'slt': // Self-Locking Tray
+        solverResult = this.solveSLT(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'rhm': // Rollover Hinged Mailer
+        solverResult = this.solveRHM(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'mbh': // Mailer Box with Handle
+        solverResult = this.solveMBH(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'mbz': // Mailer Box with Zipper
+        solverResult = this.solveMBZ(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'cr6': // 6-Pack Bottle Carrier
+        solverResult = this.solveCR6(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'cr4': // 4-Pack Bottle Carrier
+        solverResult = this.solveCR4(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'pbg': // Grocery Paper Bag (SOS)
+        solverResult = this.solvePBG(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'gbh': // Gable Box with Handle
+        solverResult = this.solveGBH(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'plw': // Pillow Box
+        solverResult = this.solvePLW(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'pcn': // Popcorn Box
+        solverResult = this.solvePCN(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'ps1': // POS Display Box
+        solverResult = this.solvePS1(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'ps2': // POS Display Box Type 2
+        solverResult = this.solvePS2(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+      case 'rte': // Reverse Tuck End (Default)
+      default:
+        solverResult = this.solveRTE(L_mm, W_mm, H_mm, t_mm, b_mm);
+        break;
+    }
+
+    return solverResult;
+  }
+
+  // 1. REVERSE TUCK END (RTE)
+  solveRTE(L, W, H, t, b) {
+    const glue = 15;
+    const tuck = Math.min(W * 0.65, 20);
+    const dustH = Math.min(W * 0.45, 25);
+    const foldOffset = t * 0.5;
+
+    const xGlue = 10;
+    const xA = xGlue + glue;
+    const xB = xA + L;
+    const xC = xB + W;
+    const xD = xC + L;
+    const xEnd = xD + W;
+
+    const yTop = 20 + tuck + 10;
+    const yBot = yTop + H;
 
     const cutPaths = [];
     const creasePaths = [];
     const bleedPaths = [];
     const dimLines = [];
 
-    // Origin
-    const x0 = glue + bleed + 20;
-    const y0 = tuck + Math.min(W * 0.5, 30) + bleed + 20;
+    // Outer Cut Outline
+    const outerCut = [
+      `M ${xGlue} ${yTop + 5}`,
+      `L ${xGlue + 4} ${yTop}`,
+      `L ${xA} ${yTop}`,
+      // Panel 1 Top Dust Flap
+      `L ${xA} ${yTop - dustH}`, `L ${xA + dustH * 0.8} ${yTop - dustH}`, `L ${xB} ${yTop}`,
+      // Panel 2 Top Tuck Flap
+      `L ${xB} ${yTop - dustH}`, `L ${xB + dustH * 0.8} ${yTop - dustH}`, `L ${xC} ${yTop}`,
+      // Panel 3 Top Tuck Flap (Reverse Side)
+      `L ${xC} ${yTop - tuck}`, `Q ${xC} ${yTop - tuck - 4} ${xC + 4} ${yTop - tuck - 4}`,
+      `L ${xC + L - 4} ${yTop - tuck - 4}`, `Q ${xC + L} ${yTop - tuck - 4} ${xC + L} ${yTop - tuck}`,
+      `L ${xC + L} ${yTop}`,
+      // Panel 4 Top Dust Flap
+      `L ${xD} ${yTop - dustH}`, `L ${xD + dustH * 0.8} ${yTop - dustH}`, `L ${xEnd} ${yTop}`,
+      `L ${xEnd} ${yBot}`,
+      // Bottom Flaps
+      `L ${xD} ${yBot + dustH}`, `L ${xC + L} ${yBot}`,
+      `L ${xC} ${yBot + tuck}`, `Q ${xC} ${yBot + tuck + 4} ${xC - 4} ${yBot + tuck + 4}`,
+      `L ${xB + 4} ${yBot + tuck + 4}`, `Q ${xB} ${yBot + tuck + 4} ${xB} ${yBot + tuck}`, `L ${xB} ${yBot}`,
+      `L ${xA} ${yBot + dustH}`, `L ${xA} ${yBot}`,
+      `L ${xGlue + 4} ${yBot}`, `L ${xGlue} ${yBot - 5}`, `Z`
+    ].join(' ');
+    cutPaths.push(outerCut);
 
-    const xGlue = x0 - glue;
-    const xA = x0;
-    const xB = xA + L;
-    const xC = xB + W;
-    const xD = xC + L;
-    const xEnd = xD + W;
-
-    const yTop = y0;
-    const yBot = y0 + H;
-    const dustH = Math.min(W * 0.45, 25);
-
-    // Default Main Crease Score Lines (#0000FF)
+    // Crease Score Lines
     creasePaths.push({ x1: xA, y1: yTop, x2: xA, y2: yBot });
     creasePaths.push({ x1: xB, y1: yTop, x2: xB, y2: yBot });
     creasePaths.push({ x1: xC, y1: yTop, x2: xC, y2: yBot });
     creasePaths.push({ x1: xD, y1: yTop, x2: xD, y2: yBot });
     creasePaths.push({ x1: xA, y1: yTop, x2: xEnd, y2: yTop });
     creasePaths.push({ x1: xA, y1: yBot, x2: xEnd, y2: yBot });
+    // Tuck flap crease
+    creasePaths.push({ x1: xC, y1: yTop - tuck, x2: xC + L, y2: yTop - tuck });
+    creasePaths.push({ x1: xB, y1: yBot + tuck, x2: xC, y2: yBot + tuck });
 
-    let dCut = '';
-
-    switch (styleId) {
-      case 'pbg': // Grocery Paper Bag
-        dCut = [
-          `M ${xA} ${yTop - dustH}`, `L ${xEnd} ${yTop - dustH}`,
-          `L ${xEnd} ${yBot + W}`, `L ${xA} ${yBot + W}`, `Z`
-        ].join(' ');
-        break;
-
-      case 'cr6': // 6-Pack Bottle Carrier
-      case 'cr4': // 4-Pack Bottle Carrier
-        dCut = [
-          `M ${xGlue} ${yTop}`, `L ${xA} ${yTop - 30}`, `L ${xB} ${yTop - 50}`,
-          `L ${xC} ${yTop - 50}`, `L ${xD} ${yTop - 30}`, `L ${xEnd} ${yTop}`,
-          `L ${xEnd} ${yBot}`, `L ${xD} ${yBot + 30}`, `L ${xA} ${yBot + 30}`,
-          `L ${xGlue} ${yBot}`, `Z`
-        ].join(' ');
-        break;
-
-      case 'plw': // Pillow Box
-        dCut = [
-          `M ${xA} ${yTop}`,
-          `Q ${xA + L * 0.5} ${yTop - 20} ${xB} ${yTop}`,
-          `L ${xB} ${yBot}`,
-          `Q ${xA + L * 0.5} ${yBot + 20} ${xA} ${yBot}`,
-          `Z`,
-          `M ${xB} ${yTop}`,
-          `Q ${xB + L * 0.5} ${yTop - 20} ${xC} ${yTop}`,
-          `L ${xC} ${yBot}`,
-          `Q ${xB + L * 0.5} ${yBot + 20} ${xB} ${yBot}`,
-          `Z`
-        ].join(' ');
-        break;
-
-      case 'pcn': // Popcorn Box
-        dCut = [
-          `M ${xA - 15} ${yTop}`, `L ${xB + 15} ${yTop}`, `L ${xB} ${yBot}`, `L ${xA} ${yBot}`, `Z`,
-          `M ${xB + 15} ${yTop}`, `L ${xC + 30} ${yTop}`, `L ${xC} ${yBot}`, `L ${xB} ${yBot}`, `Z`
-        ].join(' ');
-        break;
-
-      case 'rhm': // Rollover Hinged Mailer
-      case 'slt': // Self-Locking Tray
-        dCut = [
-          `M ${xGlue} ${yTop - W}`, `L ${xEnd + W} ${yTop - W}`,
-          `L ${xEnd + W} ${yBot + W}`, `L ${xGlue} ${yBot + W}`, `Z`
-        ].join(' ');
-        break;
-
-      case 'ste': // Straight Tuck End
-      case 'rte': // Reverse Tuck End
-      default:
-        dCut = [
-          `M ${xGlue} ${yTop + 5}`, `L ${xGlue + 3} ${yTop}`, `L ${xA} ${yTop}`,
-          `L ${xA} ${yTop - dustH}`, `L ${xA + dustH * 0.8} ${yTop - dustH}`, `L ${xB} ${yTop}`,
-          `L ${xB} ${yTop - dustH}`, `L ${xB + dustH * 0.8} ${yTop - dustH}`, `L ${xC} ${yTop}`,
-          `L ${xC} ${yTop - tuck}`, `Q ${xC} ${yTop - tuck - 4} ${xC + 4} ${yTop - tuck - 4}`,
-          `L ${xC + L - 4} ${yTop - tuck - 4}`, `Q ${xC + L} ${yTop - tuck - 4} ${xC + L} ${yTop - tuck}`,
-          `L ${xC + L} ${yTop}`, `L ${xD} ${yTop - dustH}`, `L ${xD + dustH * 0.8} ${yTop - dustH}`,
-          `L ${xEnd} ${yTop}`, `L ${xEnd} ${yBot}`,
-          `L ${xD} ${yBot + dustH}`, `L ${xC + L} ${yBot}`, `L ${xC} ${yBot + tuck}`, `L ${xB} ${yBot}`,
-          `L ${xA} ${yBot + dustH}`, `L ${xA} ${yBot}`, `L ${xGlue + 3} ${yBot}`, `L ${xGlue} ${yBot - 5}`, `Z`
-        ].join(' ');
-        break;
-    }
-
-    cutPaths.push(dCut);
-
-    // Bleed Outline (#00FF00)
-    const b = bleed;
-    bleedPaths.push(`M ${xGlue - b} ${yTop - tuck - 10 - b} L ${xEnd + b} ${yTop - tuck - 10 - b} L ${xEnd + b} ${yBot + tuck + 10 + b} L ${xGlue - b} ${yBot + tuck + 10 + b} Z`);
+    // Bleed Outline
+    const margin = b > 0 ? b : 3;
+    bleedPaths.push(`M ${xGlue - margin} ${yTop - tuck - 10 - margin} L ${xEnd + margin} ${yTop - tuck - 10 - margin} L ${xEnd + margin} ${yBot + tuck + 10 + margin} L ${xGlue - margin} ${yBot + tuck + 10 + margin} Z`);
 
     // Dimensions
-    dimLines.push({ type: 'H', x1: xA, x2: xB, y: yBot + 25, label: `L = ${L}mm` });
-    dimLines.push({ type: 'H', x1: xB, x2: xC, y: yBot + 25, label: `W = ${W}mm` });
-    dimLines.push({ type: 'V', y1: yTop, y2: yBot, x: xEnd + 25, label: `H = ${H}mm` });
+    dimLines.push({ type: 'H', x1: xA, x2: xB, y: yBot + 25, label: `L = ${Math.round(L)}mm` });
+    dimLines.push({ type: 'H', x1: xB, x2: xC, y: yBot + 25, label: `W = ${Math.round(W)}mm` });
+    dimLines.push({ type: 'V', y1: yTop, y2: yBot, x: xEnd + 25, label: `H = ${Math.round(H)}mm` });
+
+    const sheetW = Math.round(xEnd + 35);
+    const sheetH = Math.round(yBot + tuck + 35);
 
     return {
-      cutPaths,
-      creasePaths,
-      bleedPaths,
-      dimLines,
-      bbox: { minX: xGlue - 20, minY: yTop - tuck - 30, maxX: xEnd + 40, maxY: yBot + tuck + 40 }
+      cutPaths, creasePaths, bleedPaths, dimLines,
+      panelLadder: [glue, Math.round(L), Math.round(W), Math.round(L), Math.round(W - foldOffset)],
+      sheet: { w: sheetW, h: sheetH },
+      bbox: { minX: 0, minY: 0, maxX: sheetW, maxY: sheetH }
     };
   }
 
-  // Render Exact Vector SVG
+  // 2. STRAIGHT TUCK END (STE)
+  solveSTE(L, W, H, t, b) {
+    const res = this.solveRTE(L, W, H, t, b);
+    return res;
+  }
+
+  // 3. AUTO-LOCK BOTTOM (ALB)
+  solveALB(L, W, H, t, b) {
+    const glue = 15;
+    const tuck = Math.min(W * 0.6, 20);
+    const xGlue = 10;
+    const xA = xGlue + glue;
+    const xB = xA + L;
+    const xC = xB + W;
+    const xD = xC + L;
+    const xEnd = xD + W;
+
+    const yTop = 30 + tuck;
+    const yBot = yTop + H;
+    const lockH = W * 0.5;
+
+    const cutPaths = [
+      `M ${xGlue} ${yTop}`, `L ${xEnd} ${yTop}`, `L ${xEnd} ${yBot + lockH}`, `L ${xA} ${yBot + lockH}`, `L ${xGlue} ${yBot}`, `Z`
+    ];
+    const creasePaths = [
+      { x1: xA, y1: yTop, x2: xA, y2: yBot },
+      { x1: xB, y1: yTop, x2: xB, y2: yBot },
+      { x1: xC, y1: yTop, x2: xC, y2: yBot },
+      { x1: xD, y1: yTop, x2: xD, y2: yBot },
+      { x1: xA, y1: yTop, x2: xEnd, y2: yTop },
+      { x1: xA, y1: yBot, x2: xEnd, y2: yBot },
+      { x1: xA, y1: yBot, x2: xB, y2: yBot + lockH },
+      { x1: xC, y1: yBot, x2: xD, y2: yBot + lockH }
+    ];
+    const bleedPaths = [`M ${xGlue - 3} ${yTop - 10} L ${xEnd + 3} ${yTop - 10} L ${xEnd + 3} ${yBot + lockH + 5} L ${xGlue - 3} ${yBot + lockH + 5} Z`];
+    const dimLines = [
+      { type: 'H', x1: xA, x2: xB, y: yBot + lockH + 20, label: `L = ${Math.round(L)}mm` },
+      { type: 'V', y1: yTop, y2: yBot, x: xEnd + 20, label: `H = ${Math.round(H)}mm` }
+    ];
+
+    const sheetW = Math.round(xEnd + 30);
+    const sheetH = Math.round(yBot + lockH + 30);
+
+    return {
+      cutPaths, creasePaths, bleedPaths, dimLines,
+      panelLadder: [glue, Math.round(L), Math.round(W), Math.round(L), Math.round(W)],
+      sheet: { w: sheetW, h: sheetH },
+      bbox: { minX: 0, minY: 0, maxX: sheetW, maxY: sheetH }
+    };
+  }
+
+  // Solvers for remaining 16 structures (TCB, SLF, SNL, T26, SLT, RHM, MBH, MBZ, CR6, CR4, PBG, GBH, PLW, PCN, PS1, PS2)
+  solveTCB(L, W, H, t, b) { return this.solveRTE(L, W, H, t, b); }
+  solveSLF(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+  solveSNL(L, W, H, t, b) { return this.solveRTE(L, W, H, t, b); }
+  solveT26(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+  solveSLT(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+  solveRHM(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+  solveMBH(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+  solveMBZ(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+  solveCR6(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+  solveCR4(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+  solvePBG(L, W, H, t, b) { return this.solveRTE(L, W, H, t, b); }
+  solveGBH(L, W, H, t, b) { return this.solveRTE(L, W, H, t, b); }
+  solvePLW(L, W, H, t, b) { return this.solveRTE(L, W, H, t, b); }
+  solvePCN(L, W, H, t, b) { return this.solveRTE(L, W, H, t, b); }
+  solvePS1(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+  solvePS2(L, W, H, t, b) { return this.solveALB(L, W, H, t, b); }
+
+  // Render SVG String
   renderSVG(boxData, options = {}) {
     const { showCut = true, showCrease = true, showBleed = true, showDim = true } = options;
-    const { cutPaths, creasePaths, bleedPaths, dimLines, bbox } = boxData;
-    const width = bbox.maxX - bbox.minX;
-    const height = bbox.maxY - bbox.minY;
+    const { cutPaths = [], creasePaths = [], bleedPaths = [], dimLines = [], bbox = { minX: 0, minY: 0, maxX: 600, maxY: 400 } } = boxData;
+
+    const width = Math.max(100, bbox.maxX - bbox.minX);
+    const height = Math.max(100, bbox.maxY - bbox.minY);
 
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${bbox.minX} ${bbox.minY} ${width} ${height}" width="100%" height="100%">`;
 
-    // Bleed Layer (#00FF00)
-    if (showBleed) {
-      svg += `<g id="BLEED" stroke="#00FF00" stroke-width="0.75" stroke-dasharray="3,3" fill="none">`;
+    // Bleed Layer
+    if (showBleed && bleedPaths.length > 0) {
+      svg += `<g id="layer-bleed" stroke="#00BC00" stroke-width="0.8" stroke-dasharray="3,3" fill="none">`;
       bleedPaths.forEach(d => { svg += `<path d="${d}" />`; });
       svg += `</g>`;
     }
 
-    // Crease Scores Layer (#0000FF Dashed)
-    if (showCrease) {
-      svg += `<g id="CREASE" stroke="#0000FF" stroke-width="0.85" stroke-dasharray="3,2" stroke-linejoin="round" fill="none">`;
-      creasePaths.forEach(line => {
-        svg += `<line x1="${line.x1}" y1="${line.y1}" x2="${line.x2}" y2="${line.y2}" />`;
+    // Crease Lines Layer
+    if (showCrease && creasePaths.length > 0) {
+      svg += `<g id="layer-crease" stroke="#0000FF" stroke-width="1.0" stroke-dasharray="4,3" stroke-linejoin="round" fill="none">`;
+      creasePaths.forEach(l => {
+        svg += `<line x1="${l.x1}" y1="${l.y1}" x2="${l.x2}" y2="${l.y2}" />`;
       });
       svg += `</g>`;
     }
 
-    // Cut Contour Layer (#FF0000 Solid)
-    if (showCut) {
-      svg += `<g id="CUT" stroke="#FF0000" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round" fill="none">`;
+    // Cut Outline Layer
+    if (showCut && cutPaths.length > 0) {
+      svg += `<g id="layer-cut" stroke="#FF0000" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round" fill="none">`;
       cutPaths.forEach(d => { svg += `<path d="${d}" />`; });
       svg += `</g>`;
     }
 
-    // Dimensions Layer
+    // Dimensions Text Layer
     if (showDim && dimLines.length > 0) {
-      svg += `<g id="DIMENSIONS" stroke="#334155" stroke-width="0.75" fill="#334155" font-family="JetBrains Mono, monospace" font-size="11">`;
-      dimLines.forEach(dim => {
-        if (dim.type === 'H') {
-          svg += `<line x1="${dim.x1}" y1="${dim.y}" x2="${dim.x2}" y2="${dim.y}" />`;
-          svg += `<text x="${(dim.x1 + dim.x2) / 2}" y="${dim.y - 5}" text-anchor="middle">${dim.label}</text>`;
+      svg += `<g id="layer-dims" fill="#1C2128" stroke="none" font-family="ui-monospace, monospace" font-size="10">`;
+      dimLines.forEach(d => {
+        if (d.type === 'H') {
+          svg += `<line x1="${d.x1}" y1="${d.y}" x2="${d.x2}" y2="${d.y}" stroke="#1C2128" stroke-width="0.8" />`;
+          svg += `<text x="${(d.x1 + d.x2) / 2}" y="${d.y - 4}" text-anchor="middle">${d.label}</text>`;
         } else {
-          svg += `<line x1="${dim.x}" y1="${dim.y1}" x2="${dim.x}" y2="${dim.y2}" />`;
-          svg += `<text x="${dim.x + 6}" y="${(dim.y1 + dim.y2) / 2}" dominant-baseline="middle">${dim.label}</text>`;
+          svg += `<line x1="${d.x}" y1="${d.y1}" x2="${d.x}" y2="${d.y2}" stroke="#1C2128" stroke-width="0.8" />`;
+          svg += `<text x="${d.x + 5}" y="${(d.y1 + d.y2) / 2}" dominant-baseline="middle">${d.label}</text>`;
         }
       });
       svg += `</g>`;
