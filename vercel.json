@@ -1,18 +1,13 @@
 {
-  "version": 2,
   "cleanUrls": true,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/dieline",
-      "dest": "/api/dieline.js"
+      "source": "/api/dieline",
+      "destination": "https://packagingdieline.com/api/dieline"
     },
     {
-      "src": "/studio",
-      "dest": "/studio.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/api/:path*",
+      "destination": "https://packagingdieline.com/api/:path*"
     }
   ]
 }
