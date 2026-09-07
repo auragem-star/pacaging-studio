@@ -1,9 +1,0 @@
-{
-  "name": "melano-dieline",
-  "version": "2.5.0",
-  "description": "Parametric Packaging Dieline Generator & 3D Studio",
-  "private": true,
-  "scripts": {
-    "build": "echo Static build complete"
-  }
-}
